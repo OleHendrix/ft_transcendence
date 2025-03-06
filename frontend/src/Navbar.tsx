@@ -13,10 +13,13 @@ function Navbar()
 		  	<a href="#" className="hover:text-gray-400">Stats</a>
 		  	<a href="#" className="hover:text-gray-400">About</a>
 		</ul>
-		<div className="space-x-6 flex items-center">
-        <button className="flex items-center space-x-2 bg-[#ff914d] hover:bg-[#ab5a28] text-white py-2 px-4 rounded-3xl">
-			<p>Login</p>
+		<div className="flex items-center space-x-2">
+		<button className="flex items-center space-x-2 bg-transparent hover:text-gray-400 text-white py-2 px-4 rounded-3xl">
+			<p>Sign up</p>
         	<CgProfile />
+        </button>
+        <button className="flex items-center space-x-2 bg-[#ff914d] hover:bg-[#ab5a28] text-white py-1 px-4 rounded-3xl shadow-lg">
+			<p>Login</p>
         </button>
 		</div>
 	  </nav>

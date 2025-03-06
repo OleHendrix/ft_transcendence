@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "daisyui": "^5.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0"
@@ -26,5 +27,10 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.0",
     "vite": "^6.2.0"
-  }
+  },
+  "main": "tailwind.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
