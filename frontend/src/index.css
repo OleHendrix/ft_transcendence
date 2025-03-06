@@ -1,3 +1,6 @@
+@import "tailwindcss";
+/* @plugin "daisyui"; */
+
 @font-face {
 	font-family: 'Satoshi';
 	src: url('./assets/fonts/Satoshi-Light.otf') format('truetype');
@@ -65,6 +68,3 @@
 	--font-satoshi: Satoshi, "sans-serif"; 
   }
   
-
-@import "tailwindcss";
-/* @plugin "daisyui"; */
