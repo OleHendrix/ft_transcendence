@@ -1,17 +1,18 @@
 import { RiGamepadLine } from "react-icons/ri";
 import "./ponganimation.css";
 
-const SimplePong = () => {
-  return (
-    <div className="pong-wrapper">
-      <div className="pong-game">
-        <div className="paddle left-paddle"></div>
-        <div className="ball"></div>
-        <div className="paddle right-paddle"></div>
-      </div>
-    </div>
-  );
-};
+function SimplePong()
+{
+	return (
+		<div className="pong-wrapper">
+		<div className="pong-game">
+			<div className="paddle left-paddle"></div>
+			<div className="ball"></div>
+			<div className="paddle right-paddle"></div>
+		</div>
+		</div>
+	)
+}
 
 function Hero()
 {
@@ -35,7 +36,6 @@ function Hero()
 			</div>
 		</div>
 	)
-
 }
 
 export default Hero
