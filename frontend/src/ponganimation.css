@@ -46,8 +46,8 @@
 
 .paddle {
   position: absolute;
-  width: 12px;
-  height: 90px;
+  width: 15px;
+  height: 130px;
   background-color: #134588;
   border-radius: 4px;
 }
