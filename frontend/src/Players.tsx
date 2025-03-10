@@ -25,7 +25,7 @@ function Players({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers}
 				)}
 				<div className="flex items-center flex-col space-y-0.5 w-18">
 					<img src={PlayerAdd} className="h-10 w-auto hover:cursor-pointer" onClick={() => setShowSignupModal(true)}/>
-					<p className="text-[10px] w-full text-center truncate invisible">placeholder</p>
+					{loggedInPlayers.length > 0 && (<p className="text-[10px] w-full text-center truncate invisible">placeholder</p>)}
 				</div>
 			</div>
 			{showSignupModal && (<SignUpModal setShowSignupModal={setShowSignupModal} setPlayerCount={setPlayerCount} players={players} setShowLoginModal={setShowLoginModal} />)}
@@ -47,7 +47,7 @@ function PlayerStats( {setShowPlayerStats, loggedInPlayers, setLoggedInPlayers, 
 
 				<div className="flex flex-col items-center gap-2">
 					<h2 className="text-2xl font-bold text-center">{loggedInPlayers[indexPlayerStat]?.username}</h2>
-					<img src={Player} className="h-16 w-auto"/>
+					<img src={loggedInPlayers.length > 2 ? Player : indexPlayerStat === 0 ? Player1 : indexPlayerStat === 1 ? Player2 : Player} className="h-16 w-auto"/>
 				</div>
 
 				<div className="flex flex-col w-full text-left items-start space-y-4">
@@ -69,16 +69,16 @@ function PlayerStats( {setShowPlayerStats, loggedInPlayers, setLoggedInPlayers, 
 					<h2 className="text-2xl font-bold text-center">Stats</h2>
 					<div className="w-full grid grid-cols-3 gap-2 p-2 mt-2">
 						<div className="stat flex flex-col items-center">
-							<div className="stat-title">Wins</div>
-							<div className="stat-value text-green-700">{loggedInPlayers[indexPlayerStat]?.wins}</div>
+							<div className="stat-title text-green-800 font-black">Wins</div>
+							<div className="stat-value">{loggedInPlayers[indexPlayerStat]?.wins}</div>
 						</div>
 						<div className="stat flex flex-col items-center">
-							<div className="stat-title">Draws</div>
+							<div className="stat-title font-black">Draws</div>
 							<div className="stat-value">{loggedInPlayers[indexPlayerStat]?.draws}</div>
 						</div>
 						<div className="stat flex flex-col items-center">
-							<div className="stat-title">Loses</div>
-							<div className="stat-value text-red-700">{loggedInPlayers[indexPlayerStat]?.loses}</div>
+							<div className="stat-title text-red-800 font-black">Loses</div>
+							<div className="stat-value">{loggedInPlayers[indexPlayerStat]?.loses}</div>
 						</div>
 					</div>
 				</div>
