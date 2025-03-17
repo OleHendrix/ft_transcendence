@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\""
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "reinstall": "rm -rf frontend/node_modules backend/node_modules package-lock.json frontend/package-lock.json backend/package-lock.json && npm install && npm install --prefix frontend && npm install --prefix backend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
