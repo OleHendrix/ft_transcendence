@@ -5,10 +5,11 @@ import PlayerType from "./types"
 import Players from "./Players";
 import "./ponganimation.css";
 
+
 function SimplePong()
 {
 	return (
-		<div className="pong-wrapper">
+		<div className="pong-wrapper w-full max-w-[40vw] aspect-[4/3]">
 			<div className="pong-game">
 				<div className="paddle left-paddle"></div>
 				<div className="ball"></div>
@@ -21,8 +22,8 @@ function SimplePong()
 function Hero({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers }: { players: PlayerType[]; setPlayerCount: (value: number) => void; loggedInPlayers: PlayerType[]; setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>> })
 {
 	return(
-		<div className="w-full h-180 flex justify-between">
-			<div className="w-1/2 flex justify-center flex-col p-20 space-y-8">
+		<div className="w-full min-h-screen flex justify-between items-start">
+			<div className="w-1/2 flex justify-center flex-col p-24 space-y-8 px-[10vh]">
 				<h1 className="text-5xl  font-semibold text-brand-orange">Are you ready for an <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
 				<p className="text-xl">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
 				<div className="flex justify-start space-x-4 font-bold text-lg">
@@ -37,7 +38,7 @@ function Hero({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers }: 
 				</div>
 					<Players players={players} setPlayerCount={setPlayerCount} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers}/>
 			</div>
-			<div className="w-1/2 flex justify-center flex-col p-24 space-y-8">
+			<div className="w-1/2 flex justify-center flex-col p-24 space-y-8 max-w-[50vw] px-[10vh]">
 				<SimplePong />
 			</div>
 		</div>
