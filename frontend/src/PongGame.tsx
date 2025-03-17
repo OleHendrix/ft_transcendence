@@ -2,15 +2,17 @@ import { useState, useEffect } from "react";
 
 function PongGame()
 {
-	const [p2Position, setP2Position] = useState(50);
-	const [p1Position, setP1Position] = useState(50);
+	const [p1Y, setP1Y] = useState(50);
+	const [p2Y, setP2Y] = useState(50);
 
 	const [ballY, setBallY] = useState(50);
 	const [ballX, setBallX] = useState(50);
-
-	const [ballDirectionX, setBallDirectionX] = useState(1); 
-	const [ballDirectionY, setBallDirectionY] = useState(1); 
+	const [ballDirX, setBallDirX] = useState(1); 
+	const [ballDirY, setBallDirY] = useState(0);
 	const [ballSpeed, setBallSpeed] = useState(0.5);
+
+	const [p1Score, setP1Score] = useState(0);
+	const [p2Score, setP2Score] = useState(0);
 
 	const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
 
@@ -29,44 +31,56 @@ function PongGame()
 	{
 		const moveFrame = () =>
 		{
-			const p1Dir = keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0);
-			const p2Dir = keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0);
+			const p1DirY = keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0);
+			const p2DirY = keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0);
 
-			if (p1Dir !== 0)
-				setP1Position(prev => Math.max(10, Math.min(90, prev + p1Dir)));
-			if (p2Dir !== 0)
-				setP2Position(prev => Math.max(10, Math.min(90, prev + p2Dir)));
+			if (p1DirY !== 0)
+				setP1Y(prev => Math.max(10, Math.min(90, prev + p1DirY)));
+			if (p2DirY !== 0)
+				setP2Y(prev => Math.max(10, Math.min(90, prev + p2DirY)));
 
-			setBallX(prev => prev + ballSpeed * ballDirectionX);
-  			setBallY(prev => prev + ballSpeed * ballDirectionY);
+			setBallX(prev => prev + ballSpeed * ballDirX);
+  			setBallY(prev => prev + ballSpeed * ballDirY);
 
 			if (ballY <= 1 || ballY >= 99)
 			{
 				setBallY(ballY <= 1 ? 2 : 98);
-    			setBallDirectionY(prev => -prev);
+    			setBallDirY(prev => -prev);
 			}
-			if (ballX <= 4 && ballY >= p1Position - 10 && ballY <= p1Position + 10)
-				setBallDirectionX(1);
 
-			if (ballX >= 96 && ballY >= p2Position - 10 && ballY <= p2Position + 10)
-				setBallDirectionX(-1);
+			if (ballX <= 4 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
+				setBallDirX(1);
+			if (ballX >= 96 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
+				setBallDirX(-1);
 
+			if (ballX <= 0)
+			{
+				setP2Score(prev => prev + 1);
+				resetBall();
+			}
+			if (ballX >= 100)
+			{
+				setP1Score(prev => prev + 1);
+				resetBall();
+			}
+
+			function resetBall() {setBallY(50); setBallX(50); setBallDirY(1); setBallDirX(1);}
 			animationId = requestAnimationFrame(moveFrame);
 		};
 		let animationId = requestAnimationFrame(moveFrame);
 		return () => { cancelAnimationFrame(animationId); };
-	}, [keysPressed, ballX, ballY, ballDirectionX, ballDirectionY, ballSpeed, p1Position, p2Position]);
+	}, [keysPressed, ballX, ballY, ballDirX, ballDirY, ballSpeed, p1Y, p2Y]);
 
 
 	return(
 	<div className="w-screen h-screen box-border overflow-hidden relative m-0">
-		<div className="score">
-			<div className="score_p1"></div>
-			<div className="score_p2"></div>
+		<div className="absolute inset-0 text-[75vh] flex justify-center items-center space-x-[50vh] font-black">
+			<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
+			<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
 		</div>
-		<div className="ball absolute bg-white w-[2vh] h-[2vh] rounded-full" style={{ top: `${ballY}vh`, left: `${ballX}vw`, transform: 'translateY(-50%) translateX(-50%)' }}></div>
-		<div className="p1 absolute left-[4vh] bg-white w-[2vh] h-[20vh]" style={{ top: `${p1Position}vh`, transform: 'translateY(-50%)' }}></div>
-		<div className="p2 absolute right-[4vh] bg-white w-[2vh] h-[20vh]" style={{ top: `${p2Position}vh`, transform: 'translateY(-50%)' }}></div>
+		<div className={`absolute ${ballDirX > 0 ? 'bg-[#ff914d]' : 'bg-[#134588]'} w-[2vh] h-[2vh] rounded-full`} style={{ top: `${ballY}vh`, left: `${ballX}vw`, transform: 'translateY(-50%) translateX(-50%)' }}></div>
+		<div className="absolute left-[4vh] bg-[#ff914d] w-[2vh] h-[20vh]" style={{ top: `${p1Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)" }}></div>
+		<div className="absolute right-[4vh] bg-[#134588] w-[2vh] h-[20vh]" style={{ top: `${p2Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)" }}></div>
 	</div>
 	)
 }
