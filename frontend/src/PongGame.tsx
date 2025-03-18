@@ -74,9 +74,13 @@ function PongGame()
 
 	return(
 	<div className="w-screen h-screen box-border overflow-hidden relative m-0">
-		<div className="absolute inset-0 text-[75vh] flex justify-center items-center space-x-[50vh] font-black">
-			<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
-			<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
+		<div className="absolute inset-0 text-[75vh] flex justify-center items-center font-black">
+			<div className="h-full w-1/2 flex justify-center items-center">
+				<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
+			</div>
+			<div className="h-full w-1/2 flex justify-center items-center">
+				<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
+			</div>
 		</div>
 		<div className={`absolute ${ballDirX > 0 ? 'bg-[#ff914d]' : 'bg-[#134588]'} w-[2vw] h-[2vw] rounded-full`} style={{ top: `${ballY}vh`, left: `${ballX}vw`, transform: 'translateY(-50%) translateX(-50%)' }}></div>
 		<div className="absolute left-[2vw] bg-[#ff914d] w-[2vw] h-[20vh]" style={{ top: `${p1Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)" }}></div>
