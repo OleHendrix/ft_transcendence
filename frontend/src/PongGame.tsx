@@ -11,7 +11,7 @@ function PongGame()
 	const [ballX, setBallX] = useState(50);
 	const [ballDirX, setBallDirX] = useState(1); 
 	const [ballDirY, setBallDirY] = useState(0);
-	const [ballSpeed, setBallSpeed] = useState(0.5);
+	const [ballSpeed, setBallSpeed] = useState(1);
 
 	const [p1Score, setP1Score] = useState(0);
 	const [p2Score, setP2Score] = useState(0);
@@ -26,14 +26,16 @@ function PongGame()
 			setBallDirY(prev => prev * -0.9);
 		}
 
-		if (ballX <= 5 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
+		if (ballX < 5 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
 		{
+			setBallX(5);
 			setBallDirX(1);
 			setBallDirY(prev => prev + p1DirY * 0.5)
 			setBallSpeed(prev => prev + 0.02);
 		}
-		if (ballX >= 95 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
+		if (ballX > 95 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
 		{
+			setBallX(95);
 			setBallDirX(-1);
 			setBallDirY(prev => prev + p1DirY * 0.5)
 			setBallSpeed(prev => prev + 0.02);
