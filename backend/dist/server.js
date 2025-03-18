@@ -15,13 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_1 = __importDefault(require("fastify"));
 const client_1 = require("@prisma/client");
 const cors_1 = __importDefault(require("@fastify/cors"));
-// Initialize Fastify
 const fastify = (0, fastify_1.default)();
-// Enable CORS
 fastify.register(cors_1.default);
-// Initialize Prisma Client
 const prisma = new client_1.PrismaClient();
-// Root endpoint
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     return { message: 'Server is running!' };
 }));
@@ -29,19 +25,14 @@ fastify.post('/api/addaccount', (request, reply) => __awaiter(void 0, void 0, vo
     const { username, email, password } = request.body;
     const existingAccount = yield prisma.account.findFirst({
         where: {
-            OR: [
-                { username: username },
-                { email: email }
-            ]
+            OR: [{ username: username }, { email: email }]
         }
     });
     if (existingAccount) {
-        if (existingAccount.username === username) {
+        if (existingAccount.username === username)
             return reply.status(400).send({ error: 'Username already exists' });
-        }
-        else if (existingAccount.email === email) {
+        if (existingAccount.email === email)
             return reply.status(400).send({ error: 'Email already exists' });
-        }
     }
     const newAccount = yield prisma.account.create({
         data: {
@@ -55,7 +46,6 @@ fastify.post('/api/addaccount', (request, reply) => __awaiter(void 0, void 0, vo
     });
     return reply.send({ success: true, account: newAccount });
 }));
-// GET endpoint to get all players
 fastify.get('/api/getplayers', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const players = yield prisma.account.findMany();
@@ -65,7 +55,6 @@ fastify.get('/api/getplayers', (request, reply) => __awaiter(void 0, void 0, voi
         return reply.status(500).send({ error: 'Error getting players from database' });
     }
 }));
-// Start the Fastify server
 fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {
     if (err) {
         console.error(err);

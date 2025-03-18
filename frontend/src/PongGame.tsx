@@ -1,34 +1,18 @@
 import { useState, useEffect } from "react";
+import { Ball, AI, Statics } from "./types"; 
 
-interface Vec2 {
-	x: number;
-	y: number;
-}
-
-interface Paddle {
-	pos: Vec2;
-	size: Vec2;
-	dir: Vec2;
-}
-
-interface Ball {
-	pos:		Vec2;
-	prevPos:	Vec2;
-	size:		Vec2;
-	dir:		Vec2;
-}
-
-interface AI {
-	enabled:		boolean;
-	lastActivation:	number;
-	desiredY:		number;
-}
-
-interface Statics {
-	BOUNCE:		Vec2;
-	CARRYOVER:	number,
-	VELOCITY:	number,
-	FRICTION:	number,
+function managePaddle(dirY: number, setPosY: React.Dispatch<React.SetStateAction<number>>, setDirY: React.Dispatch<React.SetStateAction<number>>)
+{
+	const offset: number = 10;
+	setPosY(prevPosY =>
+	{
+		if (prevPosY < offset || prevPosY > 100 - offset)
+		{
+			setDirY(0);
+			return Math.max(offset, Math.min(100 - offset, prevPosY + dirY));
+		}
+		return prevPosY + dirY;
+	});
 }
 
 function PongGame()
@@ -38,20 +22,23 @@ function PongGame()
 	const [p1DirY, setP1DirY] = useState(0);
 	const [p2DirY, setP2DirY] = useState(0);
 
-	const [ball, setBall] = useState<Ball>({
+	const [ball, setBall] = useState<Ball>(
+	{
 		pos:		{ x: 50,  y: 50  },
 		prevPos:	{ x: 50,  y: 50  },
 		size:		{ x: 2,   y: 2   },
 		dir:		{ x: 0.5, y: 0.5 },
 	});
 
-	const [ai, setAI] = useState<AI>({
+	const [ai, setAI] = useState<AI>(
+	{
 		enabled: false,
 		lastActivation: 0,
 		desiredY: 50
 	});
 
-	const [s] = useState<Statics>({
+	const [s] = useState<Statics>(
+	{
 		BOUNCE:		{ x: -1.02, y: -0.9 },
 		CARRYOVER:	0.5,
 		VELOCITY:	0.3,
@@ -61,8 +48,10 @@ function PongGame()
 	const [p1Score, setP1Score] = useState(0);
 	const [p2Score, setP2Score] = useState(0);
 
-	function resetBall() {
-		setBall({
+	function resetBall()
+	{
+		setBall(
+		{
 			pos:		{ x: 50,  y: 50  },
 			prevPos:	{ x: 50,  y: 50  },
 			size:		{ x: 2,   y: 2   },
@@ -74,7 +63,9 @@ function PongGame()
 	{
 		if (ball.pos.y <= 1 || ball.pos.y >= 99)
 		{
-			setBall(prev => ({ ...prev,
+			setBall(prev => (
+			{ 
+				...prev,
 				pos: { ...prev.pos, y: prev.pos.y <= 1 ? 2 : 98 },
 				dir: { ...prev.dir, y: prev.dir.y * s.BOUNCE.y },
 			}));
@@ -82,14 +73,19 @@ function PongGame()
 
 		if (ball.pos.x < 5 && ball.prevPos.x >= 5 && ball.pos.y >= p1Y - 10 && ball.pos.y <= p1Y + 10)
 		{
-			setBall(prev => ({ ...prev,
+			setBall(prev => (
+			{
+				...prev,
 				pos: { ...prev.pos, x: 5 },
 				dir: { x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + p1DirY * s.CARRYOVER },
 			}));
 		}
+
 		if (ball.pos.x > 95 && ball.prevPos.x <= 95 && ball.pos.y >= p2Y - 10 && ball.pos.y <= p2Y + 10)
 		{
-			setBall(prev => ({ ...prev,
+			setBall(prev => (
+			{
+				...prev,
 				pos: { ...prev.pos, x: 95 },
 				dir: { x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + p2DirY * s.CARRYOVER },
 			}));
@@ -100,6 +96,7 @@ function PongGame()
 			setP2Score(prev => prev + 1);
 			resetBall();
 		}
+
 		if (ball.pos.x >= 100)
 		{
 			setP1Score(prev => prev + 1);
@@ -115,8 +112,10 @@ function PongGame()
 
 		if (ai.lastActivation === timeSeconds)
 			return;
+
 		ai.lastActivation = timeSeconds;
 		const ballCopy = structuredClone(ball);
+	
 		while (ballCopy.pos.x < 95)
 		{
 			if (ballCopy.pos.y <= 1 || ballCopy.pos.y >= 99)
@@ -136,29 +135,19 @@ function PongGame()
 		ai.desiredY = ballCopy.pos.y;
 	}
 
-	function managePaddle(dirY: number, setPosY: React.Dispatch<React.SetStateAction<number>>, setDirY: React.Dispatch<React.SetStateAction<number>>) {
-		const offset: number = 10;
-		setPosY(prevPosY => {
-			if (prevPosY < offset || prevPosY > 100 - offset) {
-				setDirY(0);
-				return Math.max(offset, Math.min(100 - offset, prevPosY + dirY));
-			}
-			return prevPosY + dirY;
-		});
-	}
-
 	const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
 
 	useEffect(() =>
 	{
-		const handleKeyDown = (e: KeyboardEvent) => {
+		const handleKeyDown = (e: KeyboardEvent) =>
+		{
 			setKeysPressed(prev => ({ ...prev, [e.key]: true }));
-			if (e.key === "t" || e.key === "T") {
+			if (e.key === "t" || e.key === "T")
 				setAI(prevAI => ({ ...prevAI, enabled: !prevAI.enabled }));
-			}
 		};
 
-		const handleKeyUp = (e: KeyboardEvent) => {
+		const handleKeyUp = (e: KeyboardEvent) =>
+		{
 			setKeysPressed(prev => ({ ...prev, [e.key]: false }));
 		};
 
@@ -180,7 +169,9 @@ function PongGame()
 			managePaddle(p1DirY, setP1Y, setP1DirY);
 			managePaddle(p2DirY, setP2Y, setP2DirY);
 
-			setBall(prev => ({ ...prev,
+			setBall(prev => (
+			{
+				...prev,
 				prevPos: { x: prev.pos.x,              y: prev.pos.y },
 				pos:     { x: prev.pos.x + prev.dir.x, y: prev.pos.y + prev.dir.y },
 			}));

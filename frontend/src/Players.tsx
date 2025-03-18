@@ -1,6 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { IoMdClose } from "react-icons/io";
-import PlayerType from "./types"
+import { PlayerType } from "./types"
 import Player from "./assets/Player.svg";
 import Player1 from "./assets/Player1.svg";
 import Player2 from "./assets/Player2.svg";
@@ -16,16 +16,16 @@ function Players({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers}
 
 	return(
 		<>
-			<div className="flex items-center space-x-1.5">
+			<div className="flex items-center">
 				{loggedInPlayers?.map((player, index) => 
 				<div className="flex items-center flex-col space-y-0.5 w-18">
 					<img src={loggedInPlayers.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-10 w-auto hover:cursor-pointer" onClick={() => {setIndexPlayerStat(index); setShowPlayerStats(true)}}/>
-					<p className="text-[10px] opacity-35 w-full text-center truncate">{player.username}</p>
+					<p className="text-[14px] opacity-35 w-full text-center truncate">{player.username}</p>
 				</div>
 				)}
 				<div className="flex items-center flex-col space-y-0.5 w-18">
 					<img src={PlayerAdd} className="h-10 w-auto hover:cursor-pointer" onClick={() => setShowSignupModal(true)}/>
-					{loggedInPlayers.length > 0 && (<p className="text-[10px] w-full text-center truncate invisible">placeholder</p>)}
+					{loggedInPlayers.length > 0 && (<p className="text-[12px] w-full text-center truncate invisible">placeholder</p>)}
 				</div>
 			</div>
 			{showSignupModal && (<SignUpModal setShowSignupModal={setShowSignupModal} setPlayerCount={setPlayerCount} players={players} setShowLoginModal={setShowLoginModal} />)}

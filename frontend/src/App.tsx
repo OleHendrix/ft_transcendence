@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import PlayerType from "./types"
+import { PlayerType } from "./types"
 import Navbar from "./Navbar";
 import Hero from "./Hero";
 import PongGame from "./PongGame";
