@@ -24,7 +24,7 @@ function Hero({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers }: 
 	return(
 		<div className="w-full min-h-screen flex justify-between items-start">
 			<div className="w-1/2 flex justify-center flex-col p-24 space-y-8 px-[10vh]">
-				<h1 className="text-5xl  font-semibold text-brand-orange">Are you ready for an <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
+				<h1 className="text-5xl  font-semibold text-brand-orange">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
 				<p className="text-xl">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
 				<div className="flex justify-start space-x-4 font-bold text-lg">
 					<button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white py-2 px-4 rounded-3xl ${loggedInPlayers.length !== 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}>
