@@ -7,8 +7,10 @@ function PongGame()
 	const [p1DirY, setP1DirY] = useState(0);
 	const [p2DirY, setP2DirY] = useState(0);
 
-	const [ballY, setBallY] = useState(50);
 	const [ballX, setBallX] = useState(50);
+	const [ballY, setBallY] = useState(50);
+	const [prevBallX, setPrevBallX] = useState(50);
+	const [prevBallY, setPrevBallY] = useState(50);
 	const [ballDirX, setBallDirX] = useState(1); 
 	const [ballDirY, setBallDirY] = useState(0);
 	const [ballSpeed, setBallSpeed] = useState(1);
@@ -26,18 +28,18 @@ function PongGame()
 			setBallDirY(prev => prev * -0.9);
 		}
 
-		if (ballX < 5 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
+		if (ballX < 5 && prevBallX >= 5 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
 		{
 			setBallX(5);
 			setBallDirX(1);
 			setBallDirY(prev => prev + p1DirY * 0.5)
 			setBallSpeed(prev => prev + 0.02);
 		}
-		if (ballX > 95 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
+		if (ballX > 95 && prevBallX <= 95 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
 		{
 			setBallX(95);
 			setBallDirX(-1);
-			setBallDirY(prev => prev + p1DirY * 0.5)
+			setBallDirY(prev => prev + p2DirY * 0.5)
 			setBallSpeed(prev => prev + 0.02);
 		}
 
@@ -87,6 +89,8 @@ function PongGame()
 			managePaddle(p1DirY, setP1Y, setP1DirY);
 			managePaddle(p2DirY, setP2Y, setP2DirY);
 
+			setPrevBallX(ballX);
+			setPrevBallY(ballY);
 			setBallX(prev => prev + ballSpeed * ballDirX);
   			setBallY(prev => prev + ballSpeed * ballDirY);
 
