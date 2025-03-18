@@ -1,5 +1,23 @@
 import { useState, useEffect } from "react";
 
+interface Vec2 {
+	x: number;
+	y: number;
+}
+
+interface Paddle {
+	pos: Vec2;
+	size: Vec2;
+	dir: Vec2;
+}
+
+interface Ball {
+	pos:		Vec2;
+	prevPos:	Vec2;
+	size:		Vec2;
+	dir:		Vec2;
+}
+
 function PongGame()
 {
 	const [p1Y, setP1Y] = useState(50);
@@ -7,48 +25,56 @@ function PongGame()
 	const [p1DirY, setP1DirY] = useState(0);
 	const [p2DirY, setP2DirY] = useState(0);
 
-	const [ballX, setBallX] = useState(50);
-	const [ballY, setBallY] = useState(50);
-	const [prevBallX, setPrevBallX] = useState(50);
-	const [prevBallY, setPrevBallY] = useState(50);
-	const [ballDirX, setBallDirX] = useState(1); 
-	const [ballDirY, setBallDirY] = useState(0);
-	const [ballSpeed, setBallSpeed] = useState(1);
+	const [ball, setBall] = useState<Ball>({
+		pos:		{ x: 50,  y: 50  },
+		prevPos:	{ x: 50,  y: 50  },
+		size:		{ x: 2,   y: 2   },
+		dir:		{ x: 0.5, y: 0.5 },
+	});
 
 	const [p1Score, setP1Score] = useState(0);
 	const [p2Score, setP2Score] = useState(0);
 
-	function resetBall() {setBallY(50); setBallX(50); setBallDirY(1); setBallDirX(1); setBallSpeed(0.5)}
+	function resetBall() {
+		setBall({
+			pos:		{ x: 50,  y: 50  },
+			prevPos:	{ x: 50,  y: 50  },
+			size:		{ x: 2,   y: 2   },
+			dir:		{ x: 0.5, y: 0.5 },
+		});
+	}
 
 	function handleColision()
 	{
-		if (ballY <= 1 || ballY >= 99)
+		if (ball.pos.y <= 1 || ball.pos.y >= 99)
 		{
-			setBallY(ballY <= 1 ? 2 : 98);
-			setBallDirY(prev => prev * -0.9);
+			setBall(prev => ({ ...prev,
+				pos: { ...prev.pos, y: prev.pos.y <= 1 ? 2 : 98 },
+				dir: { ...prev.dir, y: prev.dir.y * -0.9 },
+			}));
 		}
 
-		if (ballX < 5 && prevBallX >= 5 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
+		if (ball.pos.x < 5 && ball.prevPos.x >= 5 && ball.pos.y >= p1Y - 10 && ball.pos.y <= p1Y + 10)
 		{
-			setBallX(5);
-			setBallDirX(1);
-			setBallDirY(prev => prev + p1DirY * 0.5)
-			setBallSpeed(prev => prev + 0.02);
+			setBall(prev => ({ ...prev,
+				pos: { ...prev.pos, x: 5 },
+				dir: { x: prev.dir.x * -1.02, y: prev.dir.y + p1DirY * 0.5 },
+			}));
 		}
-		if (ballX > 95 && prevBallX <= 95 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
+		if (ball.pos.x > 95 && ball.prevPos.x <= 95 && ball.pos.y >= p2Y - 10 && ball.pos.y <= p2Y + 10)
 		{
-			setBallX(95);
-			setBallDirX(-1);
-			setBallDirY(prev => prev + p2DirY * 0.5)
-			setBallSpeed(prev => prev + 0.02);
+			setBall(prev => ({ ...prev,
+				pos: { ...prev.pos, x: 95 },
+				dir: { x: prev.dir.x * -1.02, y: prev.dir.y + p2DirY * 0.5 },
+			}));
 		}
 
-		if (ballX <= 0)
+		if (ball.pos.x <= 0)
 		{
 			setP2Score(prev => prev + 1);
 			resetBall();
 		}
-		if (ballX >= 100)
+		if (ball.pos.x >= 100)
 		{
 			setP1Score(prev => prev + 1);
 			resetBall();
@@ -89,10 +115,10 @@ function PongGame()
 			managePaddle(p1DirY, setP1Y, setP1DirY);
 			managePaddle(p2DirY, setP2Y, setP2DirY);
 
-			setPrevBallX(ballX);
-			setPrevBallY(ballY);
-			setBallX(prev => prev + ballSpeed * ballDirX);
-  			setBallY(prev => prev + ballSpeed * ballDirY);
+			setBall(prev => ({ ...prev,
+				prevPos: { x: prev.pos.x,              y: prev.pos.y },
+				pos:     { x: prev.pos.x + prev.dir.x, y: prev.pos.y + prev.dir.y },
+			}));
 
 			handleColision()
 			
@@ -100,7 +126,7 @@ function PongGame()
 		};
 		let animationId = requestAnimationFrame(moveFrame);
 		return () => { cancelAnimationFrame(animationId); };
-	}, [keysPressed, ballX, ballY, ballDirX, ballDirY, ballSpeed, p1Y, p2Y]);
+	}, [keysPressed, ball.pos.x, ball.pos.y, ball.dir.x, ball.dir.y, p1Y, p2Y]);
 
 
 	return(
@@ -113,7 +139,7 @@ function PongGame()
 				<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
 			</div>
 		</div>
-		<div className={`absolute ${ballDirX > 0 ? 'bg-[#ff914d]' : 'bg-[#134588]'} w-[2vw] h-[2vw] rounded-full`} style={{ top: `${ballY}vh`, left: `${ballX}vw`, transform: 'translateY(-50%) translateX(-50%)' }}></div>
+		<div className={`absolute ${ball.dir.x > 0 ? 'bg-[#ff914d]' : 'bg-[#134588]'} w-[2vw] h-[2vw] rounded-full`} style={{ top: `${ball.pos.y}vh`, left: `${ball.pos.x}vw`, transform: 'translateY(-50%) translateX(-50%)' }}></div>
 		<div className="absolute left-[2vw] bg-[#ff914d] w-[2vw] h-[20vh]" style={{ top: `${p1Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)" }}></div>
 		<div className="absolute right-[2vw] bg-[#134588] w-[2vw] h-[20vh]" style={{ top: `${p2Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)" }}></div>
 	</div>
