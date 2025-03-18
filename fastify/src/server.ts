@@ -60,7 +60,8 @@ fastify.post('/api/addaccount', async (request, reply) => {
 
 
 // GET endpoint to get all players
-fastify.get('/api/getplayers', async (request, reply) => {
+fastify.get('/api/getplayers', async (request, reply) => 
+{
   try {
     const players = await prisma.account.findMany();
     return reply.send({ success: true, players });
