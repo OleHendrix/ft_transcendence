@@ -4,6 +4,8 @@ function PongGame()
 {
 	const [p1Y, setP1Y] = useState(50);
 	const [p2Y, setP2Y] = useState(50);
+	const [p1DirY, setP1DirY] = useState(0);
+	const [p2DirY, setP2DirY] = useState(0);
 
 	const [ballY, setBallY] = useState(50);
 	const [ballX, setBallX] = useState(50);
@@ -14,9 +16,55 @@ function PongGame()
 	const [p1Score, setP1Score] = useState(0);
 	const [p2Score, setP2Score] = useState(0);
 
+	function resetBall() {setBallY(50); setBallX(50); setBallDirY(1); setBallDirX(1); setBallSpeed(0.5)}
+
+	function handleColision()
+	{
+		if (ballY <= 1 || ballY >= 99)
+		{
+			setBallY(ballY <= 1 ? 2 : 98);
+			setBallDirY(prev => prev * -0.9);
+		}
+
+		if (ballX <= 4 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
+		{
+			setBallDirX(1);
+			setBallDirY(prev => prev + p1DirY * 0.5)
+			setBallSpeed(prev => prev + 0.02);
+		}
+		if (ballX >= 96 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
+		{
+			setBallDirX(-1);
+			setBallDirY(prev => prev + p1DirY * 0.5)
+			setBallSpeed(prev => prev + 0.02);
+		}
+
+		if (ballX <= 0)
+		{
+			setP2Score(prev => prev + 1);
+			resetBall();
+		}
+		if (ballX >= 100)
+		{
+			setP1Score(prev => prev + 1);
+			resetBall();
+		}
+	}
+
+	function managePaddle(dirY: number, setPosY: React.Dispatch<React.SetStateAction<number>>, setDirY: React.Dispatch<React.SetStateAction<number>>) {
+		const offset: number = 10;
+		setPosY(prevPosY => {
+			if (prevPosY < offset || prevPosY > 100 - offset) {
+				setDirY(0); // Reset direction
+				return Math.max(offset, Math.min(100 - offset, prevPosY + dirY));
+			}
+			return prevPosY + dirY;
+		});
+	}
+
 	const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
 
-  	useEffect(() =>
+	useEffect(() =>
 	{
 		const handleKeyDown = (e: KeyboardEvent) => {setKeysPressed(prev => ({ ...prev, [e.key]: true }));};
 		const handleKeyUp = (e: KeyboardEvent) => {setKeysPressed(prev => ({ ...prev, [e.key]: false }));};
@@ -31,40 +79,17 @@ function PongGame()
 	{
 		const moveFrame = () =>
 		{
-			const p1DirY = keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0);
-			const p2DirY = keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0);
+			setP1DirY(P1DirY => 0.9 * P1DirY + 0.2 * (keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0)));
+			setP2DirY(P2DirY => 0.9 * P2DirY + 0.2 * (keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0)));
 
-			if (p1DirY !== 0)
-				setP1Y(prev => Math.max(10, Math.min(90, prev + p1DirY)));
-			if (p2DirY !== 0)
-				setP2Y(prev => Math.max(10, Math.min(90, prev + p2DirY)));
+			managePaddle(p1DirY, setP1Y, setP1DirY);
+			managePaddle(p2DirY, setP2Y, setP2DirY);
 
 			setBallX(prev => prev + ballSpeed * ballDirX);
   			setBallY(prev => prev + ballSpeed * ballDirY);
 
-			if (ballY <= 1 || ballY >= 99)
-			{
-				setBallY(ballY <= 1 ? 2 : 98);
-    			setBallDirY(prev => -prev);
-			}
-
-			if (ballX <= 4 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
-				setBallDirX(1);
-			if (ballX >= 96 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
-				setBallDirX(-1);
-
-			if (ballX <= 0)
-			{
-				setP2Score(prev => prev + 1);
-				resetBall();
-			}
-			if (ballX >= 100)
-			{
-				setP1Score(prev => prev + 1);
-				resetBall();
-			}
-
-			function resetBall() {setBallY(50); setBallX(50); setBallDirY(1); setBallDirX(1);}
+			handleColision()
+			
 			animationId = requestAnimationFrame(moveFrame);
 		};
 		let animationId = requestAnimationFrame(moveFrame);
