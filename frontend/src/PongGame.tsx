@@ -48,9 +48,9 @@ function PongGame()
     			setBallDirY(prev => -prev);
 			}
 
-			if (ballX <= 4 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
+			if (ballX <= 5 && ballY >= p1Y - 10 && ballY <= p1Y + 10)
 				setBallDirX(1);
-			if (ballX >= 96 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
+			if (ballX >= 95 && ballY >= p2Y - 10 && ballY <= p2Y + 10)
 				setBallDirX(-1);
 
 			if (ballX <= 0)
@@ -78,9 +78,9 @@ function PongGame()
 			<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
 			<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
 		</div>
-		<div className={`absolute ${ballDirX > 0 ? 'bg-[#ff914d]' : 'bg-[#134588]'} w-[2vh] h-[2vh] rounded-full`} style={{ top: `${ballY}vh`, left: `${ballX}vw`, transform: 'translateY(-50%) translateX(-50%)' }}></div>
-		<div className="absolute left-[4vh] bg-[#ff914d] w-[2vh] h-[20vh]" style={{ top: `${p1Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)" }}></div>
-		<div className="absolute right-[4vh] bg-[#134588] w-[2vh] h-[20vh]" style={{ top: `${p2Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)" }}></div>
+		<div className={`absolute ${ballDirX > 0 ? 'bg-[#ff914d]' : 'bg-[#134588]'} w-[2vw] h-[2vw] rounded-full`} style={{ top: `${ballY}vh`, left: `${ballX}vw`, transform: 'translateY(-50%) translateX(-50%)' }}></div>
+		<div className="absolute left-[2vw] bg-[#ff914d] w-[2vw] h-[20vh]" style={{ top: `${p1Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)" }}></div>
+		<div className="absolute right-[2vw] bg-[#134588] w-[2vw] h-[20vh]" style={{ top: `${p2Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)" }}></div>
 	</div>
 	)
 }
