@@ -15,18 +15,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_1 = __importDefault(require("fastify"));
 const client_1 = require("@prisma/client");
 const cors_1 = __importDefault(require("@fastify/cors"));
-// Initialize Fastify
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const fastify = (0, fastify_1.default)();
-// Enable CORS
 fastify.register(cors_1.default);
-// Initialize Prisma Client
 const prisma = new client_1.PrismaClient();
-// Root endpoint
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     return { message: 'Server is running!' };
 }));
 fastify.post('/api/addaccount', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, email, password } = request.body;
+    const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
     const existingAccount = yield prisma.account.findFirst({
         where: {
             OR: [
@@ -47,7 +45,7 @@ fastify.post('/api/addaccount', (request, reply) => __awaiter(void 0, void 0, vo
         data: {
             username: username,
             email: email,
-            password: password,
+            password: hashedPassword,
             wins: 0,
             draws: 0,
             loses: 0
@@ -55,7 +53,6 @@ fastify.post('/api/addaccount', (request, reply) => __awaiter(void 0, void 0, vo
     });
     return reply.send({ success: true, account: newAccount });
 }));
-// GET endpoint to get all players
 fastify.get('/api/getplayers', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const players = yield prisma.account.findMany();
@@ -64,6 +61,23 @@ fastify.get('/api/getplayers', (request, reply) => __awaiter(void 0, void 0, voi
     catch (error) {
         return reply.status(500).send({ error: 'Error getting players from database' });
     }
+}));
+fastify.post('/api/login', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = request.body;
+    // Check if the account exists
+    const account = yield prisma.account.findUnique({
+        where: { username: username }
+    });
+    if (!account) {
+        return reply.status(400).send({ error: 'Account not found' });
+    }
+    // Compare the provided password with the stored hashed password
+    const isPasswordValid = yield bcryptjs_1.default.compare(password, account.password);
+    if (!isPasswordValid) {
+        return reply.status(400).send({ error: 'Invalid password' });
+    }
+    // If the password matches, return the account details (or token, depending on your implementation)
+    return reply.send({ success: true, account });
 }));
 // Start the Fastify server
 fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {

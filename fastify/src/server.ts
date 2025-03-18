@@ -1,31 +1,26 @@
 import Fastify from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import fastifyCors from '@fastify/cors';
+import bcrypt from 'bcryptjs';
 
-// Initialize Fastify
 const fastify = Fastify();
-
-// Enable CORS
 fastify.register(fastifyCors);
-
-// Initialize Prisma Client
 const prisma = new PrismaClient();
 
-// Define a type for the request body structure
 interface AddAccountRequest {
   username: string;
   email: string;
   password: string;
 }
 
-
-// Root endpoint
 fastify.get('/', async (request, reply) => {
   return { message: 'Server is running!' };
 });
 
 fastify.post('/api/addaccount', async (request, reply) => {
   const { username, email, password }: AddAccountRequest = request.body as AddAccountRequest;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const existingAccount = await prisma.account.findFirst({
     where: {
@@ -48,7 +43,7 @@ fastify.post('/api/addaccount', async (request, reply) => {
     data: {
       username: username,
       email: email,
-      password: password,
+      password: hashedPassword,
       wins: 0,
       draws: 0,
       loses: 0
@@ -58,8 +53,6 @@ fastify.post('/api/addaccount', async (request, reply) => {
   return reply.send({ success: true, account: newAccount });
 });
 
-
-// GET endpoint to get all players
 fastify.get('/api/getplayers', async (request, reply) => {
   try {
     const players = await prisma.account.findMany();
@@ -67,6 +60,29 @@ fastify.get('/api/getplayers', async (request, reply) => {
   } catch (error) {
     return reply.status(500).send({ error: 'Error getting players from database' });
   }
+});
+
+fastify.post('/api/login', async (request, reply) => {
+  const { username, password }: { username: string; password: string } = request.body as any;
+
+  // Check if the account exists
+  const account = await prisma.account.findUnique({
+    where: { username: username }
+  });
+
+  if (!account) {
+    return reply.status(400).send({ error: 'Account not found' });
+  }
+
+  // Compare the provided password with the stored hashed password
+  const isPasswordValid = await bcrypt.compare(password, account.password);
+
+  if (!isPasswordValid) {
+    return reply.status(400).send({ error: 'Invalid password' });
+  }
+
+  // If the password matches, return the account details (or token, depending on your implementation)
+  return reply.send({ success: true, account });
 });
 
 // Start the Fastify server
