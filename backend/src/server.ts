@@ -1,16 +1,20 @@
 import Fastify from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import fastifyCors from '@fastify/cors';
+import fastifyJwt from 'fastify-jwt';
+import bcrypt from 'bcrypt';
+// import dotenv from 'dotenv';
 
 const fastify = Fastify();
 fastify.register(fastifyCors);
+fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
 const prisma = new PrismaClient();
 
 interface AddAccountRequest
 {
-  username: string;
-  email: string;
-  password: string;
+	username: string;
+	email: string;
+	password: string;
 }
 
 fastify.get('/', async (request, reply) =>
@@ -21,6 +25,7 @@ fastify.get('/', async (request, reply) =>
 fastify.post('/api/addaccount', async (request, reply) =>
 {
 	const { username, email, password }: AddAccountRequest = request.body as AddAccountRequest;
+	const hashedPassword = await bcrypt.hash(password, 10);
 	const existingAccount = await prisma.account.findFirst(
 	{
     	where:
@@ -43,13 +48,28 @@ fastify.post('/api/addaccount', async (request, reply) =>
 		{
 			username: username,
 			email: email,
-			password: password,
+			password: hashedPassword,
 			wins: 0,
 			draws: 0,
 			loses: 0
 		}
 	});
 	return reply.send({ success: true, account: newAccount });
+});
+
+fastify.post("/api/login", async (req, res) => {
+	const { username, password } = req.body as { username: string; password: string };
+
+	const user = await prisma.account.findUnique({ where: { username } });
+	if (!user) 
+		return res.status(400).send({ eror: "User not found" })
+	
+	const validPassword = await bcrypt.compare(password, user.password);
+	if (!validPassword) 
+		return res.status(401).send({ error: "Incorrect password"});
+
+	const token = fastify.jwt.sign({ username: user.username, email: user.email}, { expiresIn: "1h"});
+	res.send({ success: true, token, user});
 });
 
 

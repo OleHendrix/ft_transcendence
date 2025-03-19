@@ -116,6 +116,39 @@ async function checkSubmit({ username, email, password, confirmPassword}: { user
 	return false;
 }
 
+async function checkLogin(
+	{ username, password }: {username: string; password: string}, 
+	setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>, 
+	setPlayerFound: (value: number) => void
+) {
+	try { 
+		const response = await axios.post("http://localhost:5001/api/login", { username, password });
+
+		if (response.data.success) {
+			const user = response.data.user;
+
+			setLoggedInPlayers((prev) => {
+				if (prev.some((p) => p.username === user.username)) {
+					return prev;
+				}
+
+				const updatedPlayers = [...prev, user];
+				localStorage.setItem("loggedInPlayers", JSON.stringify([...prev, user]));
+				return updatedPlayers;
+			});
+			return true;
+		}
+	} catch (error: any) {
+		if (error.response?.status === 400) { //user not found
+			setPlayerFound(0);
+		} else if (error.response?.status === 401) { // incorrect password
+			setPlayerFound(2);
+		}
+		return false;
+	}
+}
+
+
 function SignUpModal({ setShowSignupModal, setPlayerCount, players, setShowLoginModal }: { setShowSignupModal: (value: boolean) => void; setPlayerCount: (value: number) => void; players: PlayerType[]; setShowLoginModal: (value: boolean) => void})
 {
 	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
@@ -173,27 +206,6 @@ function SignUpModal({ setShowSignupModal, setPlayerCount, players, setShowLogin
 	)
 }
 
-function checkLogin({ username, password }: {username: string; password: string}, players: PlayerType[], loggedInPlayers: PlayerType[], setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>, setPlayerFound: (value: number) => void)
-{
-	for (const player of players)
-	{
-		if (player.username === username && player.password === password)
-		{
-			if (loggedInPlayers.some(player => player.username === username))
-			{
-				setPlayerFound(1);
-				return false;
-			}
-			const updatedPlayers = [...loggedInPlayers, player];
-			setLoggedInPlayers(updatedPlayers);
-			localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
-			setPlayerFound(2);
-			return true;
-		}
-	}
-	setPlayerFound(0);
-	return false;
-}
 
 function LoginModal({ setShowLoginModal, players, loggedInPlayers, setLoggedInPlayers }: {setShowLoginModal: (value: boolean) => void; players: PlayerType[]; loggedInPlayers: PlayerType[]; setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>})
 {
@@ -208,7 +220,7 @@ function LoginModal({ setShowLoginModal, players, loggedInPlayers, setLoggedInPl
 			<IoMdClose size={24} />
 		</button>
 		<h2 className="text-2xl font-bold mb-6 text-center">Login your account</h2>
-		<form className="space-y-4" onSubmit={(e) => {e.preventDefault(); (checkLogin(formData, players, loggedInPlayers, setLoggedInPlayers, setPlayerFound) && setShowLoginModal(false))}}>
+		<form className="space-y-4" onSubmit={async (e) => {e.preventDefault(); const success = await checkLogin(formData, setLoggedInPlayers, setPlayerFound); if (success) setShowLoginModal(false); }} >
 			<div>
 				<label className="block text-sm font-medium mb-1">Username</label>
 				<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border ${playerFound === 2 ? 'border-gray-600 focus:border-white' : playerFound === 1 ? 'border-[#ff914d] focus:border-[#ff914d]' : 'border-red-800'} focus:outline-none`} name="username" type="text" placeholder="Type your username"
@@ -229,6 +241,12 @@ function LoginModal({ setShowLoginModal, players, loggedInPlayers, setLoggedInPl
 			(
 				<div className="text-center text-sm text-[#ff914d]">
 					<p>You're already logged in!</p>
+				</div>
+			)}
+			{playerFound === 2 && 
+			(
+				<div className="text-center text-sm text-[#ff914d]">
+					<p>Invalid Password</p>
 				</div>
 			)}
 			<div className="pt-2">
