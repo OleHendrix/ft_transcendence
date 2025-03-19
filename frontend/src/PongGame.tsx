@@ -1,30 +1,36 @@
 import { useState, useEffect } from "react";
 
-interface Vec2 {
+interface Vec2
+{
 	x: number;
 	y: number;
 }
 
-interface Paddle {
+interface Paddle
+{
 	pos: Vec2;
 	size: Vec2;
 	dir: Vec2;
+	colour: string
 }
 
-interface Ball {
+interface Ball
+{
 	pos:		Vec2;
 	prevPos:	Vec2;
 	size:		Vec2;
 	dir:		Vec2;
 }
 
-interface AI {
+interface AI
+{
 	enabled:		boolean;
 	lastActivation:	number;
 	desiredY:		number;
 }
 
-interface Statics {
+interface Statics
+{
 	BOUNCE:		Vec2;
 	CARRYOVER:	number,
 	VELOCITY:	number,
@@ -33,10 +39,12 @@ interface Statics {
 
 function PongGame()
 {
-	const [p1Y, setP1Y] = useState(50);
-	const [p2Y, setP2Y] = useState(50);
-	const [p1DirY, setP1DirY] = useState(0);
-	const [p2DirY, setP2DirY] = useState(0);
+	const [p1, setP1] = useState<Paddle>({ 
+		pos: { x: 4, y: 50},  size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#ff914d"
+	});
+	const [p2, setP2] = useState<Paddle>({ 
+		pos: { x: 96, y: 50},  size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#134588"
+	});
 
 	const [ball, setBall] = useState<Ball>({
 		pos:		{ x: 50,  y: 50  },
@@ -61,7 +69,8 @@ function PongGame()
 	const [p1Score, setP1Score] = useState(0);
 	const [p2Score, setP2Score] = useState(0);
 
-	function resetBall() {
+	function resetBall()
+	{
 		setBall({
 			pos:		{ x: 50,  y: 50  },
 			prevPos:	{ x: 50,  y: 50  },
@@ -70,28 +79,64 @@ function PongGame()
 		});
 	}
 
+	// function paddleColision(paddle: Paddle, setPaddle: React.Dispatch<React.SetStateAction<Paddle>>)
+	// {
+	// 	let temp: Vec2 = structuredClone(ball.pos);
+
+	// 	if (temp.x < paddle.pos.x)
+	// 		temp.x = paddle.pos.x;
+	// 	else if (temp.x > paddle.pos.x + paddle.size.x)
+
+
+
+
+	// 	boolean circleRect(float cx, float cy, float radius, float rx, float ry, float rw, float rh) {
+
+	// 		// temporary variables to set edges for testing
+	// 		float testX = cx;
+	// 		float testY = cy;
+		  
+	// 		// which edge is closest?
+	// 		if (cx < rx)         testX = rx;      // test left edge
+	// 		else if (cx > rx+rw) testX = rx+rw;   // right edge
+	// 		if (cy < ry)         testY = ry;      // top edge
+	// 		else if (cy > ry+rh) testY = ry+rh;   // bottom edge
+		  
+	// 		// get distance from closest edges
+	// 		float distX = cx-testX;
+	// 		float distY = cy-testY;
+	// 		float distance = sqrt( (distX*distX) + (distY*distY) );
+		  
+	// 		// if the distance is less than the radius, collision!
+	// 		if (distance <= radius) {
+	// 		  return true;
+	// 		}
+	// 		return false;
+	// 	}
+	// }
+
 	function handleColision()
 	{
-		if (ball.pos.y <= 1 || ball.pos.y >= 99)
+		if (ball.pos.y < 2 || ball.pos.y > 98)
 		{
 			setBall(prev => ({ ...prev,
-				pos: { ...prev.pos, y: prev.pos.y <= 1 ? 2 : 98 },
+				pos: { ...prev.pos, y: prev.pos.y <= 5 ? 2 : 98 },
 				dir: { ...prev.dir, y: prev.dir.y * s.BOUNCE.y },
 			}));
 		}
 
-		if (ball.pos.x < 5 && ball.prevPos.x >= 5 && ball.pos.y >= p1Y - 10 && ball.pos.y <= p1Y + 10)
+		if (ball.pos.x < 5 && ball.prevPos.x >= 5 && ball.pos.y >= p1.pos.y - 10 - ball.size.y / 2 && ball.pos.y <= p1.pos.y + 10 + ball.size.y / 2)
 		{
 			setBall(prev => ({ ...prev,
 				pos: { ...prev.pos, x: 5 },
-				dir: { x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + p1DirY * s.CARRYOVER },
+				dir: { x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + p1.dir.y * s.CARRYOVER },
 			}));
 		}
-		if (ball.pos.x > 95 && ball.prevPos.x <= 95 && ball.pos.y >= p2Y - 10 && ball.pos.y <= p2Y + 10)
+		if (ball.pos.x > 95 && ball.prevPos.x <= 95 && ball.pos.y >= p2.pos.y - 10 - ball.size.y / 2 && ball.pos.y <= p2.pos.y + 10 + ball.size.y / 2)
 		{
 			setBall(prev => ({ ...prev,
 				pos: { ...prev.pos, x: 95 },
-				dir: { x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + p2DirY * s.CARRYOVER },
+				dir: { x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + p2.dir.y * s.CARRYOVER },
 			}));
 		}
 
@@ -128,7 +173,7 @@ function PongGame()
 			{
 				ballCopy.pos.x = 5;
 				ballCopy.dir.x *= s.BOUNCE.x;
-				// ballCopy.dir.y += p1DirY * 0.5;
+				// ballCopy.dir.y += p1.dir.y * 0.5;
 			}
 			ballCopy.pos.x += ballCopy.dir.x;
 			ballCopy.pos.y += ballCopy.dir.y;
@@ -136,29 +181,36 @@ function PongGame()
 		ai.desiredY = ballCopy.pos.y;
 	}
 
-	function managePaddle(dirY: number, setPosY: React.Dispatch<React.SetStateAction<number>>, setDirY: React.Dispatch<React.SetStateAction<number>>) {
-		const offset: number = 10;
-		setPosY(prevPosY => {
-			if (prevPosY < offset || prevPosY > 100 - offset) {
-				setDirY(0);
-				return Math.max(offset, Math.min(100 - offset, prevPosY + dirY));
-			}
-			return prevPosY + dirY;
-		});
+	function managePaddle(paddle: Paddle, dirY: number, setPaddle: React.Dispatch<React.SetStateAction<Paddle>>)
+	{
+		const halfSize = paddle.size.y / 2;
+
+		setPaddle(prev => ({ ...prev,
+			pos: { ...prev.pos, y: prev.pos.y + prev.dir.y },
+			dir: { ...prev.dir, y: s.FRICTION * prev.dir.y + s.VELOCITY * dirY  }
+		}));
+		if (paddle.pos.y < halfSize || paddle.pos.y > 100 - halfSize)
+		{
+			setPaddle(prev => ({ ...prev,
+				pos: { ...prev.pos, y: (prev.pos.y < 50) ? halfSize : 100 - halfSize },
+				dir: { ...prev.dir, y: 0 },
+			}));
+		}
 	}
 
 	const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
 
 	useEffect(() =>
 	{
-		const handleKeyDown = (e: KeyboardEvent) => {
+		const handleKeyDown = (e: KeyboardEvent) =>
+		{
 			setKeysPressed(prev => ({ ...prev, [e.key]: true }));
-			if (e.key === "t" || e.key === "T") {
+			if (e.key === "t" || e.key === "T")
 				setAI(prevAI => ({ ...prevAI, enabled: !prevAI.enabled }));
-			}
 		};
 
-		const handleKeyUp = (e: KeyboardEvent) => {
+		const handleKeyUp = (e: KeyboardEvent) =>
+		{
 			setKeysPressed(prev => ({ ...prev, [e.key]: false }));
 		};
 
@@ -172,13 +224,17 @@ function PongGame()
 	{
 		const moveFrame = () =>
 		{
-			setP1DirY(P1DirY => s.FRICTION * P1DirY + s.VELOCITY * (keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0)));
+			let P1DirY: number = 0;
+			let P2DirY: number = 0;
+
+			P1DirY = keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0);
 			if (ai.enabled === false)
-				setP2DirY(P2DirY => s.FRICTION * P2DirY + s.VELOCITY * (keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0)));
+				P2DirY = keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0);
 			else
-				setP2DirY(P2DirY => s.FRICTION * P2DirY + s.VELOCITY * ((p2Y + 8 < ai.desiredY) ? 1 : (p2Y - 8 > ai.desiredY) ? -1 : 0));
-			managePaddle(p1DirY, setP1Y, setP1DirY);
-			managePaddle(p2DirY, setP2Y, setP2DirY);
+				P2DirY = (p2.pos.y + 8 < ai.desiredY) ? 1 : (p2.pos.y - 8 > ai.desiredY) ? -1 : 0;
+			
+			managePaddle(p1, P1DirY, setP1);
+			managePaddle(p2, P2DirY, setP2);
 
 			setBall(prev => ({ ...prev,
 				prevPos: { x: prev.pos.x,              y: prev.pos.y },
@@ -187,13 +243,11 @@ function PongGame()
 
 			manageAI();
 			handleColision();
-			
 			animationId = requestAnimationFrame(moveFrame);
 		};
 		let animationId = requestAnimationFrame(moveFrame);
 		return () => { cancelAnimationFrame(animationId); };
-	}, [keysPressed, ball.pos.x, ball.pos.y, ball.dir.x, ball.dir.y, p1Y, p2Y]);
-
+	}, [keysPressed, ball.pos.x, ball.pos.y, ball.dir.x, ball.dir.y, p1.pos.y, p2.pos.y]);
 
 	return(
 	<div className="w-screen h-screen box-border overflow-hidden relative m-0">
@@ -205,9 +259,33 @@ function PongGame()
 				<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
 			</div>
 		</div>
-		<div className={`absolute ${ball.dir.x > 0 ? 'bg-[#ff914d]' : 'bg-[#134588]'} w-[2vw] h-[2vw] rounded-full`} style={{ top: `${ball.pos.y}vh`, left: `${ball.pos.x}vw`, transform: 'translateY(-50%) translateX(-50%)' }}></div>
-		<div className="absolute left-[2vw] bg-[#ff914d] w-[2vw] h-[20vh]" style={{ top: `${p1Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)" }}></div>
-		<div className="absolute right-[2vw] bg-[#134588] w-[2vw] h-[20vh]" style={{ top: `${p2Y}vh`, transform: 'translateY(-50%)', boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)" }}></div>
+
+		<div className={`absolute  rounded-full`} style={{
+			backgroundColor: ball.dir.x > 0 ? p1.colour : p2.colour,
+			width: `${ball.size.x}vw`,
+			height: `${ball.size.y}vw`,
+			top: `${ball.pos.y}vh`,
+			left: `${ball.pos.x}vw`,
+			transform: 'translateY(-50%) translateX(-50%)'
+		}}></div>
+		<div className="absolute rounded-sm" style={{
+			backgroundColor: p1.colour,
+			width: `${p1.size.x}vw`,
+			height: `${p1.size.y}vh`,
+			left: `${p1.pos.x - p1.size.x}vw`,
+			top: `${p1.pos.y}vh`,
+			transform: 'translateY(-50%)',
+			boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)"
+		}}></div>
+		<div className="absolute rounded-sm" style={{
+			backgroundColor: p2.colour,
+			width: `${p2.size.x}vw`,
+			height: `${p2.size.y}vh`,
+			left: `${p2.pos.x}vw`,
+			top: `${p2.pos.y}vh`,
+			transform: 'translateY(-50%)',
+			boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)"
+		}}></div>
 	</div>
 	)
 }
