@@ -11,6 +11,7 @@ function App()
 	const [players, setPlayers] = useState<PlayerType[]>([]);
 	const [playerCount, setPlayerCount] = useState(0);
 	const [loggedInPlayers, setLoggedInPlayers] = useState<PlayerType[]>([]);
+	const [isPlaying, setIsPlaying] = useState(false);
 
 	useEffect(() =>
 	{
@@ -35,9 +36,9 @@ function App()
 
 	return (
 		<div className='h-screen w-screen bg-[#222222] font-satoshi text-white'>
-			<Navbar players={players} setPlayerCount={setPlayerCount} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers} />
-			<Hero players={players} setPlayerCount={setPlayerCount} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers}/>
-			{/* <PongGame /> */}
+			{<Navbar players={players} setPlayerCount={setPlayerCount} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers} setIsPlaying={setIsPlaying} />}
+			{!isPlaying && <Hero players={players} setPlayerCount={setPlayerCount} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers} setIsPlaying={setIsPlaying}/>}
+			{isPlaying  && <PongGame />}
 		</div>
 	)
 }

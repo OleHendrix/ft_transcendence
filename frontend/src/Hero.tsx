@@ -19,7 +19,7 @@ function SimplePong()
 	)
 }
 
-function Hero({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers }: { players: PlayerType[]; setPlayerCount: (value: number) => void; loggedInPlayers: PlayerType[]; setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>> })
+function Hero({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers, setIsPlaying }: { players: PlayerType[]; setPlayerCount: (value: number) => void; loggedInPlayers: PlayerType[]; setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>; setIsPlaying: Dispatch<SetStateAction<boolean>> })
 {
 	return(
 		<div className="w-full flex justify-between items-start pt-[10vh]">
@@ -27,7 +27,7 @@ function Hero({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers }: 
 				<h1 className="text-6xl  font-semibold text-brand-orange">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
 				<p className="text-2xl">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
 				<div className="flex justify-start space-x-4 font-bold text-lg">
-					<motion.button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white py-2 px-4 rounded-3xl ${loggedInPlayers.length !== 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`} whileHover={(loggedInPlayers.length === 2 ? {scale: 1.03} : {})} whileTap={(loggedInPlayers.length === 2 ? {scale: 0.97} : {})}>
+					<motion.button onClick={() => setIsPlaying(true)} className={`flex items-center h-10 space-x-2 bg-[#134588] text-white py-2 px-4 rounded-3xl ${loggedInPlayers.length !== 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`} whileHover={(loggedInPlayers.length === 2 ? {scale: 1.03} : {})} whileTap={(loggedInPlayers.length === 2 ? {scale: 0.97} : {})}>
 						<p>Play</p>
 						<RiGamepadLine />
 					</motion.button>
