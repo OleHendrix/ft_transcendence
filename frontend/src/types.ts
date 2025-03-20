@@ -14,6 +14,14 @@ export interface Vec2
 	y: number;
 }
 
+export interface Paddle
+{
+	pos: Vec2;
+	size: Vec2;
+	dir: Vec2;
+	colour: string
+}
+
 export interface Ball
 {
 	pos:		Vec2;
