@@ -164,7 +164,7 @@ function PongGame()
 			setP1DirY(P1DirY => s.FRICTION * P1DirY + s.VELOCITY * (keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0)));
 			if (ai.enabled === false)
 				setP2DirY(P2DirY => s.FRICTION * P2DirY + s.VELOCITY * (keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0)));
-			else
+			else+
 				setP2DirY(P2DirY => s.FRICTION * P2DirY + s.VELOCITY * ((p2Y + 8 < ai.desiredY) ? 1 : (p2Y - 8 > ai.desiredY) ? -1 : 0));
 			managePaddle(p1DirY, setP1Y, setP1DirY);
 			managePaddle(p2DirY, setP2Y, setP2DirY);
