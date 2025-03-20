@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { RiGamepadLine } from "react-icons/ri";
 import { TbTournament } from "react-icons/tb";
+import { usePlayerContext } from "./Context";
 import { PlayerType } from "./types"
 import Players from "./Players";
 import "./ponganimation.css";
@@ -19,8 +20,9 @@ function SimplePong()
 	)
 }
 
-function Hero({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers, setIsPlaying }: { players: PlayerType[]; setPlayerCount: (value: number) => void; loggedInPlayers: PlayerType[]; setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>; setIsPlaying: Dispatch<SetStateAction<boolean>> })
+function Hero()
 {
+	const { players, setPlayerCount, loggedInPlayers, setLoggedInPlayers, setIsPlaying } = usePlayerContext();
 	return(
 		<div className="w-full flex justify-between items-start pt-[10vh]">
 			<div className="w-1/2 flex h-[calc(100vh - 8vh)] justify-start flex-col p-24 pr-16 space-y-12 px-[6vw]">
