@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
-import { Ball, AI, Statics, Paddle } from "./types"; 
+import { Vec2, Ball, AI, Statics, Paddle } from "./types"; 
 
 function PongGame()
 {
 	const [p1, setP1] = useState<Paddle>
 	({ 
-		pos: { x: 4, y: 50},  size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#ff914d"
+		pos: { x: 3, y: 50},  size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#ff914d"
 	});
 	const [p2, setP2] = useState<Paddle>
 	({ 
-		pos: { x: 96, y: 50},  size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#134588"
+		pos: { x: 95, y: 50},  size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#134588"
 	});
 
 	const [ball, setBall] = useState<Ball>
@@ -38,90 +38,48 @@ function PongGame()
 
 	function resetBall()
 	{
-		let rand: number = Math.random();
+		const goRight: boolean	= (p1Score + p2Score) % 2 === 0;
+		const pos: number		= goRight ? 70 : 30;
 
-		setBall({
-			pos:		{ x: 50,  y: 50  },
-			prevPos:	{ x: 50,  y: 50  },
-			size:		{ x: 2,   y: 2   },
-			dir:		{ x: 0.5, y: 0.5 },
+		setBall
+		({
+			pos:		{ x: pos,				y: 50					},
+			prevPos:	{ x: pos,				y: 50					},
+			size:		{ x: 2,					y: 2					},
+			dir:		{ x: 0.5 - +goRight,	y: Math.random() - 0.5	}
 		});
 	}
 
-	// function resetBall()
-	// {
-	// 	const rand: number = Math.random();
-	// 	const pos: number = rand < 0.5 ? 20 : 80;
+	function paddleColision(paddle: Paddle, setPaddle: React.Dispatch<React.SetStateAction<Paddle>>)
+	{
+		let reachY: number = paddle.size.y / 2 + ball.size.y;
+		let collX:  number = paddle.pos.x;
+		if (ball.dir.x < 0)
+			collX += paddle.size.x + ball.size.x / 2;
+		else
+			collX -= ball.size.x / 2;
 
-	// 	setBall({
-	// 		pos:		{ x: pos,	y: 50  },
-	// 		prevPos:	{ x: pos,	y: 50  },
-	// 		size:		{ x: 2,		y: 2   },
-	// 		dir:		{ x: 0.5,	y: 0.5 },
-	// 	});
-	// }
-
-	// function paddleColision(paddle: Paddle, setPaddle: React.Dispatch<React.SetStateAction<Paddle>>)
-	// {
-	// 	let temp: Vec2 = structuredClone(ball.pos);
-
-	// 	if (temp.x < paddle.pos.x)
-	// 		temp.x = paddle.pos.x;
-	// 	else if (temp.x > paddle.pos.x + paddle.size.x)
-
-
-
-
-	// 	boolean circleRect(float cx, float cy, float radius, float rx, float ry, float rw, float rh) {
-
-	// 		// temporary variables to set edges for testing
-	// 		float testX = cx;
-	// 		float testY = cy;
-		  
-	// 		// which edge is closest?
-	// 		if (cx < rx)         testX = rx;      // test left edge
-	// 		else if (cx > rx+rw) testX = rx+rw;   // right edge
-	// 		if (cy < ry)         testY = ry;      // top edge
-	// 		else if (cy > ry+rh) testY = ry+rh;   // bottom edge
-		  
-	// 		// get distance from closest edges
-	// 		float distX = cx-testX;
-	// 		float distY = cy-testY;
-	// 		float distance = sqrt( (distX*distX) + (distY*distY) );
-		  
-	// 		// if the distance is less than the radius, collision!
-	// 		if (distance <= radius) {
-	// 		  return true;
-	// 		}
-	// 		return false;
-	// 	}
-	// }
+		if (((ball.pos.x < collX) !== (ball.prevPos.x < collX)) && ball.pos.y >= paddle.pos.y - reachY && ball.pos.y <= paddle.pos.y + reachY)
+		{
+			setBall(prev => ({ ...prev,
+				prevPos:	{ ...prev.pos, x: collX },
+				pos:		{ ...prev.pos, x: collX },
+				dir:		{ x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + paddle.dir.y * s.CARRYOVER },
+			}));
+		}
+	}
 
 	function handleColision()
 	{
-		if (ball.pos.y < 2 || ball.pos.y > 98)
+		paddleColision(p1, setP1);
+		paddleColision(p2, setP2);
+		if (ball.pos.y < ball.size.y || ball.pos.y > 100 - ball.size.y)
 		{
 			setBall(prev => ({ ...prev,
-				pos: { ...prev.pos, y: prev.pos.y <= 5 ? 2 : 98 },
+				pos: { ...prev.pos, y: prev.pos.y <= 50 ? ball.size.y : 100 - ball.size.y },
 				dir: { ...prev.dir, y: prev.dir.y * s.BOUNCE.y },
 			}));
 		}
-
-		if (ball.pos.x < 5 && ball.prevPos.x >= 5 && ball.pos.y >= p1.pos.y - 10 - ball.size.y / 2 && ball.pos.y <= p1.pos.y + 10 + ball.size.y / 2)
-		{
-			setBall(prev => ({ ...prev,
-				pos: { ...prev.pos, x: 5 },
-				dir: { x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + p1.dir.y * s.CARRYOVER },
-			}));
-		}
-		if (ball.pos.x > 95 && ball.prevPos.x <= 95 && ball.pos.y >= p2.pos.y - 10 - ball.size.y / 2 && ball.pos.y <= p2.pos.y + 10 + ball.size.y / 2)
-		{
-			setBall(prev => ({ ...prev,
-				pos: { ...prev.pos, x: 95 },
-				dir: { x: prev.dir.x * s.BOUNCE.x, y: prev.dir.y + p2.dir.y * s.CARRYOVER },
-			}));
-		}
-
 		if (ball.pos.x <= 0)
 		{
 			setP2Score(prev => prev + 1);
@@ -142,25 +100,28 @@ function PongGame()
 
 		if (ai.lastActivation === timeSeconds)
 			return;
+
 		ai.lastActivation = timeSeconds;
 		const ballCopy = structuredClone(ball);
-		while (ballCopy.pos.x < 95)
+		const p2collX = p2.pos.x - ballCopy.size.x / 2;
+
+		while (ballCopy.pos.x < p2collX)
 		{
-			if (ballCopy.pos.y <= 1 || ballCopy.pos.y >= 99)
+			if (ballCopy.pos.y < ballCopy.size.y || ballCopy.pos.y > 100 - ballCopy.size.y)
 			{
-				ballCopy.pos.y = ballCopy.pos.y <= 1 ? 2 : 98;
-				ballCopy.dir.y *= s.BOUNCE.y;
+				ballCopy.pos.y = ballCopy.pos.y <= 50 ? ballCopy.size.y : 100 - ballCopy.size.y;
+				ballCopy.dir.y *= s.BOUNCE.y
 			}
-			if (ballCopy.pos.x < 5)
+			const p1collX: number = p1.pos.x + p1.size.x + ballCopy.size.x / 2;
+			if (ballCopy.pos.x < p1collX)
 			{
-				ballCopy.pos.x = 5;
+				ballCopy.pos.x = p1collX;
 				ballCopy.dir.x *= s.BOUNCE.x;
-				// ballCopy.dir.y += p1.dir.y * 0.5;
 			}
 			ballCopy.pos.x += ballCopy.dir.x;
 			ballCopy.pos.y += ballCopy.dir.y;
 		}
-		ai.desiredY = ballCopy.pos.y;
+		ai.desiredY = Math.max(p2.size.y / 2, Math.min(100 - p2.size.y / 2, ballCopy.pos.y));
 	}
 
 	function managePaddle(paddle: Paddle, dirY: number, setPaddle: React.Dispatch<React.SetStateAction<Paddle>>)
@@ -198,6 +159,8 @@ function PongGame()
 
 		window.addEventListener('keydown', handleKeyDown);
 		window.addEventListener('keyup', handleKeyUp);
+
+		resetBall();
 	
 		return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
 	}, []);
@@ -213,7 +176,7 @@ function PongGame()
 			if (ai.enabled === false)
 				P2DirY = keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0);
 			else
-				P2DirY = (p2.pos.y + 8 < ai.desiredY) ? 1 : (p2.pos.y - 8 > ai.desiredY) ? -1 : 0;
+				P2DirY = (p2.pos.y < ai.desiredY - p2.size.y / 2) ? 1 : (p2.pos.y > ai.desiredY + p2.size.y / 2) ? -1 : 0;
 			
 			managePaddle(p1, P1DirY, setP1);
 			managePaddle(p2, P2DirY, setP2);
@@ -232,46 +195,46 @@ function PongGame()
 	}, [keysPressed, ball.pos.x, ball.pos.y, ball.dir.x, ball.dir.y, p1.pos.y, p2.pos.y]);
 
 	return(
-	<div className="w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0">
-		<div className="relative w-full h-full">
-			<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
-				<div className="h-full w-1/2 flex justify-center items-center">
-					<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
+		<div className="w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0">
+			<div className="relative w-full h-full">
+				<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
+					<div className="h-full w-1/2 flex justify-center items-center">
+						<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
+					</div>
+					<div className="h-full w-1/2 flex justify-center items-center">
+						<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
+					</div>
 				</div>
-				<div className="h-full w-1/2 flex justify-center items-center">
-					<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
-				</div>
+	
+				<div className={`absolute  rounded-full`} style=
+				{{
+					backgroundColor: ball.dir.x > 0 ? p1.colour : p2.colour,
+					width: `${ball.size.x}vw`,
+					height: `${ball.size.y}vw`,
+					top: `${ball.pos.y}%`,
+					left: `${ball.pos.x}vw`,
+					transform: 'translateY(-50%) translateX(-50%)'
+				}}></div>
+				<div className="absolute rounded-sm" style={{
+					backgroundColor: p1.colour,
+					width: `${p1.size.x}vw`,
+					height: `${p1.size.y}%`,
+					left: `${p1.pos.x}vw`,
+					top: `${p1.pos.y}%`,
+					transform: 'translateY(-50%)',
+					boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)"
+				}}></div>
+				<div className="absolute rounded-sm" style={{
+					backgroundColor: p2.colour,
+					width: `${p2.size.x}vw`,
+					height: `${p2.size.y}%`,
+					left: `${p2.pos.x}vw`,
+					top: `${p2.pos.y}%`,
+					transform: 'translateY(-50%)',
+					boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)"
+				}}></div>
 			</div>
-
-			<div className={`absolute  rounded-full`} style=
-			{{
-				backgroundColor: ball.dir.x > 0 ? p1.colour : p2.colour,
-				width: `${ball.size.x}vw`,
-				height: `${ball.size.y}vw`,
-				top: `${ball.pos.y}%`,
-				left: `${ball.pos.x}vw`,
-				transform: 'translateY(-50%) translateX(-50%)'
-			}}></div>
-			<div className="absolute rounded-sm" style={{
-				backgroundColor: p1.colour,
-				width: `${p1.size.x}vw`,
-				height: `${p1.size.y}%`,
-				left: `${p1.pos.x - p1.size.x}vw`,
-				top: `${p1.pos.y}%`,
-				transform: 'translateY(-50%)',
-				boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)"
-			}}></div>
-			<div className="absolute rounded-sm" style={{
-				backgroundColor: p2.colour,
-				width: `${p2.size.x}vw`,
-				height: `${p2.size.y}%`,
-				left: `${p2.pos.x}vw`,
-				top: `${p2.pos.y}%`,
-				transform: 'translateY(-50%)',
-				boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)"
-			}}></div>
 		</div>
-	</div>
 	)
 }
 
