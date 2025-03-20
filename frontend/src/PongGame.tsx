@@ -71,6 +71,8 @@ function PongGame()
 
 	function resetBall()
 	{
+		let rand: number = Math.random();
+
 		setBall({
 			pos:		{ x: 50,  y: 50  },
 			prevPos:	{ x: 50,  y: 50  },
@@ -78,6 +80,19 @@ function PongGame()
 			dir:		{ x: 0.5, y: 0.5 },
 		});
 	}
+
+	// function resetBall()
+	// {
+	// 	const rand: number = Math.random();
+	// 	const pos: number = rand < 0.5 ? 20 : 80;
+
+	// 	setBall({
+	// 		pos:		{ x: pos,	y: 50  },
+	// 		prevPos:	{ x: pos,	y: 50  },
+	// 		size:		{ x: 2,		y: 2   },
+	// 		dir:		{ x: 0.5,	y: 0.5 },
+	// 	});
+	// }
 
 	// function paddleColision(paddle: Paddle, setPaddle: React.Dispatch<React.SetStateAction<Paddle>>)
 	// {
@@ -260,7 +275,8 @@ function PongGame()
 			</div>
 		</div>
 
-		<div className={`absolute  rounded-full`} style={{
+		<div className={`absolute  rounded-full`} style=
+		{{
 			backgroundColor: ball.dir.x > 0 ? p1.colour : p2.colour,
 			width: `${ball.size.x}vw`,
 			height: `${ball.size.y}vw`,
