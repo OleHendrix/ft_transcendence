@@ -3,14 +3,18 @@ import logo from "./assets/Logo.png";
 import Players from "./Players";
 import Logo42 from "./assets/Logo42.svg"
 import { PlayerType } from "./types"
+import { usePlayerContext } from "./Context";
 
-function Navbar({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers }: { players: PlayerType[]; setPlayerCount: (value: number) => void; loggedInPlayers: PlayerType[]; setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>> })
+function Navbar()
 {
+  const { players, setPlayerCount, loggedInPlayers, setLoggedInPlayers, setIsPlaying } = usePlayerContext();
 	return (
     <>
       <nav className="bg-[#313131] text-white h-[8vh] p-5 px-[6vw] flex justify-between items-center shadow-xl text-lg font-medium">
         <div className="flex items-center">
-          <img src={logo} alt="Logo" className="h-16 w-auto" />
+          <button onClick={() => setIsPlaying(false)}>
+            <img src={logo} alt="Logo" className="h-16 w-auto"   />
+          </button>
         </div>
 		<div className="flex items-center">
 			<img src={Logo42} className="h-18 w-auto"/>

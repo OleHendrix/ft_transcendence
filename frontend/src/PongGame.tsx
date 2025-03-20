@@ -232,43 +232,45 @@ function PongGame()
 	}, [keysPressed, ball.pos.x, ball.pos.y, ball.dir.x, ball.dir.y, p1.pos.y, p2.pos.y]);
 
 	return(
-	<div className="w-screen h-screen box-border overflow-hidden relative m-0">
-		<div className="absolute inset-0 text-[75vh] flex justify-center items-center font-black">
-			<div className="h-full w-1/2 flex justify-center items-center">
-				<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
+	<div className="w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0">
+		<div className="relative w-full h-full">
+			<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
+				<div className="h-full w-1/2 flex justify-center items-center">
+					<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
+				</div>
+				<div className="h-full w-1/2 flex justify-center items-center">
+					<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
+				</div>
 			</div>
-			<div className="h-full w-1/2 flex justify-center items-center">
-				<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
-			</div>
-		</div>
 
-		<div className={`absolute  rounded-full`} style=
-		{{
-			backgroundColor: ball.dir.x > 0 ? p1.colour : p2.colour,
-			width: `${ball.size.x}vw`,
-			height: `${ball.size.y}vw`,
-			top: `${ball.pos.y}vh`,
-			left: `${ball.pos.x}vw`,
-			transform: 'translateY(-50%) translateX(-50%)'
-		}}></div>
-		<div className="absolute rounded-sm" style={{
-			backgroundColor: p1.colour,
-			width: `${p1.size.x}vw`,
-			height: `${p1.size.y}vh`,
-			left: `${p1.pos.x - p1.size.x}vw`,
-			top: `${p1.pos.y}vh`,
-			transform: 'translateY(-50%)',
-			boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)"
-		}}></div>
-		<div className="absolute rounded-sm" style={{
-			backgroundColor: p2.colour,
-			width: `${p2.size.x}vw`,
-			height: `${p2.size.y}vh`,
-			left: `${p2.pos.x}vw`,
-			top: `${p2.pos.y}vh`,
-			transform: 'translateY(-50%)',
-			boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)"
-		}}></div>
+			<div className={`absolute  rounded-full`} style=
+			{{
+				backgroundColor: ball.dir.x > 0 ? p1.colour : p2.colour,
+				width: `${ball.size.x}vw`,
+				height: `${ball.size.y}vw`,
+				top: `${ball.pos.y}%`,
+				left: `${ball.pos.x}vw`,
+				transform: 'translateY(-50%) translateX(-50%)'
+			}}></div>
+			<div className="absolute rounded-sm" style={{
+				backgroundColor: p1.colour,
+				width: `${p1.size.x}vw`,
+				height: `${p1.size.y}%`,
+				left: `${p1.pos.x - p1.size.x}vw`,
+				top: `${p1.pos.y}%`,
+				transform: 'translateY(-50%)',
+				boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)"
+			}}></div>
+			<div className="absolute rounded-sm" style={{
+				backgroundColor: p2.colour,
+				width: `${p2.size.x}vw`,
+				height: `${p2.size.y}%`,
+				left: `${p2.pos.x}vw`,
+				top: `${p2.pos.y}%`,
+				transform: 'translateY(-50%)',
+				boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)"
+			}}></div>
+		</div>
 	</div>
 	)
 }
