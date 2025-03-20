@@ -17,6 +17,7 @@ const client_1 = require("@prisma/client");
 const cors_1 = __importDefault(require("@fastify/cors"));
 const fastify_jwt_1 = __importDefault(require("fastify-jwt"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+// import dotenv from 'dotenv';
 const fastify = (0, fastify_1.default)();
 fastify.register(cors_1.default);
 fastify.register(fastify_jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
