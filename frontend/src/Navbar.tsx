@@ -8,7 +8,7 @@ function Navbar({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers }
 {
 	return (
     <>
-      <nav className="bg-[#313131] text-white h-[10vh] p-5 px-[6vw] flex justify-between items-center shadow-xl text-lg font-medium">
+      <nav className="bg-[#313131] text-white h-[8vh] p-5 px-[6vw] flex justify-between items-center shadow-xl text-lg font-medium">
         <div className="flex items-center">
           <img src={logo} alt="Logo" className="h-16 w-auto" />
         </div>

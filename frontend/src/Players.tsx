@@ -20,14 +20,14 @@ function Players({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers}
 		<>
 			<div className="flex items-center">
 				{loggedInPlayers?.map((player, index) => 
-				<div className="flex items-center flex-col space-y-0.5 w-18">
-					<motion.img src={loggedInPlayers.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-10 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStat(index); setShowPlayerStats(true)}}/>
-					<p className="text-[10px] opacity-35 w-full text-center truncate">{player.username}</p>
+				<div className="flex items-center flex-col space-y-0.5 space-x-2.5 w-18">
+					<motion.img src={loggedInPlayers.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStat(index); setShowPlayerStats(true)}}/>
+					<p className="text-[12px] opacity-35 w-full text-center truncate">{player.username}</p>
 				</div>
 				)}
 				<div className="flex items-center flex-col space-y-0.5 w-18">
-					<motion.img src={PlayerAdd} className="h-10 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => setShowSignupModal(true)}/>
-					{loggedInPlayers.length > 0 && (<p className="text-[10px] w-full text-center truncate invisible">placeholder</p>)}
+					<motion.img src={PlayerAdd} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => setShowSignupModal(true)}/>
+					{loggedInPlayers.length > 0 && (<p className="text-[12px] w-full text-center truncate invisible">placeholder</p>)}
 				</div>
 			</div>
 			{showSignupModal && (<SignUpModal setShowSignupModal={setShowSignupModal} setPlayerCount={setPlayerCount} players={players} setShowLoginModal={setShowLoginModal} />)}
