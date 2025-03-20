@@ -20,7 +20,7 @@ function Players({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers}
 		<>
 			<div className="flex items-center">
 				{loggedInPlayers?.map((player, index) => 
-				<div className="flex items-center flex-col space-y-0.5 space-x-2.5 w-18">
+				<div className="flex items-center flex-col space-y-0.5 w-18">
 					<motion.img src={loggedInPlayers.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStat(index); setShowPlayerStats(true)}}/>
 					<p className="text-[12px] opacity-35 w-full text-center truncate">{player.username}</p>
 				</div>
@@ -132,9 +132,14 @@ async function checkSubmit({ username, email, password, confirmPassword}: { user
 async function checkLogin(
 	{ username, password }: {username: string; password: string}, 
 	setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>, 
-	setPlayerFound: (value: number) => void
+	setPlayerFound: Dispatch<SetStateAction<{ 
+		'Already logged in': boolean; 
+		'Username not found': boolean; 
+		'Password incorrect': boolean; 
+	  }>>
 ) {
 	try { 
+		console.log('check')
 		const response = await axios.post("http://localhost:5001/api/login", { username, password });
 
 		if (response.data.success) {
@@ -153,9 +158,9 @@ async function checkLogin(
 		}
 	} catch (error: any) {
 		if (error.response?.status === 400) { //user not found
-			setPlayerFound(0);
+			setPlayerFound(prev => ({...prev, ['Username not found']: true}));
 		} else if (error.response?.status === 401) { // incorrect password
-			setPlayerFound(2);
+			setPlayerFound(prev => ({...prev, ['Password incorrect']: true}));
 		}
 		return false;
 	}
@@ -221,7 +226,20 @@ function LoginModal({ setShowLoginModal, players, loggedInPlayers, setLoggedInPl
 {
 	const [formData, setFormData] = useState({username: '', password: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
-	const [playerFound, setPlayerFound] = useState(2);
+	const [playerFound, setPlayerFound] = useState({'Already logged in': false, 'Username not found': false, 'Password incorrect': false});
+
+	useEffect(() =>
+	{
+		setPlayerFound(prev => ({
+			...prev,
+			'Already logged in': loggedInPlayers.some(player => player.username === formData.username),
+			'Username not found': false, // Reset bij elke input
+			'Password incorrect': false // Reset bij elke input
+		}));
+		Object.values(formData).every(field => field !== '') ? setEmptyForm(false) : setEmptyForm(true);
+		loggedInPlayers.some(player => player.username === formData.username) ? setPlayerFound({...playerFound, ['Already logged in']: true}) : setPlayerFound({...playerFound, ['Already logged in']: false});
+		console.log(playerFound);
+	}, [formData]);
 
 	return(
 	<div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
@@ -233,34 +251,38 @@ function LoginModal({ setShowLoginModal, players, loggedInPlayers, setLoggedInPl
 		<form className="space-y-4" onSubmit={async (e) => {e.preventDefault(); const success = await checkLogin(formData, setLoggedInPlayers, setPlayerFound); if (success) setShowLoginModal(false); }} >
 			<div>
 				<label className="block text-sm font-medium mb-1">Username</label>
-				<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border ${playerFound === 2 ? 'border-gray-600 focus:border-white' : playerFound === 1 ? 'border-[#ff914d] focus:border-[#ff914d]' : 'border-red-800'} focus:outline-none`} name="username" type="text" placeholder="Type your username"
-				onChange={(e) => {loggedInPlayers.some(player => player.username === e.target.value) ? setPlayerFound(1) : setPlayerFound(2); setFormData({...formData, [e.target.name]: e.target.value}); const updatedValues = {...formData, [e.target.name]: e.target.value}; Object.values(updatedValues).every(field => field !== '') ? setEmptyForm(false) : setEmptyForm(true)}}/>
+				<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border ${Object.values(playerFound).every((value) => !value) ? 'border-gray-600 focus:border-white' : playerFound['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' : 'border-red-800'} focus:outline-none`} name="username" type="text" placeholder="Type your username"
+				onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
 			<div>
 				<label className="block text-sm font-medium mb-1">Password</label>
-				<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border ${playerFound === 2 ? 'border-gray-600 focus:border-white' : playerFound === 1 ? 'border-[#ff914d] focus:border-[#ff914d]' : 'border-red-800'} focus:outline-none`} name="password" type="password" placeholder="Type your password"
-				onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value}); const updatedValues = {...formData, [e.target.name]: e.target.value}; Object.values(updatedValues).every(field => field !== '') ? setEmptyForm(false) : setEmptyForm(true)}}/>
+				<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border ${Object.values(playerFound).every((value) => !value) ? 'border-gray-600 focus:border-white' : playerFound['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' : 'border-red-800'} focus:outline-none`} name="password" type="password" placeholder="Type your password"
+				onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
-			{!playerFound && 
-			(
-				<div className="text-center text-sm text-red-500">
-					<p>Username not found, please try again.</p>
-				</div>
-			)}
-			{playerFound === 1 && 
+			{playerFound['Already logged in'] && 
 			(
 				<div className="text-center text-sm text-[#ff914d]">
 					<p>You're already logged in!</p>
 				</div>
 			)}
-			{playerFound === 2 && 
+			{playerFound['Username not found'] && 
+			(
+				<div className="text-center text-sm text-red-500">
+					<p>Username not found, please try again.</p>
+				</div>
+			)}
+			{playerFound['Password incorrect'] && 
 			(
 				<div className="text-center text-sm text-[#ff914d]">
 					<p>Invalid Password</p>
 				</div>
 			)}
 			<div className="pt-2">
-				<motion.button className={`w-full bg-[#ff914d] text-white py-2 px-4 rounded-3xl font-bold transition-colors shadow-2xl ${(!emptyForm && playerFound === 2) ? 'hover:bg-[#ab5a28] hover:cursor-pointer' : 'opacity-30'}`} whileHover={(!emptyForm && playerFound === 2) ? {scale: 1.03} : {}} whileTap={(!emptyForm && playerFound === 2) ? {scale: 0.97} : {}}  type="submit" disabled={emptyForm || playerFound !== 2}>Login</motion.button>
+				<motion.button className={`w-full bg-[#ff914d] text-white py-2 px-4 rounded-3xl font-bold transition-colors shadow-2xl 
+					${(!emptyForm && Object.values(playerFound).every((value) => !value)) ? 'hover:bg-[#ab5a28] hover:cursor-pointer' : 'opacity-30'}`} 
+					whileHover={(!emptyForm && Object.values(playerFound).every((value) => !value)) ? {scale: 1.03} : {}} 
+					whileTap={(!emptyForm && Object.values(playerFound).every((value) => !value)) ? {scale: 0.97} : {}}  
+					type="submit" disabled={emptyForm || Object.values(playerFound).some((value) => value)}>Login</motion.button>
 			</div>
 		</form>
 		</div>
