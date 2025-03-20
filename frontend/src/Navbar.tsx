@@ -3,7 +3,7 @@ import logo from "./assets/Logo.png";
 import Players from "./Players";
 import Logo42 from "./assets/Logo42.svg"
 import { PlayerType } from "./types"
-import { usePlayerContext } from "./Context";
+import { usePlayerContext } from "./PlayerContext";
 
 function Navbar()
 {
@@ -19,12 +19,7 @@ function Navbar()
 		<div className="flex items-center">
 			<img src={Logo42} className="h-18 w-auto"/>
         </div>
-        {/* <ul className="space-x-10">
-          <a href="#" className="hover:text-gray-400">Play</a>
-          <a href="#" className="hover:text-gray-400">Stats</a>
-          <a href="#" className="hover:text-gray-400">About</a>
-        </ul> */}
-		<Players players={players} setPlayerCount={setPlayerCount} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers}/>
+		    <Players />
       </nav>
     </>
   );

@@ -1,9 +1,7 @@
-import { Dispatch, SetStateAction } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { RiGamepadLine } from "react-icons/ri";
 import { TbTournament } from "react-icons/tb";
-import { usePlayerContext } from "./Context";
-import { PlayerType } from "./types"
+import { usePlayerContext } from "./PlayerContext";
 import Players from "./Players";
 import "./ponganimation.css";
 
@@ -38,7 +36,7 @@ function Hero()
 						<TbTournament />
 					</motion.button>
 				</div>
-					<Players players={players} setPlayerCount={setPlayerCount} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers}/>
+					<Players />
 			</div>
 			<div className="w-1/2 h-[calc(100vh - 8vh)] flex justify-start flex-col p-24 pl-16 space-y-12 max-w-[50vw] px-[6vw]">
 				<SimplePong />

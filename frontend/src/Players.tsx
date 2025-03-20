@@ -2,6 +2,8 @@ import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
 import { PlayerType } from "./types"
+import { usePlayerContext } from "./PlayerContext";
+import { useLoginContext } from "./LoginContext";
 import Loader from "./Loader";
 import Player from "./assets/Player.svg";
 import Player1 from "./assets/Player1.svg";
@@ -9,12 +11,10 @@ import Player2 from "./assets/Player2.svg";
 import PlayerAdd from "./assets/PlayerAdd.svg"
 import axios from "axios";
 
-function Players({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers}: { players: PlayerType[]; setPlayerCount: (value: number) => void; loggedInPlayers: PlayerType[]; setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>})
+function Players()
 {
-	const [showSignupModal, setShowSignupModal] = useState(false);
-	const [showLoginModal, setShowLoginModal] = useState(false);
-	const [showPlayerStats, setShowPlayerStats] = useState(false);
-	const [indexPlayerStat, setIndexPlayerStat] = useState(-1);
+	const { loggedInPlayers } = usePlayerContext();
+	const { showSignupModal, setShowSignupModal, showLoginModal, showPlayerStats, setShowPlayerStats, setIndexPlayerStat } = useLoginContext();
 
 	return(
 		<>
@@ -30,15 +30,17 @@ function Players({ players, setPlayerCount, loggedInPlayers, setLoggedInPlayers}
 					{loggedInPlayers.length > 0 && (<p className="text-[12px] w-full text-center truncate invisible">placeholder</p>)}
 				</div>
 			</div>
-			{showSignupModal && (<SignUpModal setShowSignupModal={setShowSignupModal} setPlayerCount={setPlayerCount} players={players} setShowLoginModal={setShowLoginModal} />)}
-			{showLoginModal && (<LoginModal setShowLoginModal={setShowLoginModal} players={players} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers} />)}
-			{showPlayerStats && (<PlayerStats setShowPlayerStats={setShowPlayerStats} loggedInPlayers={loggedInPlayers} setLoggedInPlayers={setLoggedInPlayers} indexPlayerStat={indexPlayerStat}/>)}
+			{showSignupModal && (<SignUpModal />)}
+			{showLoginModal && (<LoginModal />)}
+			{showPlayerStats && (<PlayerStats />)}
 		</>
 	)
 }
 
-function PlayerStats( {setShowPlayerStats, loggedInPlayers, setLoggedInPlayers, indexPlayerStat }: {setShowPlayerStats: (value: boolean) => void; loggedInPlayers: PlayerType[]; setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>; indexPlayerStat: number})
+function PlayerStats()
 {
+	const { loggedInPlayers, setLoggedInPlayers } = usePlayerContext();
+	const { setShowPlayerStats, indexPlayerStat } = useLoginContext();
 	return (
 		<AnimatePresence>
 			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -100,6 +102,7 @@ function PlayerStats( {setShowPlayerStats, loggedInPlayers, setLoggedInPlayers, 
 
 async function checkSubmit({ username, email, password, confirmPassword}: { username: string; email: string; password: string; confirmPassword: string; }, setPlayerCount: any, setIsLoading: (value: boolean) => void)
 {
+
 	setIsLoading(true);
 	let success = false;
     const startTime = Date.now();
@@ -167,13 +170,12 @@ async function checkLogin(
 }
 
 
-function SignUpModal({ setShowSignupModal, setPlayerCount, players, setShowLoginModal }: { setShowSignupModal: (value: boolean) => void; setPlayerCount: (value: number) => void; players: PlayerType[]; setShowLoginModal: (value: boolean) => void})
+function SignUpModal()
 {
-	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
-	const [emptyForm, setEmptyForm] = useState(true);
-	const [passwordConfirm, setPasswordConfirm] = useState(1);
-	const [alreadyExists, setAlreadyExists] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
+	const { players, setPlayerCount } = usePlayerContext();
+	const { setShowSignupModal, setShowLoginModal, setIsLoading } = useLoginContext();
+	const { formData, setFormData, emptyForm, setEmptyForm, passwordConfirm, setPasswordConfirm, alreadyExists, setAlreadyExists, isLoading } = useLoginContext();
+
 
 
 	return(
@@ -221,16 +223,11 @@ function SignUpModal({ setShowSignupModal, setPlayerCount, players, setShowLogin
 	)
 }
 
-interface LoginModalProps 
+function LoginModal()
 {
-	setShowLoginModal: (value: boolean) => void;
-	players: PlayerType[];
-	loggedInPlayers: PlayerType[];
-	setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>;
-}
+	const { loggedInPlayers, setLoggedInPlayers } = usePlayerContext();
+	const { setShowLoginModal } = useLoginContext();
 
-function LoginModal({ setShowLoginModal, players, loggedInPlayers, setLoggedInPlayers }: LoginModalProps)
-{
 	const [formData, setFormData] = useState({username: '', password: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
 	const [playerFound, setPlayerFound] = useState({
