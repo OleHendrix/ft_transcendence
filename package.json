@@ -4,12 +4,14 @@
     "reinstall": "rm -rf node_modules frontend/node_modules backend/node_modules package-lock.json frontend/package-lock.json backend/package-lock.json && npm install && npm install --prefix frontend && npm install --prefix backend"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "concurrently": "^8.2.2",
     "prisma": "^6.5.0"
   },
   "dependencies": {
     "@fastify/cors": "^11.0.0",
     "@prisma/client": "^6.5.0",
+    "bcrypt": "^5.1.1",
     "fastify": "^3.29.5",
     "fastify-bcrypt": "^1.0.1",
     "fastify-jwt": "^4.1.3",

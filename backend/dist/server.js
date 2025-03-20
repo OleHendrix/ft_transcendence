@@ -15,14 +15,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_1 = __importDefault(require("fastify"));
 const client_1 = require("@prisma/client");
 const cors_1 = __importDefault(require("@fastify/cors"));
+const fastify_jwt_1 = __importDefault(require("fastify-jwt"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const fastify = (0, fastify_1.default)();
 fastify.register(cors_1.default);
+fastify.register(fastify_jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
 const prisma = new client_1.PrismaClient();
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     return { message: 'Server is running!' };
 }));
 fastify.post('/api/addaccount', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, email, password } = request.body;
+    const hashedPassword = yield bcrypt_1.default.hash(password, 10);
     const existingAccount = yield prisma.account.findFirst({
         where: {
             OR: [{ username: username }, { email: email }]
@@ -38,13 +42,24 @@ fastify.post('/api/addaccount', (request, reply) => __awaiter(void 0, void 0, vo
         data: {
             username: username,
             email: email,
-            password: password,
+            password: hashedPassword,
             wins: 0,
             draws: 0,
             loses: 0
         }
     });
     return reply.send({ success: true, account: newAccount });
+}));
+fastify.post("/api/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    const user = yield prisma.account.findUnique({ where: { username } });
+    if (!user)
+        return res.status(400).send({ eror: "User not found" });
+    const validPassword = yield bcrypt_1.default.compare(password, user.password);
+    if (!validPassword)
+        return res.status(401).send({ error: "Incorrect password" });
+    const token = fastify.jwt.sign({ username: user.username, email: user.email }, { expiresIn: "1h" });
+    res.send({ success: true, token, user });
 }));
 fastify.get('/api/getplayers', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     try {
