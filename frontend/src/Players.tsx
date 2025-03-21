@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
-import { PlayerType, FormDataType, LoginFormType, PlayerFoundStatusType } from "./types"
+import { PlayerType, SignupFormType, LoginFormType, PlayerFoundStatusType } from "./types"
 import { usePlayerContext } from "./PlayerContext";
 import { useLoginContext } from "./LoginContext";
 import Loader from "./Loader";
@@ -110,7 +110,7 @@ function PlayerStats( {indexPlayerStats} : PlayerStatsProps)
 
 interface CheckSubmitProps
 {
-  formData: FormDataType;
+  formData: SignupFormType;
   setPlayerCount: React.Dispatch<React.SetStateAction<number>>;
   setIsLoading: (value: boolean) => void;
 }
@@ -197,8 +197,6 @@ function SignUpModal()
 	const [passwordConfirm, setPasswordConfirm] = useState(1);
 	const [alreadyExists, setAlreadyExists] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-
-	console.log('renderd');
 
 	return(
 	<AnimatePresence>

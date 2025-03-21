@@ -8,7 +8,7 @@ export interface PlayerType
 	loses: number;
 }
 
-export interface FormDataType
+export interface SignupFormType
 {
 	username: string;
 	email: string;
