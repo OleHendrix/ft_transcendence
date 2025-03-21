@@ -14,9 +14,7 @@ import axios from "axios";
 const Players = React.memo(function Players()
 {
 	const { loggedInPlayers } = usePlayerContext();
-	const { showSignupModal, setShowSignupModal, showLoginModal, showPlayerStats, setShowPlayerStats } = useLoginContext();
-
-	const [indexPlayerStats, setIndexPlayerStats] = useState(-1);
+	const { setShowSignupModal, setShowPlayerStats, setIndexPlayerStats } = useLoginContext();
 
 	return(
 		<>
@@ -32,9 +30,6 @@ const Players = React.memo(function Players()
 					{loggedInPlayers.length > 0 && (<p className="text-[12px] w-full text-center truncate invisible">placeholder</p>)}
 				</div>
 			</div>
-			{showSignupModal && (<SignUpModal />)}
-			{showLoginModal && (<LoginModal />)}
-			{showPlayerStats && (<PlayerStats indexPlayerStats={indexPlayerStats} />)}
 		</>
 	)
 })
@@ -44,7 +39,7 @@ interface PlayerStatsProps
   indexPlayerStats: number;
 }
 
-function PlayerStats( {indexPlayerStats} : PlayerStatsProps)
+export function PlayerStats( {indexPlayerStats} : PlayerStatsProps)
 {
 	const { loggedInPlayers, setLoggedInPlayers } = usePlayerContext();
 	const { setShowPlayerStats } = useLoginContext();
@@ -186,7 +181,7 @@ async function checkLogin( { formData, setLoggedInPlayers, setPlayerFound }  : C
 }
 
 
-function SignUpModal()
+export function SignUpModal()
 {
 	const { players, setPlayerCount } = usePlayerContext();
 	const { setShowSignupModal, setShowLoginModal } = useLoginContext();
@@ -243,7 +238,7 @@ function SignUpModal()
 	)
 }
 
-function LoginModal()
+export function LoginModal()
 {
 	const { loggedInPlayers, setLoggedInPlayers } = usePlayerContext();
 	const { setShowLoginModal } = useLoginContext();
