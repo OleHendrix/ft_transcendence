@@ -1,7 +1,7 @@
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
-import { PlayerType } from "./types"
+import { PlayerType, FormDataType, LoginFormType, PlayerFoundStatusType } from "./types"
 import { usePlayerContext } from "./PlayerContext";
 import { useLoginContext } from "./LoginContext";
 import Loader from "./Loader";
@@ -11,17 +11,19 @@ import Player2 from "./assets/Player2.svg";
 import PlayerAdd from "./assets/PlayerAdd.svg"
 import axios from "axios";
 
-function Players()
+const Players = React.memo(function Players()
 {
 	const { loggedInPlayers } = usePlayerContext();
-	const { showSignupModal, setShowSignupModal, showLoginModal, showPlayerStats, setShowPlayerStats, setIndexPlayerStat } = useLoginContext();
+	const { showSignupModal, setShowSignupModal, showLoginModal, showPlayerStats, setShowPlayerStats } = useLoginContext();
+
+	const [indexPlayerStats, setIndexPlayerStats] = useState(-1);
 
 	return(
 		<>
 			<div className="flex items-center">
 				{loggedInPlayers?.map((player, index) => 
 				<div className="flex items-center flex-col space-y-0.5 w-18">
-					<motion.img src={loggedInPlayers.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStat(index); setShowPlayerStats(true)}}/>
+					<motion.img src={loggedInPlayers.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStats(index); setShowPlayerStats(true)}}/>
 					<p className="text-[12px] opacity-35 w-full text-center truncate">{player.username}</p>
 				</div>
 				)}
@@ -32,15 +34,21 @@ function Players()
 			</div>
 			{showSignupModal && (<SignUpModal />)}
 			{showLoginModal && (<LoginModal />)}
-			{showPlayerStats && (<PlayerStats />)}
+			{showPlayerStats && (<PlayerStats indexPlayerStats={indexPlayerStats} />)}
 		</>
 	)
+})
+
+interface PlayerStatsProps
+{
+  indexPlayerStats: number;
 }
 
-function PlayerStats()
+function PlayerStats( {indexPlayerStats} : PlayerStatsProps)
 {
 	const { loggedInPlayers, setLoggedInPlayers } = usePlayerContext();
-	const { setShowPlayerStats, indexPlayerStat } = useLoginContext();
+	const { setShowPlayerStats } = useLoginContext();
+
 	return (
 		<AnimatePresence>
 			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -50,22 +58,22 @@ function PlayerStats()
 					</button>
 
 					<div className="flex flex-col items-center gap-2">
-						<h2 className="text-2xl font-bold text-center">{loggedInPlayers[indexPlayerStat]?.username}</h2>
-						<img src={loggedInPlayers.length > 2 ? Player : indexPlayerStat === 0 ? Player1 : indexPlayerStat === 1 ? Player2 : Player} className="h-16 w-auto"/>
+						<h2 className="text-2xl font-bold text-center">{loggedInPlayers[indexPlayerStats]?.username}</h2>
+						<img src={loggedInPlayers.length > 2 ? Player : indexPlayerStats === 0 ? Player1 : indexPlayerStats === 1 ? Player2 : Player} className="h-16 w-auto"/>
 					</div>
 
 					<div className="flex flex-col w-full text-left items-start space-y-4">
 						<div className="w-full">
 							<p className="block text-sm font-medium mb-1">Username</p>
-							<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStat]?.username}</p>
+							<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.username}</p>
 						</div>
 						<div className="w-full">
 							<p className="block text-sm font-medium mb-1">Email</p>
-							<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStat]?.email}</p>
+							<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.email}</p>
 						</div>
 						<div className="w-full">
 							<p className="block text-sm font-medium mb-1">Password</p>
-							<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{('').padStart(loggedInPlayers[indexPlayerStat]?.password.length, '*')}</p>
+							<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{('').padStart(loggedInPlayers[indexPlayerStats]?.password.length, '*')}</p>
 						</div>
 					</div>
 
@@ -74,22 +82,22 @@ function PlayerStats()
 						<div className="w-full grid grid-cols-3 gap-2 p-2 mt-2">
 							<div className="stat flex flex-col items-center">
 								<div className="stat-title text-green-800 font-black">Wins</div>
-								<div className="stat-value">{loggedInPlayers[indexPlayerStat]?.wins}</div>
+								<div className="stat-value">{loggedInPlayers[indexPlayerStats]?.wins}</div>
 							</div>
 							<div className="stat flex flex-col items-center">
 								<div className="stat-title font-black">Draws</div>
-								<div className="stat-value">{loggedInPlayers[indexPlayerStat]?.draws}</div>
+								<div className="stat-value">{loggedInPlayers[indexPlayerStats]?.draws}</div>
 							</div>
 							<div className="stat flex flex-col items-center">
 								<div className="stat-title text-red-800 font-black">Loses</div>
-								<div className="stat-value">{loggedInPlayers[indexPlayerStat]?.loses}</div>
+								<div className="stat-value">{loggedInPlayers[indexPlayerStats]?.loses}</div>
 							</div>
 						</div>
 					</div>
 					<motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer" whileHover={ {scale: 1.03}} whileTap={ {scale: 0.97}}
 					onClick={() =>
 					{
-						const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStat)
+						const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
 						setLoggedInPlayers(updatedPlayers);
 						localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
 						setShowPlayerStats(false)
@@ -100,9 +108,16 @@ function PlayerStats()
 	)
 }
 
-async function checkSubmit({ username, email, password, confirmPassword}: { username: string; email: string; password: string; confirmPassword: string; }, setPlayerCount: any, setIsLoading: (value: boolean) => void)
+interface CheckSubmitProps
 {
+  formData: FormDataType;
+  setPlayerCount: React.Dispatch<React.SetStateAction<number>>;
+  setIsLoading: (value: boolean) => void;
+}
 
+async function checkSubmit({ formData, setPlayerCount, setIsLoading}: CheckSubmitProps)
+{
+	const { username, email, password, confirmPassword } = formData;
 	setIsLoading(true);
 	let success = false;
     const startTime = Date.now();
@@ -132,15 +147,16 @@ async function checkSubmit({ username, email, password, confirmPassword}: { user
 	return success;
 }
 
-async function checkLogin(
-	{ username, password }: {username: string; password: string}, 
-	setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>, 
-	setPlayerFound: Dispatch<SetStateAction<{ 
-		'Already logged in': boolean; 
-		'Username not found': boolean; 
-		'Password incorrect': boolean; 
-	  }>>
-) {
+interface CheckLoginProps
+{
+  formData: LoginFormType;
+  setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>;
+  setPlayerFound: Dispatch<SetStateAction<PlayerFoundStatusType>>;
+}
+
+async function checkLogin( { formData, setLoggedInPlayers, setPlayerFound }  : CheckLoginProps)
+{
+	const {username, password } = formData;
 	try { 
 		console.log('check')
 		const response = await axios.post("http://localhost:5001/api/login", { username, password });
@@ -173,10 +189,16 @@ async function checkLogin(
 function SignUpModal()
 {
 	const { players, setPlayerCount } = usePlayerContext();
-	const { setShowSignupModal, setShowLoginModal, setIsLoading } = useLoginContext();
-	const { formData, setFormData, emptyForm, setEmptyForm, passwordConfirm, setPasswordConfirm, alreadyExists, setAlreadyExists, isLoading } = useLoginContext();
+	const { setShowSignupModal, setShowLoginModal } = useLoginContext();
 
 
+	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
+	const [emptyForm, setEmptyForm] = useState(true);
+	const [passwordConfirm, setPasswordConfirm] = useState(1);
+	const [alreadyExists, setAlreadyExists] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+
+	console.log('renderd');
 
 	return(
 	<AnimatePresence>
@@ -192,7 +214,7 @@ function SignUpModal()
 					<IoMdClose size={24} />
 				</button>
 				<h2 className="text-2xl font-bold mb-6 text-center">Create Your Account</h2>
-				<form className="space-y-4" onSubmit={(e) => {e.preventDefault(); checkSubmit(formData, setPlayerCount, setIsLoading).then(success => {if (success) {setShowSignupModal(false); setShowLoginModal(true);}})}}>
+				<form className="space-y-4" onSubmit={(e) => {e.preventDefault(); checkSubmit({formData, setPlayerCount, setIsLoading}).then(success => {if (success) {setShowSignupModal(false); setShowLoginModal(true);}})}}>
 					<div>
 						<label className="block text-sm font-medium mb-1">Username</label>
 						<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border ${alreadyExists ? 'border-[#ff914d] focus:border-[#ff914d]' : 'border-gray-600 focus:border-white'} focus:outline-none`} name="username" type="text" placeholder="Choose a username" 
@@ -230,7 +252,8 @@ function LoginModal()
 
 	const [formData, setFormData] = useState({username: '', password: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
-	const [playerFound, setPlayerFound] = useState({
+	const [playerFound, setPlayerFound] = useState(
+	{
 		'Already logged in': false, 
 		'Username not found': false, 
 		'Password incorrect': false
@@ -238,7 +261,8 @@ function LoginModal()
 
 	useEffect(() =>
 	{
-		setPlayerFound(prev => ({
+		setPlayerFound(prev => (
+		{
 			...prev,
 			'Already logged in': loggedInPlayers.some(player => player.username === formData.username),
 			'Username not found': false, 
@@ -261,7 +285,7 @@ function LoginModal()
 			onSubmit={async (e) => 
 			{
 				e.preventDefault(); 
-				const success = await checkLogin(formData, setLoggedInPlayers, setPlayerFound);
+				const success = await checkLogin({formData, setLoggedInPlayers, setPlayerFound});
 				if (success) setShowLoginModal(false); 
 			}} 
 		>
@@ -288,7 +312,6 @@ function LoginModal()
 				placeholder="Type your password"
 				onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
-
 			{playerFound['Already logged in'] && 
 			(
 				<div className="text-center text-sm text-[#ff914d]">

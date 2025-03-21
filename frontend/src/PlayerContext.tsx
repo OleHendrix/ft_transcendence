@@ -55,6 +55,6 @@ export function usePlayerContext()
 {
 	const context = useContext(PlayerContext);
 	if (!context)
-		throw new Error("You didn't use it the right way my guy");
+		throw new Error("Error");
 	return context;
 }

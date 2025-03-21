@@ -7,7 +7,7 @@ import { usePlayerContext } from "./PlayerContext";
 
 function Navbar()
 {
-  const { players, setPlayerCount, loggedInPlayers, setLoggedInPlayers, setIsPlaying } = usePlayerContext();
+  const { setIsPlaying } = usePlayerContext();
 	return (
     <>
       <nav className="bg-[#313131] text-white h-[8vh] p-5 px-[6vw] flex justify-between items-center shadow-xl text-lg font-medium">

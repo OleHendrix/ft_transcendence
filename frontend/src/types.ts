@@ -8,6 +8,27 @@ export interface PlayerType
 	loses: number;
 }
 
+export interface FormDataType
+{
+	username: string;
+	email: string;
+	password: string;
+	confirmPassword: string;
+};
+
+export interface LoginFormType
+{
+	username: string;
+	password: string;
+}
+
+export interface PlayerFoundStatusType
+{
+  'Already logged in': boolean;
+  'Username not found': boolean; 
+  'Password incorrect': boolean;
+}
+
 export interface Vec2
 {
 	x: number;
