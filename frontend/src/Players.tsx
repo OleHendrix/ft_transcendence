@@ -34,15 +34,10 @@ const Players = React.memo(function Players()
 	)
 })
 
-interface PlayerStatsProps
-{
-  indexPlayerStats: number;
-}
-
-export function PlayerStats( {indexPlayerStats} : PlayerStatsProps)
+export function PlayerStats()
 {
 	const { loggedInPlayers, setLoggedInPlayers } = usePlayerContext();
-	const { setShowPlayerStats } = useLoginContext();
+	const { setShowPlayerStats, indexPlayerStats } = useLoginContext();
 
 	return (
 		<AnimatePresence>
