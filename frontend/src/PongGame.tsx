@@ -127,16 +127,20 @@ function PongGame()
 	function managePaddle(paddle: Paddle, dirY: number, setPaddle: React.Dispatch<React.SetStateAction<Paddle>>)
 	{
 		const halfSize = paddle.size.y / 2;
+		dirY = s.FRICTION * paddle.dir.y + s.VELOCITY * dirY;
 
-		setPaddle(prev => ({ ...prev,
-			pos: { ...prev.pos, y: prev.pos.y + prev.dir.y },
-			dir: { ...prev.dir, y: s.FRICTION * prev.dir.y + s.VELOCITY * dirY  }
-		}));
-		if (paddle.pos.y < halfSize || paddle.pos.y > 100 - halfSize)
+		if (paddle.pos.y + dirY < halfSize || paddle.pos.y + dirY > 100 - halfSize)
 		{
 			setPaddle(prev => ({ ...prev,
 				pos: { ...prev.pos, y: (prev.pos.y < 50) ? halfSize : 100 - halfSize },
 				dir: { ...prev.dir, y: 0 },
+			}));
+		}
+		else
+		{
+			setPaddle(prev => ({ ...prev,
+				pos: { ...prev.pos, y: prev.pos.y + prev.dir.y },
+				dir: { ...prev.dir, y: dirY },
 			}));
 		}
 	}
@@ -194,15 +198,26 @@ function PongGame()
 		return () => { cancelAnimationFrame(animationId); };
 	}, [keysPressed, ball.pos.x, ball.pos.y, ball.dir.x, ball.dir.y, p1.pos.y, p2.pos.y]);
 
+	const textSize: number = 1250 - Math.max(p1Score.toString().length, p2Score.toString().length, 1) * 250;
+	console.log(textSize);
+
 	return(
 		<div className="w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0">
 			<div className="relative w-full h-full">
 				<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 					<div className="h-full w-1/2 flex justify-center items-center">
-						<h1 className="text-[#ff914d] opacity-5">{p1Score}</h1>
+						<h1 className={`opacity-5`} style=
+						{{
+							color: p1.colour,
+							fontSize: textSize,
+						}}>{p1Score}</h1>
 					</div>
 					<div className="h-full w-1/2 flex justify-center items-center">
-						<h1 className="text-[#134588] opacity-10">{p2Score}</h1>
+					<h1 className={`opacity-7`} style=
+						{{
+							color: p2.colour,
+							fontSize: textSize,
+						}}>{p2Score}</h1>
 					</div>
 				</div>
 	
