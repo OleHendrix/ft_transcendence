@@ -22,7 +22,7 @@ export interface LoginFormType
 	password: string;
 }
 
-export interface PlayerFoundStatusType
+export interface LoginValidationType
 {
   'Already logged in': boolean;
   'Username not found': boolean; 

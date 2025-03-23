@@ -55,6 +55,14 @@ function SignUpModal()
 	const [passwordConfirm, setPasswordConfirm] = useState(1);
 	const [alreadyExists, setAlreadyExists] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	// const [validation, setValidation] = useState(
+	// {
+	// 	'Already logged in': false,
+	// 	'Username exists': false,
+	// 	'Email exists': false,
+	// 	'Password don\'t matches': false,
+	// 	'Password matches!': false,
+	// });
 
 	useEffect(() =>
 	{

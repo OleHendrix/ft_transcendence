@@ -1,7 +1,7 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
-import { PlayerType, LoginFormType, PlayerFoundStatusType } from "./types"
+import { PlayerType, LoginFormType, LoginValidationType } from "./types"
 import { usePlayerContext } from "./contexts/PlayerContext";
 import { useLoginContext } from "./contexts/LoginContext";
 import axios from "axios";
@@ -10,10 +10,10 @@ interface CheckLoginProps
 {
   formData: LoginFormType;
   setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>;
-  setPlayerFound: Dispatch<SetStateAction<PlayerFoundStatusType>>;
+  setValidation: Dispatch<SetStateAction<LoginValidationType>>;
 }
 
-async function checkLogin( { formData, setLoggedInPlayers, setPlayerFound }  : CheckLoginProps)
+async function checkLogin( { formData, setLoggedInPlayers, setValidation }  : CheckLoginProps)
 {
 	const {username, password } = formData;
 	try
@@ -36,9 +36,9 @@ async function checkLogin( { formData, setLoggedInPlayers, setPlayerFound }  : C
 	catch (error: any)
 	{
 		if (error.response?.status === 400)
-			setPlayerFound(prev => ({...prev, ['Username not found']: true}));
+			setValidation(prev => ({...prev, ['Username not found']: true}));
 		else if (error.response?.status === 401)
-			setPlayerFound(prev => ({...prev, ['Password incorrect']: true}));
+			setValidation(prev => ({...prev, ['Password incorrect']: true}));
 		return false;
 	}
 }
@@ -50,7 +50,7 @@ function LoginModal()
 
 	const [formData, setFormData] = useState({username: '', password: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
-	const [playerFound, setPlayerFound] = useState(
+	const [validation, setValidation] = useState(
 	{
 		'Already logged in': false, 
 		'Username not found': false, 
@@ -59,7 +59,7 @@ function LoginModal()
 
 	useEffect(() =>
 	{
-		setPlayerFound(prev => (
+		setValidation(prev => (
 		{
 			...prev,
 			'Already logged in': loggedInPlayers.some(player => player.username === formData.username),
@@ -83,15 +83,15 @@ function LoginModal()
 			onSubmit={async (e) => 
 			{
 				e.preventDefault(); 
-				const success = await checkLogin({formData, setLoggedInPlayers, setPlayerFound});
+				const success = await checkLogin({formData, setLoggedInPlayers, setValidation});
 				if (success) setShowLoginModal(false); 
 			}} 
 		>
 			<div>
 				<label className="block text-sm font-medium mb-1">Username</label>
 				<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border 
-					${Object.values(playerFound).every((value) => !value) ? 'border-gray-600 focus:border-white' 
-					: playerFound['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
+					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
+					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
 					: 'border-red-800'} focus:outline-none`} 
 					name="username" type="text" placeholder="Type your username"
 					onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
@@ -100,36 +100,36 @@ function LoginModal()
 			<div>
 				<label className="block text-sm font-medium mb-1">Password</label>
 				<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border 
-					${Object.values(playerFound).every((value) => !value) ? 'border-gray-600 focus:border-white' 
-					: playerFound['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
+					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
+					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
 					: 'border-red-800'} focus:outline-none`} 
 					name="password" type="password" placeholder="Type your password"
 					onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
-			{playerFound['Already logged in'] && 
+			{validation['Already logged in'] && 
 			(
 				<div className="text-center text-sm text-[#ff914d]">
 					<p>You're already logged in!</p>
 				</div>
 			)}
-			{playerFound['Username not found'] && 
+			{validation['Username not found'] && 
 			(
 				<div className="text-center text-sm text-red-500">
 					<p>Username not found, please try again.</p>
 				</div>
 			)}
-			{playerFound['Password incorrect'] && 
+			{validation['Password incorrect'] && 
 			(
-				<div className="text-center text-sm text-[#ff914d]">
+				<div className="text-center text-sm text-red-500">
 					<p>Invalid Password</p>
 				</div>
 			)}
 			<div className="pt-2">
 				<motion.button className={`w-full bg-[#ff914d] text-white py-2 px-4 rounded-3xl font-bold transition-colors shadow-2xl 
-					${(!emptyForm && Object.values(playerFound).every((value) => !value)) ? 'hover:bg-[#ab5a28] hover:cursor-pointer' : 'opacity-30'}`} 
-					whileHover={(!emptyForm && Object.values(playerFound).every((value) => !value)) ? {scale: 1.03} : {}} 
-					whileTap={(!emptyForm && Object.values(playerFound).every((value) => !value)) ? {scale: 0.97} : {}}  
-					type="submit" disabled={emptyForm || Object.values(playerFound).some((value) => value)}>Login</motion.button>
+					${(!emptyForm && Object.values(validation).every((value) => !value)) ? 'hover:bg-[#ab5a28] hover:cursor-pointer' : 'opacity-30'}`} 
+					whileHover={(!emptyForm && Object.values(validation).every((value) => !value)) ? {scale: 1.03} : {}} 
+					whileTap={(!emptyForm && Object.values(validation).every((value) => !value)) ? {scale: 0.97} : {}}  
+					type="submit" disabled={emptyForm || Object.values(validation).some((value) => value)}>Login</motion.button>
 			</div>
 		</form>
 		</div>
