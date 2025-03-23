@@ -15,7 +15,8 @@ function PlayerStats()
 		<AnimatePresence>
 			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 				<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-full max-w-md relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
-					<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer" onClick={() => setShowPlayerStats(false)}>
+					<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
+						onClick={() => setShowPlayerStats(false)}>
 						<IoMdClose size={24} />
 					</button>
 
@@ -56,14 +57,17 @@ function PlayerStats()
 							</div>
 						</div>
 					</div>
-					<motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer" whileHover={ {scale: 1.03}} whileTap={ {scale: 0.97}}
-					onClick={() =>
-					{
-						const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
-						setLoggedInPlayers(updatedPlayers);
-						localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
-						setShowPlayerStats(false)
-					}}>Logout</motion.button> 
+					<motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
+						whileHover={ {scale: 1.03}}
+						whileTap={ {scale: 0.97}}
+						onClick={() =>
+						{
+							const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
+							setLoggedInPlayers(updatedPlayers);
+							localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
+							setShowPlayerStats(false)
+						}}>Logout
+					</motion.button> 
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>
