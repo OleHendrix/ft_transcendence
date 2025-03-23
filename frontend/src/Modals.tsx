@@ -1,16 +1,17 @@
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { useLoginContext } from "./LoginContext";
-import { SignUpModal, LoginModal, PlayerStats } from "./Players";
+import { useLoginContext } from "./contexts/LoginContext";
+import SignUpModal from "./SignUpModal";
+import LoginModal from "./LoginModal";
+import PlayerStats from "./Playerstats";
 
 function Modals()
 {
-	const { showSignupModal, showLoginModal, showPlayerStats, indexPlayerStats } = useLoginContext();
+	const { showSignUpModal, showLoginModal, showPlayerStats, indexPlayerStats } = useLoginContext();
 
 	return (
 		<>
-			{showSignupModal && <SignUpModal />}
+			{showSignUpModal && <SignUpModal />}
 			{showLoginModal && <LoginModal />}
-			{showPlayerStats && <PlayerStats indexPlayerStats={indexPlayerStats} />}
+			{showPlayerStats && <PlayerStats />}
 		</>
 	);
 }

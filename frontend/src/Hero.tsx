@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { RiGamepadLine } from "react-icons/ri";
 import { TbTournament } from "react-icons/tb";
-import { usePlayerContext } from "./PlayerContext";
+import { usePlayerContext } from "./contexts/PlayerContext";
 import Players from "./Players";
-import "./ponganimation.css";
+import "./css/ponganimation.css";
 
 function SimplePong()
 {

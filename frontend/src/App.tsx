@@ -2,9 +2,9 @@ import Navbar from "./Navbar";
 import Hero from "./Hero";
 import Modals from "./Modals";
 import PongGame from "./PongGame";
-import './index.css'
-import { PlayerProvider, usePlayerContext } from './PlayerContext';
-import { LoginProvider } from "./LoginContext";
+import './css/index.css'
+import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
+import { LoginProvider } from "./contexts/LoginContext";
 
 function MainContent()
 {

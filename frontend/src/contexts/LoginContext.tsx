@@ -2,8 +2,8 @@ import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, 
 
 type LoginContextType = 
 {
-	showSignupModal: boolean;
-	setShowSignupModal: Dispatch<SetStateAction<boolean>>;
+	showSignUpModal: boolean;
+	setShowSignUpModal: Dispatch<SetStateAction<boolean>>;
 	showLoginModal: boolean;
 	setShowLoginModal: Dispatch<SetStateAction<boolean>>;
 	showPlayerStats: boolean;
@@ -16,7 +16,7 @@ const LoginContext = createContext<LoginContextType | null>(null);
 
 export function LoginProvider({ children }: {children: ReactNode})
 {
-	const [showSignupModal, setShowSignupModal] = useState(false);
+	const [showSignUpModal, setShowSignUpModal] = useState(false);
 	const [showLoginModal, setShowLoginModal] = useState(false);
 	const [showPlayerStats, setShowPlayerStats] = useState(false);
 	const [indexPlayerStats, setIndexPlayerStats] = useState(-1);
@@ -24,11 +24,11 @@ export function LoginProvider({ children }: {children: ReactNode})
 
 	const value = useMemo(() => (
 	{
-		showSignupModal, setShowSignupModal,
+		showSignUpModal, setShowSignUpModal,
 		showLoginModal, setShowLoginModal,
 		showPlayerStats, setShowPlayerStats,
 		indexPlayerStats, setIndexPlayerStats
-	}), [showSignupModal, showLoginModal, showPlayerStats, indexPlayerStats, setIndexPlayerStats]);
+	}), [showSignUpModal, showLoginModal, showPlayerStats, indexPlayerStats, setIndexPlayerStats]);
 
 	return (
 		<LoginContext.Provider value={value}>

@@ -1,9 +1,7 @@
-import { Dispatch, SetStateAction } from "react";
 import logo from "./assets/Logo.png";
 import Players from "./Players";
 import Logo42 from "./assets/Logo42.svg"
-import { PlayerType } from "./types"
-import { usePlayerContext } from "./PlayerContext";
+import { usePlayerContext } from "./contexts/PlayerContext";
 
 function Navbar()
 {
