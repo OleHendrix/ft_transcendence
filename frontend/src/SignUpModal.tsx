@@ -47,25 +47,32 @@ async function checkSubmit({ formData, setPlayerCount, setIsLoading}: CheckSubmi
 
 function SignUpModal()
 {
-	const { players, setPlayerCount } = usePlayerContext();
+	const { players, setPlayerCount, loggedInPlayers } = usePlayerContext();
 	const { setShowSignUpModal, setShowLoginModal } = useLoginContext();
 
 	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
-	const [passwordConfirm, setPasswordConfirm] = useState(1);
-	const [alreadyExists, setAlreadyExists] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	// const [validation, setValidation] = useState(
-	// {
-	// 	'Already logged in': false,
-	// 	'Username exists': false,
-	// 	'Email exists': false,
-	// 	'Password don\'t matches': false,
-	// 	'Password matches!': false,
-	// });
+	const [validation, setValidation] = useState(
+	{
+		'Already logged in': false,
+		'Username exists': false,
+		'Email exists': false,
+		'Password don\'t matches': false,
+		'Password matches!': false
+	});
 
 	useEffect(() =>
 	{
+		setValidation(prev => (
+		{
+			...prev,
+			'Already logged in': (loggedInPlayers.some(player => player.username === formData.username) || loggedInPlayers.some(player => player.email === formData.email)),
+			'Username exists': players.some(player => player.username === formData.username),
+			'Email exists': players.some(player => player.email === formData.email),
+			'Password don\'t matches': (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) ? true : false,
+			'Password matches!': (formData.password && formData.confirmPassword && formData.password === formData.confirmPassword) ? true : false
+		}));
 		setEmptyForm(Object.values(formData).some(field => field === ""))
 	}, [formData]);
 
@@ -100,56 +107,46 @@ function SignUpModal()
 					<div>
 						<label className="block text-sm font-medium mb-1">Username</label>
 						<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-							${alreadyExists ? 'border-[#ff914d] focus:border-[#ff914d]'
+							${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
 							: 'border-gray-600 focus:border-white'} focus:outline-none`}
 							name="username" type="text" placeholder="Choose a username" 
-							onChange={(e) =>
-							{
-								players.some(player => player.username === e.target.value) ? setAlreadyExists(true) : setAlreadyExists(false);
-								setFormData({...formData, [e.target.name]: e.target.value});
-							}}/>
+							onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
 					</div>
 					<div>
 						<label className="block text-sm font-medium mb-1">Email</label>
 						<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-							${alreadyExists ? 'border-[#ff914d] focus:border-[#ff914d]'
+							${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
 							: 'border-gray-600 focus:border-white'} focus:outline-none`}
 							name="email" type="email" placeholder="Enter your email"
-							onChange={(e) => 
-							{
-								players.some(player => player.email === e.target.value) ? setAlreadyExists(true) : setAlreadyExists(false);
-								setFormData({...formData, [e.target.name]: e.target.value});
-							}}/>
+							onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
 					</div>
 					<div>
 						<label className="block text-sm font-medium mb-1">Password</label>
 						<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-							${alreadyExists ? 'border-[#ff914d] focus:border-[#ff914d]'
-							: !passwordConfirm ? 'border-red-800'
-							: passwordConfirm === 2 ? 'border-green-500'
+							${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
+							: validation['Password don\'t matches'] ? 'border-red-800'
+							: validation['Password matches!'] ? 'border-green-500'
 							: 'border-gray-600 focus:border-white'}  focus:outline-none`}
 							name="password" type="password" placeholder="Create a password"
-							onChange={(e) => 
-							{
-								(!e.target.value || e.target.value !== formData.confirmPassword) ? setPasswordConfirm(0) : setPasswordConfirm(2);
-								setFormData({...formData, [e.target.name]: e.target.value});
-							}}/>
+							onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
 					</div>
 					<div>
 						<label className="block text-sm font-medium mb-1">Confirm Password</label>
 						<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-							${alreadyExists ? 'border-[#ff914d] focus:border-[#ff914d]'
-							: !passwordConfirm ? 'border-red-800'
-							: passwordConfirm === 2 ? 'border-green-500'
+							${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
+							: validation['Password don\'t matches'] ? 'border-red-800'
+							: validation['Password matches!'] ? 'border-green-500'
 							: 'border-gray-600 focus:border-white'} focus:outline-none`}
 							name="confirmPassword" type="password" placeholder="Confirm your password"
-							onChange={(e) =>
-							{
-								(!e.target.value || e.target.value !== formData.password) ? setPasswordConfirm(0) : setPasswordConfirm(2);
-								setFormData({...formData, [e.target.name]: e.target.value});
-							}}/>
+							onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
 					</div>
-					{alreadyExists &&
+					{validation['Already logged in'] && 
+					(
+						<motion.div className="text-center text-sm text-[#ff914d] font-bold" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+							<p>You're already logged in!</p>
+						</motion.div>
+					)}
+					{((validation['Username exists'] || validation['Email exists']) && !validation['Already logged in']) &&
 					(
 						<motion.div className="flex flex-col text-center text-sm gap-2" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
 							<p>Account already exists</p>
@@ -163,14 +160,14 @@ function SignUpModal()
 					)}
 					<div className="pt-2">
 						<motion.button className={`w-full bg-[#ff914d]
-							${(emptyForm || alreadyExists || passwordConfirm !== 2) ? 'opacity-30'
+							${(emptyForm || validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches']) ? 'opacity-30'
 							: 'hover:bg-[#ab5a28] hover:cursor-pointer'} text-white py-2 px-4 rounded-3xl font-bold transition-colors shadow-2xl`}
-							type="submit" disabled={emptyForm || alreadyExists || passwordConfirm !== 2}
-							whileHover={!(emptyForm || alreadyExists || passwordConfirm !== 2) ? { scale: 1.03 } : {}}
-							whileTap={!(emptyForm || alreadyExists || passwordConfirm !== 2) ? { scale: 0.97 } : {}}>Sign Up
+							type="submit" disabled={(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches'])}
+							whileHover={!(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches']) ? { scale: 1.03 } : {}}
+							whileTap={!(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches']) ? { scale: 0.97 } : {}}>Sign Up
 						</motion.button>
 					</div>
-					{!alreadyExists &&
+					{!(validation['Already logged in'] && validation['Username exists'] || validation['Email exists']) &&
 					(
 						<motion.div className="text-center text-sm text-gray-400 mt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
 							Already have an account?{" "} 
