@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import fastifyCors from '@fastify/cors';
 import fastifyJwt from 'fastify-jwt';
 import bcrypt from 'bcrypt';
+import setupTotp from './authenticator/setupTotp';
+import verifyTotp from './authenticator/verifyTotp';
 // import dotenv from 'dotenv';
 
 const fastify = Fastify();
@@ -16,6 +18,9 @@ interface AddAccountRequest
 	email: string;
 	password: string;
 }
+
+setupTotp(fastify);
+verifyTotp(fastify);
 
 fastify.get('/', async (request, reply) =>
 {
@@ -95,3 +100,5 @@ fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) =>
 	}
 	console.log(`Server running at ${address}`);
 });
+
+export default prisma
