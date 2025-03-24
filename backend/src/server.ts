@@ -3,12 +3,16 @@ import { PrismaClient } from '@prisma/client';
 import fastifyCors from '@fastify/cors';
 import fastifyJwt from 'fastify-jwt';
 import bcrypt from 'bcrypt';
+import { setupChat } from './chat';
 // import dotenv from 'dotenv';
 
 const fastify = Fastify();
+const prisma = new PrismaClient();
+
 fastify.register(fastifyCors);
 fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
-const prisma = new PrismaClient();
+
+setupChat(fastify);
 
 interface AddAccountRequest
 {

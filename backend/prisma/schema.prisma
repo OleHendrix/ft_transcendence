@@ -7,13 +7,37 @@ datasource db {
   url      = "file:./database.db"
 }
 
-
 model Account {
-  id       Int  @id @default(autoincrement())
-  email    String  @unique
-  username String  @unique
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  username String @unique
   password String
   wins     Int    @default(0)
   draws    Int    @default(0)
   loses    Int    @default(0)
+
+  account1ChatSessions ChatSession[] @relation("account1ChatSessions")
+  account2ChatSessions ChatSession[] @relation("account2ChatSessions")
+}
+
+model ChatSession {
+  id         Int      @id @default(autoincrement())
+  account1Id Int
+  account2Id Int
+  account1   Account  @relation("account1ChatSessions", fields: [account1Id], references: [id])
+  account2   Account  @relation("account2ChatSessions", fields: [account2Id], references: [id])
+  messages   Message[]
+  createdAt  DateTime @default(now())
+}
+
+model Message {
+  id            Int      @id @default(autoincrement())
+  content       String
+  timestamp     DateTime @default(now())
+  senderId      Int
+  receiverId    Int
+  sender        Account  @relation("SentMessages", fields: [senderId], references: [id])
+  receiver      Account  @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  chatSessionId Int
+  chatSession   ChatSession @relation(fields: [chatSessionId], references: [id])
 }
