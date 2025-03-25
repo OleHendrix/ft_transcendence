@@ -36,18 +36,51 @@ function setupChat(server) {
                 globalChatClients.delete(connection);
             });
         });
-        server.get("/chat/private/:receiverId", { websocket: true }, (connection, req) => {
+        server.get("/chat/private/:receiverId", { websocket: true }, (connection, req) => __awaiter(this, void 0, void 0, function* () {
             const senderId = req.headers["x-user-id"];
             const { receiverId } = req.params;
-            console.log('New WebSocket connection for private chat with user ${receiverId');
+            console.log(`New WebSocket connection for private chat with user ${receiverId}`);
+            // const isBlocked = await prisma.block.findFirst({
+            // 	where: { blockerId: Number(receiverId), blockedId: Number(senderId) }
+            // });
+            // if (isBlocked) {
+            // 	console.log(`User ${senderId} is blocked bij ${receiverId}, closing connection`);
+            // 	connection.socket.send("You are blocked by this user");
+            // 	connection.socket.close();
+            // 	return ;
+            // }
+            let chatSession = yield prisma.chatSession.findFirst({
+                where: {
+                    OR: [
+                        { account1Id: Number(senderId), account2Id: Number(receiverId) },
+                        { account1Id: Number(receiverId), account2Id: Number(senderId) }
+                    ]
+                }
+            });
+            if (!chatSession) {
+                chatSession = yield prisma.chatSession.create({
+                    data: {
+                        account1Id: Number(senderId),
+                        account2Id: Number(receiverId)
+                    }
+                });
+            }
             connection.socket.on("message", (message) => __awaiter(this, void 0, void 0, function* () {
-                console.log('Received private message from ${senderId} to ${receiverId}:', message);
-                connection.socket.sent('message sent to user ${receiverId} to ${senderId}:', message);
+                console.log(`Received private message from ${senderId} to ${receiverId}:`, message);
+                yield prisma.message.create({
+                    data: {
+                        content: message,
+                        senderId: Number(senderId),
+                        receiverId: Number(receiverId),
+                        chatSessionId: chatSession.id
+                    }
+                });
+                connection.socket.send('message sent to user ${receiverId} to ${senderId}:', message);
             }));
             connection.socket.on("close", () => {
                 console.log("Connection closed for private chat");
             });
-        });
+        }));
         // Chat message sending route (not WebSocket yet)
         server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { senderId, receiverId, content } = request.body;

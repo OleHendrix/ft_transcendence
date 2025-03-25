@@ -7,7 +7,8 @@ const globalChatClients: Set<any> = new Set();
 
 interface PrivateChatParams {
 	receiverId: string;
-  }
+}
+
 
 export async function setupChat(server: FastifyInstance) {
 	server.register(fastifyWebsocket);
@@ -33,16 +34,55 @@ export async function setupChat(server: FastifyInstance) {
 		});
 	});
 
-	server.get("/chat/private/:receiverId", { websocket: true}, (connection, req) => {
-		const senderId = req.headers["x-user-id"];
+	server.get("/chat/private/:receiverId", { websocket: true}, async (connection, req) => {
+		const senderId = req.headers["x-user-id"] as string;
 		const { receiverId } = req.params as PrivateChatParams;
 
-		console.log('New WebSocket connection for private chat with user ${receiverId');
+		console.log(`New WebSocket connection for private chat with user ${receiverId}`);
+
+
+		// const isBlocked = await prisma.block.findFirst({
+		// 	where: { blockerId: Number(receiverId), blockedId: Number(senderId) }
+		// });
+
+		// if (isBlocked) {
+		// 	console.log(`User ${senderId} is blocked bij ${receiverId}, closing connection`);
+		// 	connection.socket.send("You are blocked by this user");
+		// 	connection.socket.close();
+		// 	return ;
+		// }
+
+		let chatSession = await prisma.chatSession.findFirst({
+			where: {
+				OR: [
+					{ account1Id: Number(senderId), account2Id: Number(receiverId) },
+					{ account1Id: Number(receiverId), account2Id: Number(senderId) }
+				]
+			}
+		});
+
+		if (!chatSession) {
+			chatSession = await prisma.chatSession.create({
+				data: {
+					account1Id: Number(senderId),
+					account2Id: Number(receiverId)
+				}
+			});
+		}
 
 		connection.socket.on("message", async (message: string) => {
-			console.log('Received private message from ${senderId} to ${receiverId}:', message);
+			console.log(`Received private message from ${senderId} to ${receiverId}:`, message);
+			
+			await prisma.message.create({
+				data: {
+					content: message,
+					senderId: Number(senderId),
+					receiverId: Number(receiverId),
+					chatSessionId: chatSession.id
+				}
+			});
 
-			connection.socket.sent('message sent to user ${receiverId} to ${senderId}:', message);
+			connection.socket.send('message sent to user ${receiverId} to ${senderId}:', message);
 		});
 
 		connection.socket.on("close", () => {
