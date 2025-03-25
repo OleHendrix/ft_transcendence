@@ -1,7 +1,7 @@
 import { useLoginContext } from "./contexts/LoginContext";
 import SignUpModal from "./SignUpModal";
 import LoginModal from "./LoginModal";
-import PlayerStats from "./Playerstats";
+import PlayerInfo from "./PlayerInfo";
 
 function Modals()
 {
@@ -11,7 +11,7 @@ function Modals()
 		<>
 			{showSignUpModal && <SignUpModal />}
 			{showLoginModal && <LoginModal />}
-			{showPlayerStats && <PlayerStats />}
+			{showPlayerStats && <PlayerInfo />}
 		</>
 	);
 }

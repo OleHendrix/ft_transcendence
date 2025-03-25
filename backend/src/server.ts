@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import fastifyCors from '@fastify/cors';
 import fastifyJwt from 'fastify-jwt';
 import bcrypt from 'bcrypt';
+import setupTotp from './authenticator/setupTotp';
+import verifyTotp from './authenticator/verifyTotp';
 import { setupChat } from './chat';
 // import dotenv from 'dotenv';
 
@@ -90,12 +92,22 @@ fastify.get('/api/getplayers', async (request, reply) =>
 	}
 });
 
-fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) =>
+const start = async () =>
 {
-	if (err)
+	await setupTotp(fastify);
+	await verifyTotp(fastify);
+
+	fastify.listen({ port: 5001, host: 'localhost' }, (err, address) =>
 	{
-		console.error(err);
-		process.exit(1);
-	}
-	console.log(`Server running at ${address}`);
-});
+		if (err)
+		{
+			console.error(err);
+			process.exit(1);
+		}
+		console.log(`Server running at ${address}`);
+	});
+}
+
+start();
+
+export default prisma

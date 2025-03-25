@@ -1,0 +1,29 @@
+import { FastifyInstance } from "fastify";
+import speakeasy from 'speakeasy';
+import prisma from '../server';
+import qrcode from 'qrcode';
+
+export default async function setupTotp(fastify: FastifyInstance)
+{
+	fastify.post('/api/auth/setup-totp', async (req, reply) =>
+	{
+		const { username } = req.body as { username: string };
+		console.log('username:', username);
+
+		const account = await prisma.account.findUnique({ where: { username } });
+		if (!account)
+			return reply.code(404).send({ message: 'User not found'});
+
+		const secret = speakeasy.generateSecret({ name: 'NextBall' });
+
+		await prisma.account.update(
+			{
+				where: { username },
+				data: { totpSecret: secret.base32 }
+			});
+		
+		const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url || '');
+
+		return reply.send({ qrCodeUrl });
+	});
+}

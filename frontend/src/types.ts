@@ -28,6 +28,7 @@ export interface LoginValidationType
   'Already logged in': boolean;
   'Username not found': boolean; 
   'Password incorrect': boolean;
+  '2FA Code incorrect': boolean;
 }
 
 export interface Vec2

@@ -17,6 +17,8 @@ const client_1 = require("@prisma/client");
 const cors_1 = __importDefault(require("@fastify/cors"));
 const fastify_jwt_1 = __importDefault(require("fastify-jwt"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const setupTotp_1 = __importDefault(require("./authenticator/setupTotp"));
+const verifyTotp_1 = __importDefault(require("./authenticator/verifyTotp"));
 const chat_1 = require("./chat");
 // import dotenv from 'dotenv';
 const fastify = (0, fastify_1.default)();
@@ -73,10 +75,16 @@ fastify.get('/api/getplayers', (request, reply) => __awaiter(void 0, void 0, voi
         return reply.status(500).send({ error: 'Error getting players from database' });
     }
 }));
-fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {
-    if (err) {
-        console.error(err);
-        process.exit(1);
-    }
-    console.log(`Server running at ${address}`);
+const start = () => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, setupTotp_1.default)(fastify);
+    yield (0, verifyTotp_1.default)(fastify);
+    fastify.listen({ port: 5001, host: 'localhost' }, (err, address) => {
+        if (err) {
+            console.error(err);
+            process.exit(1);
+        }
+        console.log(`Server running at ${address}`);
+    });
 });
+start();
+exports.default = prisma;

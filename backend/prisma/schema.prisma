@@ -8,13 +8,14 @@ datasource db {
 }
 
 model Account {
-  id        Int        @id @default(autoincrement())
-  email     String     @unique
-  username  String     @unique
-  password  String
-  wins      Int        @default(0)
-  draws     Int        @default(0)
-  loses     Int        @default(0)
+  id          Int        @id @default(autoincrement())
+  email       String     @unique
+  username    String     @unique
+  password    String
+  totpSecret String?
+  wins        Int        @default(0)
+  draws       Int        @default(0)
+  loses       Int        @default(0)
 
   Blocks                Block[]          @relation("Blocks")
   BlockedBy             Block[]          @relation("BlockedBy")
