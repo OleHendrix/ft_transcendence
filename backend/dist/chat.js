@@ -36,51 +36,74 @@ function setupChat(server) {
                 globalChatClients.delete(connection);
             });
         });
-        server.get("/chat/private/:receiverId", { websocket: true }, (connection, req) => __awaiter(this, void 0, void 0, function* () {
-            const senderId = req.headers["x-user-id"];
-            const { receiverId } = req.params;
-            console.log(`New WebSocket connection for private chat with user ${receiverId}`);
-            // const isBlocked = await prisma.block.findFirst({
-            // 	where: { blockerId: Number(receiverId), blockedId: Number(senderId) }
-            // });
-            // if (isBlocked) {
-            // 	console.log(`User ${senderId} is blocked bij ${receiverId}, closing connection`);
-            // 	connection.socket.send("You are blocked by this user");
-            // 	connection.socket.close();
-            // 	return ;
-            // }
+        server.get("/api/get-messages", (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { senderId, receiverId } = request.query;
+            const senderIdNum = parseInt(senderId);
+            const receiverIdNum = parseInt(receiverId);
             let chatSession = yield prisma.chatSession.findFirst({
                 where: {
                     OR: [
-                        { account1Id: Number(senderId), account2Id: Number(receiverId) },
-                        { account1Id: Number(receiverId), account2Id: Number(senderId) }
+                        { account1Id: senderIdNum, account2Id: receiverIdNum },
+                        { account1Id: receiverIdNum, account2Id: senderIdNum }
                     ]
                 }
             });
             if (!chatSession) {
                 chatSession = yield prisma.chatSession.create({
                     data: {
-                        account1Id: Number(senderId),
-                        account2Id: Number(receiverId)
+                        account1Id: senderIdNum,
+                        account2Id: receiverIdNum
                     }
                 });
             }
-            connection.socket.on("message", (message) => __awaiter(this, void 0, void 0, function* () {
-                console.log(`Received private message from ${senderId} to ${receiverId}:`, message);
-                yield prisma.message.create({
-                    data: {
-                        content: message,
-                        senderId: Number(senderId),
-                        receiverId: Number(receiverId),
-                        chatSessionId: chatSession.id
-                    }
-                });
-                connection.socket.send('message sent to user ${receiverId} to ${senderId}:', message);
-            }));
-            connection.socket.on("close", () => {
-                console.log("Connection closed for private chat");
+            const messages = yield prisma.message.findMany({
+                where: {
+                    chatSessionId: chatSession.id
+                },
+                orderBy: {
+                    timestamp: 'asc'
+                }
             });
+            return (reply.send({ success: true, messages: messages }));
         }));
+        // server.get("/api/get-messages", { websocket: true}, async (connection, req) => {
+        // 	// console.log(req);
+        // 	const { senderId, receiverId } = req.query as { senderId: number; receiverId: number }//PrivateChatParams;
+        // 	console.log(`New WebSocket connection for private chat with user ${receiverId}`);
+        // 	let chatSession = await prisma.chatSession.findFirst({
+        // 	where: {
+        // 		OR: [
+        // 		{ account1Id: senderId, account2Id: receiverId },
+        // 		{ account1Id: receiverId, account2Id: senderId }
+        // 		]
+        // 	}
+        // 	});
+        // 	if (!chatSession) {
+        // 	chatSession = await prisma.chatSession.create({
+        // 		data: { 
+        // 		account1Id: senderId,
+        // 		account2Id: receiverId
+        // 		}
+        // 	});
+        // 	}
+        // 	const messages = await prisma.message.findMany({
+        // 			where:
+        // 			{
+        // 				chatSessionId: chatSession.id
+        // 			},
+        // 			orderBy:
+        // 			{
+        // 				timestamp: 'desc'
+        // 			}
+        // 	});
+        // 	connection.socket.send(JSON.stringify({
+        //   	  	type: 'initial-messages',
+        //     	messages: messages
+        // 	}));
+        // 	connection.socket.on("close", () => {
+        // 		console.log("Connection closed for private chat");
+        // 	});
+        // });
         // Chat message sending route (not WebSocket yet)
         server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { senderId, receiverId, content } = request.body;
@@ -90,6 +113,15 @@ function setupChat(server) {
             if (!sender || !receiver) {
                 return reply.status(400).send({ error: 'Invalid sender or receiver' });
             }
+            // const isBlocked = await prisma.block.findFirst({
+            // 	where: { blockerId: Number(receiverId), blockedId: Number(senderId) }
+            // });
+            // if (isBlocked) {
+            // 	console.log(`User ${senderId} is blocked bij ${receiverId}, closing connection`);
+            // 	connection.socket.send("You are blocked by this user");
+            // 	connection.socket.close();
+            // 	return ;
+            // }
             // Create a chat session or find an existing one
             let chatSession = yield prisma.chatSession.findFirst({
                 where: {

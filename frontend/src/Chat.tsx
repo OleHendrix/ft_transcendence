@@ -7,24 +7,22 @@ import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
 import axios from 'axios';
 
+interface message
+{
+	id: number,
+	content: string,
+	timestamp: string,
+	chatSessionId: number,
+	receiverId: number,
+	senderId: number
+}
+
 function Chat()
 {
 	const {players, loggedInPlayers} = usePlayerContext();
 	const [chatIndex, setChatIndex] = useState(-1);
 	const [isOpen, setIsOpen] = useState(false);
-	const [testChats, setTestChats] = useState(
-	[
-		{
-			name: 'John',
-			time: '12:45',
-			message: 'Hello my guy, how are you?',
-		},
-		{
-			name: "Mary",
-			time: '12:51',
-			message: 'Hey John, I\'m good, How are you?',
-		}
-	])
+	const [testChats, setTestChats] = useState<message[]>([]);
 
 	useEffect(() =>
 	{
@@ -32,19 +30,24 @@ function Chat()
 		{
 			try
 			{
-				const response = await axios.get('http://localhost:5001/api/sendmessages',
+				// console.log(loggedInPlayers[0].id);
+				const response = await axios.get('http://localhost:5001/api/get-messages',
 				{
 					params:
 					{
-						requested_username: loggedInPlayers[0].username,
-						requested_receiver: loggedInPlayers[chatIndex].username,
-						last_message: null
+						senderId: loggedInPlayers[0].id,
+						receiverId: loggedInPlayers[chatIndex].id
+						// last_message: null
 					}
 				})
+				if (response.data.success)
+				{
+					setTestChats(response.data.messages);
+				}
 			}
 			catch (error: any)
 			{
-				console.log(error.response.data);
+				console.log(error.response);
 			}
 		}
 		fetchMessages();
@@ -98,10 +101,10 @@ function Chat()
 							{testChats.map((message, index) =>
 								<div className={`chat ${index % 2 == 0 ? 'chat-start' : 'chat-end'}`}>
 									<div className="chat-header">
-										{message.name}
-										<time className="text-xs opacity-50">{message.time}</time>
+										{message.senderId}
+										<time className="text-xs opacity-50">{message.timestamp}</time>
 									</div>
-									<div className="chat-bubble">{message.message}</div>
+									<div className="chat-bubble">{message.content}</div>
 								</div>
 							)}
 							</div>
@@ -110,30 +113,22 @@ function Chat()
 							{
 								if (e.key === 'Enter')
 								{
+									console.log("enter pressed");
 									const target = e.target as HTMLInputElement
 									const message = target.value.trim();
 									if (message)
 									{
-										// async function sendMessage()
-										// {
-										// 	const response = await axios.post('http://localhost:5001/api/sendmessage',
-										// 	{
-										// 		from_username: loggedInPlayers[0].username,
-										// 		receiver_username: (chatIndex !== -1 ? loggedInPlayers[chatIndex].username : null),
-										// 		message: message
-										// 	}
-										// 	)
-										// }
-										// sendMessage();
-										setTestChats(prev =>
-										[
-											...prev,
+										async function sendMessage()
+										{
+											const response = await axios.post('http://localhost:5001/api/send-message',
 											{
-												name: loggedInPlayers[0].username,
-												time: '12:56',
-												message: message
-											}
-										])
+												senderId: loggedInPlayers[0].id,
+												receiverId: (chatIndex !== -1 ? loggedInPlayers[chatIndex].id : 1),
+												content: message
+											})
+											console.log(response);
+										}
+										sendMessage();
 									}
 								}
 							}

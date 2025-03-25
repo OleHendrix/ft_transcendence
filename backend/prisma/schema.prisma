@@ -41,8 +41,8 @@ model ChatSession {
   id         Int      @id @default(autoincrement())
   account1Id Int
   account2Id Int
-  messages   Message[]
   createdAt  DateTime @default(now())
+  messages   Message[]
 
   account1   Account  @relation("account1ChatSessions", fields: [account1Id], references: [id])
   account2   Account  @relation("account2ChatSessions", fields: [account2Id], references: [id])
@@ -52,6 +52,7 @@ model Block {
   id          Int      @id @default(autoincrement())
   blockerId   Int
   blockedId   Int
+
   blocker     Account  @relation("Blocks", fields: [blockerId], references: [id])
   blocked     Account  @relation("BlockedBy", fields: [blockedId], references: [id])
   createdAt   DateTime @default(now())

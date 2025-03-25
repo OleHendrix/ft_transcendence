@@ -1,5 +1,6 @@
 export interface PlayerType
 {
+	id: number,
 	username: string;
 	email: string;
 	password: string;
