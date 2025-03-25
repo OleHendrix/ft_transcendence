@@ -20,10 +20,11 @@ function setupTotp(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/auth/setup-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
             const { username } = req.body;
+            console.log('username:', username);
             const account = yield server_1.default.account.findUnique({ where: { username } });
             if (!account)
                 return reply.code(404).send({ message: 'User not found' });
-            const secret = speakeasy_1.default.generateSecret({ name: 'MyApp (${username})' });
+            const secret = speakeasy_1.default.generateSecret({ name: 'NextBall' });
             yield server_1.default.account.update({
                 where: { username },
                 data: { totpSecret: secret.base32 }

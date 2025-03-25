@@ -4,11 +4,10 @@ import prisma from '../server';
 
 export default async function verifyTotp(fastify: FastifyInstance)
 {
-	console.log("yes");
 	fastify.post('/api/auth/verify-totp', async (req, reply) =>
 	{
 		const { username, token } = req.body as { username: string; token: string; };
-
+		console.log("checking 2fa from:", username, "token:", token);
 		const account = await prisma.account.findUnique({ where: { username } });
 
 		if (!account || !account.totpSecret)
@@ -25,6 +24,7 @@ export default async function verifyTotp(fastify: FastifyInstance)
 
 		if (!isValid)
 			return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
-		return { success: true };
+		console.log("authorized:", username);
+		return { success: true, user: account };
 	});
 }

@@ -17,9 +17,9 @@ const speakeasy_1 = __importDefault(require("speakeasy"));
 const server_1 = __importDefault(require("../server"));
 function verifyTotp(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log("yes");
         fastify.post('/api/auth/verify-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
             const { username, token } = req.body;
+            console.log("checking 2fa from:", username, "token:", token);
             const account = yield server_1.default.account.findUnique({ where: { username } });
             if (!account || !account.totpSecret)
                 return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
@@ -31,7 +31,8 @@ function verifyTotp(fastify) {
             });
             if (!isValid)
                 return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
-            return { success: true };
+            console.log("authorized:", username);
+            return { success: true, user: account };
         }));
     });
 }
