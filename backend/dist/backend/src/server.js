@@ -17,7 +17,10 @@ const client_1 = require("@prisma/client");
 const cors_1 = __importDefault(require("@fastify/cors"));
 const fastify_jwt_1 = __importDefault(require("fastify-jwt"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const PongServer_1 = require("./PongServer");
+const console_1 = require("console");
 // import dotenv from 'dotenv';
+// import { PongState } from './../../frontend/src/types'
 const fastify = (0, fastify_1.default)();
 fastify.register(cors_1.default);
 fastify.register(fastify_jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
@@ -78,3 +81,72 @@ fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {
     }
     console.log(`Server running at ${address}`);
 });
+;
+let userTable = {};
+// gets userID's match and sends it's inputs
+// TODO: add input
+fastify.post('/pong', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userID, keysPressed } = request.body;
+    if (userID === undefined) {
+        console.log("User undefined");
+        reply.status(400);
+        return;
+    }
+    console.log("Detected user:", userID);
+    if ((userID in userTable) === false) {
+        console.log("User not in table");
+        reply.status(400);
+        return;
+    }
+    let state;
+    try {
+        state = (0, PongServer_1.getGame)(userTable[userID].ID);
+    }
+    catch (error) {
+        console.log("Caught error:", error);
+        reply.status(400);
+        return;
+    }
+    console.log(state);
+    reply.status(200).send(state);
+}));
+// adds a new match between userID1 and userID2
+fastify.post('/pong/add', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userID1, userID2 } = request.body;
+    console.log("adding game with:", userID1, userID2);
+    if (userID1 === undefined || userID2 === undefined) {
+        console.log("User undefined");
+        reply.status(400);
+        return;
+    }
+    if ((userID1 in userTable) || (userID1 in userTable)) {
+        console.log("User already in table");
+        reply.status(400);
+        return;
+    }
+    let matchID = (0, PongServer_1.postGame)();
+    userTable[userID1] = { ID: matchID, isPlayer1: true, isAI: false };
+    userTable[userID2] = { ID: matchID, isPlayer1: false, isAI: userID2 === -1 };
+    reply.status(201);
+}));
+// deletes the match userID1 is in
+fastify.post('/pong/delete', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userID1, userID2 } = request.body;
+    if (userID1 === undefined || userID2 === undefined) {
+        console.log("User undefined");
+        reply.status(400);
+        return;
+    }
+    try {
+        const ID = userTable[userID1].ID;
+        delete userTable[userID1];
+        delete userTable[userID2]; // fine because delete userTable[-1] throws no error
+        (0, PongServer_1.deleteGame)(ID);
+    }
+    catch (_a) {
+        console.log("Caught error:", console_1.error);
+        reply.status(404);
+        return;
+    }
+    reply.status(200);
+}));

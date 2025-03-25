@@ -65,3 +65,12 @@ export interface Statics
 	VELOCITY:	number,
 	FRICTION:	number,
 }
+
+export interface PongState
+{
+	p1:			Paddle;
+	p2:			Paddle;
+	p1Score:	number;
+	p2Score:	number;
+	ball:		Ball;
+}
