@@ -17,3 +17,4 @@ model Account {
   draws    Int    @default(0)
   loses    Int    @default(0)
 }
+
