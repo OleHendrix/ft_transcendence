@@ -17,7 +17,8 @@ const speakeasy_1 = __importDefault(require("speakeasy"));
 const server_1 = __importDefault(require("../server"));
 function verifyTotp(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/auth/verify-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
+        console.log("yes");
+        fastify.post('/api/auth/verify-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
             const { username, token } = req.body;
             const account = yield server_1.default.account.findUnique({ where: { username } });
             if (!account || !account.totpSecret)

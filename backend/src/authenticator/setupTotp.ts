@@ -5,8 +5,9 @@ import qrcode from 'qrcode';
 
 export default async function setupTotp(fastify: FastifyInstance)
 {
-	fastify.post('/auth/setup-totp', async (req, reply) =>
+	fastify.post('/api/auth/setup-totp', async (req, reply) =>
 	{
+
 		const { username } = req.body as { username: string };
 
 		const account = await prisma.account.findUnique({ where: { username } });
@@ -23,6 +24,6 @@ export default async function setupTotp(fastify: FastifyInstance)
 		
 		const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url || '');
 
-		return { qrCodeUrl };
+		return reply.send({ qrCodeUrl });
 	});
 }

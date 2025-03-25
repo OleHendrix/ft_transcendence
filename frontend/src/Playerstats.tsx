@@ -5,11 +5,52 @@ import { useLoginContext } from "./contexts/LoginContext";
 import Player from "./assets/Player.svg";
 import Player1 from "./assets/Player1.svg";
 import Player2 from "./assets/Player2.svg";
+import axios from 'axios';
+import { useState } from 'react';
 
 function PlayerStats()
 {
 	const { loggedInPlayers, setLoggedInPlayers } = usePlayerContext();
 	const { setShowPlayerStats, indexPlayerStats } = useLoginContext();
+	const [qrCode, setQrCode] = useState<string | null>(null);
+	const [token, setToken] = useState('');
+	const [show2FA, setShow2FA] = useState(false);
+
+	// Call backend to generate QR code
+	const handleEnable2FA = async () => {
+	try {
+		const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
+		{
+			username: loggedInPlayers[indexPlayerStats].username
+		});
+
+		setQrCode(res.data.qrCodeUrl);
+		setShow2FA(true);
+		console.log('QR Code:', qrCode);
+	} catch (err) {
+		console.error('Error enabling 2FA:', err);
+	}
+	};
+
+	// Submit 6-digit code
+	const verify2FA = async () => {
+	try {
+		const res = await axios.post('http://localhost:5001/api/auth/verify-totp',
+		{
+			username: loggedInPlayers[indexPlayerStats].username,
+			token
+		});
+
+		if (res.data.success) {
+		alert('✅ 2FA enabled!');
+		setShow2FA(false);
+		} else {
+		alert('❌ Invalid code');
+		}
+	} catch (err) {
+		console.error('Verification failed', err);
+	}
+	};
 
 	return (
 		<AnimatePresence>
@@ -38,6 +79,38 @@ function PlayerStats()
 							<p className="block text-sm font-medium mb-1">Password</p>
 							<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{('').padStart(loggedInPlayers[indexPlayerStats]?.password.length, '*')}</p>
 						</div>
+						<div className="w-full">
+							<p className="block text-sm font-medium mb-1">Enable 2FA</p>
+							<button
+								onClick={handleEnable2FA}
+								className="bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 transition"
+							>
+								Enable
+							</button>
+							</div>
+
+								{show2FA && (
+								<div className="mt-4 bg-gray-800 p-4 rounded-xl border border-gray-600">
+									<p className="text-sm font-medium mb-2">Scan this QR code with Google Authenticator:</p>
+									{qrCode && <img src={qrCode} alt="2FA QR Code" className="mb-4" />}
+
+									<input
+									type="text"
+									maxLength={6}
+									value={token}
+									onChange={(e) => setToken(e.target.value)}
+									placeholder="Enter 6-digit code"
+									className="w-full px-3 py-2 rounded-xl bg-gray-700 text-white mb-2"
+									/>
+
+									<button
+									onClick={verify2FA}
+									className="bg-green-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-green-700 transition"
+									>
+									Verify
+									</button>
+								</div>
+							)}
 					</div>
 
 					<div className="flex flex-col items-center mt-4">

@@ -4,7 +4,8 @@ import prisma from '../server';
 
 export default async function verifyTotp(fastify: FastifyInstance)
 {
-	fastify.post('/auth/verify-totp', async (req, reply) =>
+	console.log("yes");
+	fastify.post('/api/auth/verify-totp', async (req, reply) =>
 	{
 		const { username, token } = req.body as { username: string; token: string; };
 

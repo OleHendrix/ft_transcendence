@@ -18,7 +18,7 @@ const server_1 = __importDefault(require("../server"));
 const qrcode_1 = __importDefault(require("qrcode"));
 function setupTotp(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/auth/setup-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
+        fastify.post('/api/auth/setup-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
             const { username } = req.body;
             const account = yield server_1.default.account.findUnique({ where: { username } });
             if (!account)
@@ -29,7 +29,7 @@ function setupTotp(fastify) {
                 data: { totpSecret: secret.base32 }
             });
             const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '');
-            return { qrCodeUrl };
+            return reply.send({ qrCodeUrl });
         }));
     });
 }

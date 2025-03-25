@@ -24,8 +24,6 @@ const fastify = (0, fastify_1.default)();
 fastify.register(cors_1.default);
 fastify.register(fastify_jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
 const prisma = new client_1.PrismaClient();
-(0, setupTotp_1.default)(fastify);
-(0, verifyTotp_1.default)(fastify);
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     return { message: 'Server is running!' };
 }));
@@ -75,11 +73,16 @@ fastify.get('/api/getplayers', (request, reply) => __awaiter(void 0, void 0, voi
         return reply.status(500).send({ error: 'Error getting players from database' });
     }
 }));
-fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {
-    if (err) {
-        console.error(err);
-        process.exit(1);
-    }
-    console.log(`Server running at ${address}`);
+const start = () => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, setupTotp_1.default)(fastify);
+    yield (0, verifyTotp_1.default)(fastify);
+    fastify.listen({ port: 5001, host: 'localhost' }, (err, address) => {
+        if (err) {
+            console.error(err);
+            process.exit(1);
+        }
+        console.log(`Server running at ${address}`);
+    });
 });
+start();
 exports.default = prisma;
