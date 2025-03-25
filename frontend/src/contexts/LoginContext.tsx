@@ -20,7 +20,6 @@ export function LoginProvider({ children }: {children: ReactNode})
 	const [showLoginModal, setShowLoginModal] = useState(false);
 	const [showPlayerStats, setShowPlayerStats] = useState(false);
 	const [indexPlayerStats, setIndexPlayerStats] = useState(-1);
-	
 
 	const value = useMemo(() => (
 	{

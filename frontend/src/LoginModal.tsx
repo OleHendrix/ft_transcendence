@@ -73,7 +73,7 @@ function LoginModal()
 	<div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
 		<div className="bg-[#2a2a2a] text-white p-8 rounded-lg w-full max-w-md relative shadow-xl">
 		<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer" 
-			onClick={() =>{setShowLoginModal(false)}}>
+			onClick={() => setShowLoginModal(false)}>
 			<IoMdClose size={24} />
 		</button>
 
