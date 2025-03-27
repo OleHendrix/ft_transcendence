@@ -2,6 +2,7 @@
 **/package-lock.json/
 ./backend/dist
 *.local
+*.db
 
 # Editor directories and files
 .vscode/*
