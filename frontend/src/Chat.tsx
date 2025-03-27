@@ -23,14 +23,14 @@ function Chat()
 	const [receiverId, setReceiverId] = useState(-1);
 	const [isOpen, setIsOpen] = useState(false);
 	const [messageReceived, setMessageReceived] = useState(false);
+	const [chatSessionId, setChatSessionId] = useState(-1);
 	const [testChats, setTestChats] = useState<message[]>([]);
 
 	useEffect(() =>
 	{
 		async function fetchMessages()
 		{
-			try
-			{
+			try {
 				const response = await axios.get('http://localhost:5001/api/get-messages',
 				{
 					params:
@@ -43,16 +43,33 @@ function Chat()
 				if (response.data.success)
 				{
 					setTestChats(response.data.messages);
-					setMessageReceived(false);
+					// setMessageReceived(false);
+					setChatSessionId(response.data.chatSessionId);
 				}
-			}
-			catch (error: any)
-			{
+				
+			} catch (error: any) {
 				console.log(error.response);
 			}
 		}
 		fetchMessages();
 	}, [receiverId, messageReceived])
+
+	useEffect(() => {
+		if (!chatSessionId) return;
+	
+		console.log("frontend csid:", chatSessionId);
+		const socket = new WebSocket(`ws://localhost:5001/ws/chat?chatSessionId=${chatSessionId}`);
+		console.log("help me");
+		socket.onmessage = function(message) {
+			console.log("socket on message")
+			setMessageReceived(true);
+		};
+	
+		return () => {
+			console.log("closed");
+			socket.close();
+		}
+	}, [chatSessionId]);
 
 	return(
 		<div className="absolute left-[2vw] bottom-[2vw] hover:cursor-pointer">
@@ -81,7 +98,9 @@ function Chat()
 							{players.filter(player => player.id !== loggedInPlayers[0].id).map((player, index) =>
 								<div className="flex items-center flex-col space-y-0.5 w-12">
 									<motion.img src={Player} className="h-10 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}}
-										onClick={() => setReceiverId(player.id)}/>
+										onClick={() => {
+											setReceiverId(player.id);
+											}}/>
 									<p className="text-[10px] opacity-50 w-full text-center truncate">{player.username}</p>
 								</div>
 							)}
@@ -114,8 +133,6 @@ function Chat()
 							{
 								if (e.key === 'Enter')
 								{
-
-									console.log("enter pressed");
 									const target = e.target as HTMLInputElement
 									const message = target.value.trim();
 									if (message)

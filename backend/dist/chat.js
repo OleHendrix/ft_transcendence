@@ -16,23 +16,31 @@ exports.setupChat = setupChat;
 const client_1 = require("@prisma/client");
 const websocket_1 = __importDefault(require("@fastify/websocket"));
 const prisma = new client_1.PrismaClient();
-const globalChatClients = new Set();
+const activeChats = new Map();
 function setupChat(server) {
     return __awaiter(this, void 0, void 0, function* () {
         server.register(websocket_1.default);
-        server.get("/chat", { websocket: true }, (connection, req) => {
-            console.log("New WebSocket connection for global chatroom");
-            globalChatClients.add(connection);
-            connection.socket.on("message", (message) => __awaiter(this, void 0, void 0, function* () {
-                console.log("Recieved message in global chat:", message);
-                globalChatClients.forEach(client => {
-                    if (client !== connection)
-                        client.socket.send(message);
-                });
-            }));
+        server.get("/ws/chat", { websocket: true }, (connection, req) => {
+            console.log("/ws/chat");
+            const url = new URL(connection.raw.url, "http://localhost");
+            const chatSessionId = Number(url.searchParams.get("chatSessionId"));
+            console.log(chatSessionId);
+            if (!chatSessionId) {
+                console.log("chat session socket failed");
+                connection.socket.close();
+                return;
+            }
+            console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
+            // if (!activeChats.has(chatSessionId)) {
+            // 	activeChats.set(chatSessionId, new Set());
+            // }
+            activeChats.get(chatSessionId).add(connection.socket);
             connection.socket.on("close", () => {
-                console.log("Connection closed for global chat");
-                globalChatClients.delete(connection);
+                console.log(`User ${chatSessionId} disconnected`);
+                activeChats.get(chatSessionId).delete(connection.socket);
+                if (activeChats.get(chatSessionId).size === 0) {
+                    activeChats.delete(chatSessionId);
+                }
             });
         });
         server.get("/api/get-messages", (request, reply) => __awaiter(this, void 0, void 0, function* () {
@@ -41,7 +49,10 @@ function setupChat(server) {
             const receiverIdNum = parseInt(receiverId);
             let chatSession = yield prisma.chatSession.findFirst({
                 where: {
-                    OR: [{ account1Id: senderIdNum, account2Id: receiverIdNum }, { account1Id: receiverIdNum, account2Id: senderIdNum }]
+                    OR: [
+                        { account1Id: senderIdNum, account2Id: receiverIdNum },
+                        { account1Id: receiverIdNum, account2Id: senderIdNum }
+                    ]
                 }
             });
             if (!chatSession) {
@@ -53,15 +64,20 @@ function setupChat(server) {
                 });
             }
             const messages = yield prisma.message.findMany({
-                where: {
-                    chatSessionId: chatSession.id
-                },
-                orderBy: {
-                    timestamp: 'asc'
+                where: { chatSessionId: chatSession.id },
+                orderBy: { timestamp: 'asc' }
+            });
+            return (reply.send({ success: true, messages: messages, chatSessionId: chatSession.id }));
+        }));
+        function notifyClients(newMessage) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const { chatSessionId } = newMessage;
+                console.log("notifyclient csid", chatSessionId);
+                const activeChatSockets = activeChats.get(chatSessionId);
+                if (activeChatSockets) {
                 }
             });
-            return (reply.send({ success: true, messages: messages }));
-        }));
+        }
         server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { senderId, receiverId, content } = request.body;
             const sender = yield prisma.account.findUnique({ where: { id: senderId } });
@@ -89,6 +105,7 @@ function setupChat(server) {
                     chatSessionId: chatSession.id
                 }
             });
+            notifyClients(message);
             return reply.send({ success: true, message });
         }));
     });
