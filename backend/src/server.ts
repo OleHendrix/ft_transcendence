@@ -5,7 +5,7 @@ import fastifyJwt from 'fastify-jwt';
 import bcrypt from 'bcrypt';
 import { postGame, deleteGame, getGame } from './PongServer';
 import { error } from 'console';
-import { PongState } from '../../frontend/src/types';
+import { PongState, Match } from '../../frontend/src/types';
 // import dotenv from 'dotenv';
 // import { PongState } from './../../frontend/src/types'
 
@@ -100,45 +100,42 @@ fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) =>
 	console.log(`Server running at ${address}`);
 });
 
-interface match
-{
-	ID:			number;
-	isPlayer1:	boolean;
-	isAI:		boolean;
-};
 
-let userTable: {[key: number]: match} = {};
+
+let userTable = new Map<number, Match>([]);
 
 // gets userID's match and sends it's inputs
 // TODO: add input
 fastify.post('/pong', async (request, reply) =>
 {
 	const { userID, keysPressed } = request.body as { userID?: number, keysPressed?: {[key: string]: boolean} };
-	if (userID === undefined)
+	if (userID === undefined || keysPressed === undefined)
 	{
-		console.log("User undefined");
+		console.log("Undefined input:", userID, keysPressed);
 		reply.status(400);
 		return;
 	}
-	console.log("Detected user:", userID);
-	if ((userID in userTable) === false)
+	// console.log("keys pressed:", keysPressed);
+	//console.log("Detected user:", userID);
+	if (userTable.has(userID) === false)
 	{
-		console.log("User not in table");
+		//console.log("User not in table:", userTable);
 		reply.status(400);
 		return;
 	}
 	let state: PongState;
 	try
 	{
-		state = getGame(userTable[userID].ID);
+		//console.log("UserID:", userTable.get(userID)?.ID as number);
+		state = getGame(userTable.get(userID) as Match, keysPressed);
 	}
 	catch (error)
 	{
-		console.log("Caught error:", error);
+		//console.log("Caught error:", error);
 		reply.status(400);
 		return;
 	}
-	console.log(state);
+	//console.log(state);
 	reply.status(200).send(state);
 });
 
@@ -146,22 +143,22 @@ fastify.post('/pong', async (request, reply) =>
 fastify.post('/pong/add', async (request, reply) =>
 {
 	const { userID1, userID2 } = request.body as { userID1?: number, userID2?: number };
-	console.log("adding game with:", userID1, userID2);
+	//console.log("adding game with:", userID1, userID2);
 	if (userID1 === undefined || userID2 === undefined)
 	{
-		console.log("User undefined");
+		//console.log("User undefined");
 		reply.status(400);
 		return;
 	}
-	if ((userID1 in userTable) || (userID1 in userTable))
+	if (userTable.has(userID1) && (userID2 === -1 || userTable.has(userID2)))
 	{
-		console.log("User already in table");
-		reply.status(400);
+		//console.log("User already in table");
+		reply.status(200);
 		return;
 	}
 	let matchID = postGame();
-	userTable[userID1] = { ID: matchID, isPlayer1: true,  isAI: false };
-	userTable[userID2] = { ID: matchID, isPlayer1: false, isAI: userID2 === -1 };
+	userTable.set(userID1, { ID: matchID, isPlayer1: true,  vsAI: userID2 === -1 });
+	userTable.set(userID2, { ID: matchID, isPlayer1: false, vsAI: false });
 	reply.status(201);
 });
 
@@ -171,20 +168,20 @@ fastify.post('/pong/delete', async (request, reply) =>
 	const { userID1, userID2 } = request.body as { userID1: number, userID2: number };
 	if (userID1 === undefined || userID2 === undefined)
 	{
-		console.log("User undefined");
+		//console.log("User undefined");
 		reply.status(400);
 		return;
 	}
 	try
 	{
-		const ID = userTable[userID1].ID;
-		delete userTable[userID1];
-		delete userTable[userID2]; // fine because delete userTable[-1] throws no error
-		deleteGame(ID);
+		const ID = userTable.get(userID1)?.ID;
+		userTable.delete(userID1);
+		userTable.delete(userID2); // fine because delete userTable[-1] throws no error
+		deleteGame(ID as number);
 	}
 	catch
 	{
-		console.log("Caught error:", error);
+		//console.log("Caught error:", error);
 		reply.status(404);
 		return;
 	}

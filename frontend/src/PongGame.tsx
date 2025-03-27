@@ -145,58 +145,58 @@
 // 		}
 // 	}
 
-// 	const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
+	// const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
 
-// 	useEffect(() =>
-// 	{
-// 		const handleKeyDown = (e: KeyboardEvent) =>
-// 		{
-// 			setKeysPressed(prev => ({ ...prev, [e.key]: true }));
-// 			if (e.key === "t" || e.key === "T")
-// 				setAI(prevAI => ({ ...prevAI, enabled: !prevAI.enabled }));
-// 		};
+	// useEffect(() =>
+	// {
+	// 	const handleKeyDown = (e: KeyboardEvent) =>
+	// 	{
+	// 		setKeysPressed(prev => ({ ...prev, [e.key]: true }));
+	// 		if (e.key === "t" || e.key === "T")
+	// 			setAI(prevAI => ({ ...prevAI, enabled: !prevAI.enabled }));
+	// 	};
 
-// 		const handleKeyUp = (e: KeyboardEvent) =>
-// 		{
-// 			setKeysPressed(prev => ({ ...prev, [e.key]: false }));
-// 		};
+	// 	const handleKeyUp = (e: KeyboardEvent) =>
+	// 	{
+	// 		setKeysPressed(prev => ({ ...prev, [e.key]: false }));
+	// 	};
 
-// 		window.addEventListener('keydown', handleKeyDown);
-// 		window.addEventListener('keyup', handleKeyUp);
+	// 	window.addEventListener('keydown', handleKeyDown);
+	// 	window.addEventListener('keyup', handleKeyUp);
 
-// 		resetBall();
+	// 	resetBall();
 	
-// 		return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
-// 	}, []);
+	// 	return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
+	// }, []);
 
-// 	useEffect(() =>
-// 	{
-// 		const moveFrame = () =>
-// 		{
-// 			let P1DirY: number = 0;
-// 			let P2DirY: number = 0;
+	// useEffect(() =>
+	// {
+	// 	const moveFrame = () =>
+	// 	{
+	// 		let P1DirY: number = 0;
+	// 		let P2DirY: number = 0;
 
-// 			P1DirY = keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0);
-// 			if (ai.enabled === false)
-// 				P2DirY = keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0);
-// 			else
-// 				P2DirY = (p2.pos.y < ai.desiredY - p2.size.y / 2) ? 1 : (p2.pos.y > ai.desiredY + p2.size.y / 2) ? -1 : 0;
+	// 		P1DirY = keysPressed['w'] && keysPressed['s'] ? 0 : (keysPressed['w'] ? -1 : 0) + (keysPressed['s'] ? 1 : 0);
+	// 		if (ai.enabled === false)
+	// 			P2DirY = keysPressed['ArrowUp'] && keysPressed['ArrowDown'] ? 0 : (keysPressed['ArrowUp'] ? -1 : 0) + (keysPressed['ArrowDown'] ? 1 : 0);
+	// 		else
+	// 			P2DirY = (p2.pos.y < ai.desiredY - p2.size.y / 2) ? 1 : (p2.pos.y > ai.desiredY + p2.size.y / 2) ? -1 : 0;
 			
-// 			managePaddle(p1, P1DirY, setP1);
-// 			managePaddle(p2, P2DirY, setP2);
+	// 		managePaddle(p1, P1DirY, setP1);
+	// 		managePaddle(p2, P2DirY, setP2);
 
-// 			setBall(prev => ({ ...prev,
-// 				prevPos: { x: prev.pos.x,              y: prev.pos.y },
-// 				pos:     { x: prev.pos.x + prev.dir.x, y: prev.pos.y + prev.dir.y },
-// 			}));
+	// 		setBall(prev => ({ ...prev,
+	// 			prevPos: { x: prev.pos.x,              y: prev.pos.y },
+	// 			pos:     { x: prev.pos.x + prev.dir.x, y: prev.pos.y + prev.dir.y },
+	// 		}));
 
-// 			manageAI();
-// 			handleColision();
-// 			animationId = requestAnimationFrame(moveFrame);
-// 		};
-// 		let animationId = requestAnimationFrame(moveFrame);
-// 		return () => { cancelAnimationFrame(animationId); };
-// 	}, [keysPressed, ball.pos.x, ball.pos.y, ball.dir.x, ball.dir.y, p1.pos.y, p2.pos.y]);
+	// 		manageAI();
+	// 		handleColision();
+	// 		animationId = requestAnimationFrame(moveFrame);
+	// 	};
+	// 	let animationId = requestAnimationFrame(moveFrame);
+	// 	return () => { cancelAnimationFrame(animationId); };
+	// }, [keysPressed, ball.pos.x, ball.pos.y, ball.dir.x, ball.dir.y, p1.pos.y, p2.pos.y]);
 
 // 	const textSize: number = 1250 - Math.max(p1Score.toString().length, p2Score.toString().length, 1) * 250;
 // 	console.log(textSize);
@@ -253,7 +253,7 @@
 // 	)
 // }
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from "axios";
 import { PongState } from './types';
 
@@ -282,73 +282,82 @@ function PongGame()
 			prevPos: { x: 45, y: 50 },
 			size: { x: 2, y: 2 },
 			dir: { x: 1, y: 1 }
-		}
+		},
+		lastUpdate: -1,
 	});
-	const [loading, setLoading] = useState<Boolean> (false);
+
+	let animationId: number = 0;
 
 	const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
 
-	useEffect(() =>
+	const handleKeyDown = (e: KeyboardEvent) =>
 	{
-		// +------------------------------------------------------------------+
-		// |                             > init <                             |
-		// +------------------------------------------------------------------+
+		console.log("keydown");
+		setKeysPressed(prev => ({ ...prev, [e.key]: true }));
+	};
 
-		const handleKeyDown = (e: KeyboardEvent) =>
-		{
-			setKeysPressed(prev => ({ ...prev, [e.key]: true }));
-			// if (e.key === "t" || e.key === "T")
-			// 	setAI(prevAI => ({ ...prevAI, enabled: !prevAI.enabled }));
-		};
+	const handleKeyUp = (e: KeyboardEvent) =>
+	{
+		console.log("keyup");
+		setKeysPressed(prev => ({ ...prev, [e.key]: false }));
+	};
 
-		const handleKeyUp = (e: KeyboardEvent) =>
-		{
-			setKeysPressed(prev => ({ ...prev, [e.key]: false }));
-		};
-
-		async function initGame()
-		{
-			
-			const response = await axios.post("http://localhost:5001/pong/add", { userID1: 1, userID2: -1 });
-			console.log("init status:", response.status);
-		};
-		initGame();
-		window.addEventListener('keydown', handleKeyDown);
-		window.addEventListener('keyup', handleKeyUp);
-	
-		return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
-	}, []);
+	async function initGame()
+	{
+		const response = await axios.post("http://localhost:5001/pong/add", { userID1: userID, userID2: aiID });
+		//console.log("init status:", response.status);
+	};
 
 	useEffect(() =>
 	{
-		// o------------------------------------------------------------------o
-		// (                            > update <                            )
-		// o------------------------------------------------------------------o
-
-		async function fetchGame()
+		function loop()
 		{
-			try
+			async function fetchGame()
 			{
-				const response = await axios.post("http://localhost:5001/pong", { userID: userID, keysPressed: keysPressed });
-				if (response.data)
+				try
 				{
-					setPong(response.data);
-					setLoading(false);
+					console.log("keys pressed:", keysPressed);
+					const response = await axios.post("http://localhost:5001/pong", { userID: userID, keysPressed: keysPressed });
+					if (response.data)
+					{
+						setPong(response.data);
+					}
+				}
+				catch (error)
+				{
+					//console.log("error while getting pong state");
 				}
 			}
-			catch (error)
-			{
-				console.log("error while getting pong state");
-			}
+			fetchGame();
 		}
-		fetchGame();
-	}, [keysPressed]);
+		// loop();
+		animationId = requestAnimationFrame(loop);
+	}, [pong]);
 
-	if (loading === true)
+	async function endGame()
 	{
-		return <div>Loading...</div>;
+		await axios.post("http://localhost:5001/pong/add", { userID1: userID, userID2: aiID });
 	}
 
+	useEffect(() =>
+	{
+		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('keyup', handleKeyUp);
+		initGame();
+
+		return () =>
+		{
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('keyup', handleKeyUp);
+			endGame();
+			// cancelAnimationFrame(animationId);
+		};
+	}, []);
+
+
+
+
+	
 	const textSize: number = 1250 - Math.max(pong.p1Score.toString().length, pong.p2Score.toString().length, 1) * 250;
 
 	return(

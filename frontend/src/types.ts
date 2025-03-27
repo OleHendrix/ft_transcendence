@@ -73,4 +73,12 @@ export interface PongState
 	p1Score:	number;
 	p2Score:	number;
 	ball:		Ball;
+	lastUpdate:	number;
 }
+
+export interface Match
+{
+	ID:			number;
+	isPlayer1:	boolean;
+	vsAI:		boolean;
+};
