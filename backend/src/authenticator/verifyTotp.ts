@@ -13,6 +13,7 @@ export default async function verifyTotp(fastify: FastifyInstance)
 		if (!account || !account.totpSecret)
 			return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
 
+		console.log("found user with totp:", username);
 		const isValid = speakeasy.totp.verify(
 			{
 				secret: account.totpSecret,

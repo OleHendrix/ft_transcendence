@@ -58,7 +58,7 @@ function Enable2FA()
 
 	return (
 		<div className="w-full">
-			<div className="mt-4 bg-[#3a3a3a] p-4 rounded-xl">
+			<div className="mt-4 p-4 rounded-xl">
 				{!scannedQrCode && (<>
 					<p className="text-sm font-medium mb-2">Scan this QR code with Google Authenticator:</p>
 					{qrCode && <img src={qrCode} alt="2FA QR Code" className="mb-4" />}

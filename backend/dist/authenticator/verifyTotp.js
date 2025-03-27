@@ -23,6 +23,7 @@ function verifyTotp(fastify) {
             const account = yield server_1.default.account.findUnique({ where: { username } });
             if (!account || !account.totpSecret)
                 return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
+            console.log("found user with totp:", username);
             const isValid = speakeasy_1.default.totp.verify({
                 secret: account.totpSecret,
                 encoding: 'base32',
