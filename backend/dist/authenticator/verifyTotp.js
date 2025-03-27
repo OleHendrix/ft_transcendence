@@ -14,13 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = verifyTotp;
 const speakeasy_1 = __importDefault(require("speakeasy"));
-const server_1 = __importDefault(require("../server"));
-function verifyTotp(fastify) {
+function verifyTotp(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/auth/verify-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
             const { username, token } = req.body;
             console.log("checking 2fa from:", username, "token:", token);
-            const account = yield server_1.default.account.findUnique({ where: { username } });
+            const account = yield prisma.account.findUnique({ where: { username } });
             if (!account || !account.totpSecret)
                 return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
             console.log("found user with totp:", username);

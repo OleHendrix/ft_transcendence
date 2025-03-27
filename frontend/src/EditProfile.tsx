@@ -98,32 +98,51 @@ function EditProfile()
 
 	const [ settingUp2FA, setSettingUp2FA ] = useState(false);
 
-		return (
-			<div className="flex flex-col w-full text-left items-start space-y-4">
-				{!settingUp2FA && (<>
-					<div className="w-full">
-						<p className="block text-sm font-medium mb-1">Username</p>
-						<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.username}</p>
-					</div>
-					<div className="w-full">
-						<p className="block text-sm font-medium mb-1">Email</p>
-						<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.email}</p>
-					</div>
-					<div className="w-full">
-						<p className="block text-sm font-medium mb-1">Password</p>
-						<input className="w-full p-2 opacity-100 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600" placeholder="Create a new password"></input>
-					</div>
-					<div className="w-full">
-						<p className="block text-sm font-medium mb-1">Enable 2FA</p>
-						<button className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition"
-							onClick={() => { setSettingUp2FA(true) } }>
-							Enable
-						</button>
-					</div>
-				</>)}
-				{settingUp2FA && <Enable2FA />}
-			</div>
-		);
+	const disable2FA = async () =>
+	{
+		try
+		{
+			const response = await axios.post('http://localhost:5001/api/auth/delete-totp',
+			{
+				username: loggedInPlayers[indexPlayerStats].username
+			});
+		}
+		catch (error)
+		{
+			console.error('Error disabling 2FA:', error);
+		}
+	}
+
+	return (
+		<div className="flex flex-col w-full text-left items-start space-y-4">
+			{!settingUp2FA && (<>
+				<div className="w-full">
+					<p className="block text-sm font-medium mb-1">Username</p>
+					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.username}</p>
+				</div>
+				<div className="w-full">
+					<p className="block text-sm font-medium mb-1">Email</p>
+					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.email}</p>
+				</div>
+				<div className="w-full">
+					<p className="block text-sm font-medium mb-1">Password</p>
+					<input className="w-full p-2 opacity-100 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600" placeholder="Create a new password"></input>
+				</div>
+				<div className="w-full">
+					<p className="block text-sm font-medium mb-1">2FA</p>
+					{!loggedInPlayers[indexPlayerStats].totpSecret && <button className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition"
+						onClick={() => { setSettingUp2FA(true) } }>
+						Enable
+					</button>}
+					{loggedInPlayers[indexPlayerStats].totpSecret && <button className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition"
+						onClick={disable2FA}>
+						Disable
+					</button>}
+				</div>
+			</>)}
+			{settingUp2FA && <Enable2FA />}
+		</div>
+	);
 }
 
 export default EditProfile

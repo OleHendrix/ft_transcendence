@@ -11,6 +11,8 @@ import EditProfile from "./EditProfile";
 import { LiaUserEditSolid } from "react-icons/lia";
 import { TfiSave } from "react-icons/tfi";
 
+import axios from "axios";
+
 function ShowInfo()
 {
 	const { loggedInPlayers }  = usePlayerContext();
@@ -45,6 +47,21 @@ function PlayerInfo()
 
 	const [editProfile, setEditProfile] = useState(false);
 
+	const deleteAccount = async () =>
+	{
+		try
+		{
+			const response = await axios.post('http://localhost:5001/api/delete-account',
+			{
+				username: loggedInPlayers[indexPlayerStats].username
+			});
+		}
+		catch (error)
+		{
+			console.error('Error deleting account:', error);
+		}
+	}
+
 	return (
 		<AnimatePresence>
 			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -70,7 +87,7 @@ function PlayerInfo()
 					{editProfile  && <EditProfile />}
 					{!editProfile && <ShowInfo />}
 					{!editProfile && <PlayerStats />}
-					<motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
+					{!editProfile && <motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
 						whileHover={ {scale: 1.03}}
 						whileTap={ {scale: 0.97}}
 						onClick={() =>
@@ -80,7 +97,19 @@ function PlayerInfo()
 							localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
 							setShowPlayerStats(false)
 						}}>Logout
-					</motion.button>
+					</motion.button>}
+					{editProfile && <motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
+						whileHover={ {scale: 1.03}}
+						whileTap={ {scale: 0.97}}
+						onClick={() =>
+						{
+							deleteAccount();
+							const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
+							setLoggedInPlayers(updatedPlayers);
+							localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
+							setShowPlayerStats(false);
+						}}>Delete Account
+					</motion.button>}
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>

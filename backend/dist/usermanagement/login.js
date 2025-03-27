@@ -12,24 +12,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = setupTotp;
-const speakeasy_1 = __importDefault(require("speakeasy"));
-const qrcode_1 = __importDefault(require("qrcode"));
-function setupTotp(fastify, prisma) {
+exports.default = login;
+const bcrypt_1 = __importDefault(require("bcrypt"));
+function login(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/auth/setup-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username } = req.body;
-            console.log('username:', username);
-            const account = yield prisma.account.findUnique({ where: { username } });
-            if (!account)
-                return reply.code(404).send({ message: 'User not found' });
-            const secret = speakeasy_1.default.generateSecret({ name: `NextBall (${username})` });
-            yield prisma.account.update({
-                where: { username },
-                data: { totpSecret: secret.base32 }
-            });
-            const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '');
-            return reply.send({ qrCodeUrl });
+        fastify.post("/api/login", (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const { username, password } = req.body;
+            const user = yield prisma.account.findUnique({ where: { username } });
+            if (!user)
+                return res.status(400).send({ eror: "User not found" });
+            const validPassword = yield bcrypt_1.default.compare(password, user.password);
+            if (!validPassword)
+                return res.status(401).send({ error: "Incorrect password" });
+            const token = fastify.jwt.sign({ username: user.username, email: user.email }, { expiresIn: "1h" });
+            res.send({ success: true, token, user });
         }));
     });
 }
