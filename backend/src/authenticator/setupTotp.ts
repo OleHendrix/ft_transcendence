@@ -1,9 +1,9 @@
 import { FastifyInstance } from "fastify";
+import { PrismaClient } from '@prisma/client';
 import speakeasy from 'speakeasy';
-import prisma from '../server';
 import qrcode from 'qrcode';
 
-export default async function setupTotp(fastify: FastifyInstance)
+export default async function setupTotp(fastify: FastifyInstance, prisma: PrismaClient)
 {
 	fastify.post('/api/auth/setup-totp', async (req, reply) =>
 	{
@@ -14,7 +14,7 @@ export default async function setupTotp(fastify: FastifyInstance)
 		if (!account)
 			return reply.code(404).send({ message: 'User not found'});
 
-		const secret = speakeasy.generateSecret({ name: 'NextBall' });
+		const secret = speakeasy.generateSecret({ name: `NextBall (${username})` });
 
 		await prisma.account.update(
 			{

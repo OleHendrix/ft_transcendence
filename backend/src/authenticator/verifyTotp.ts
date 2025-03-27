@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
+import { PrismaClient } from '@prisma/client';
 import speakeasy from 'speakeasy';
-import prisma from '../server';
 
-export default async function verifyTotp(fastify: FastifyInstance)
+export default async function verifyTotp(fastify: FastifyInstance, prisma: PrismaClient)
 {
 	fastify.post('/api/auth/verify-totp', async (req, reply) =>
 	{
@@ -13,6 +13,7 @@ export default async function verifyTotp(fastify: FastifyInstance)
 		if (!account || !account.totpSecret)
 			return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
 
+		console.log("found user with totp:", username);
 		const isValid = speakeasy.totp.verify(
 			{
 				secret: account.totpSecret,
