@@ -1,5 +1,5 @@
 // +--------------------------------------------------------------------------+
-// |               WARNING: is a duplicate of backend/types.ts                |
+// |               WARNING: is a duplicate of backend/types.ts                )
 // +--------------------------------------------------------------------------+
 
 export interface PlayerType
