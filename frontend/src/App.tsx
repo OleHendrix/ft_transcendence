@@ -2,6 +2,7 @@ import Navbar from "./Navbar";
 import Hero from "./Hero";
 import Modals from "./Modals";
 import PongGame from "./PongGame";
+import Chat from "./Chat";
 import './css/index.css'
 import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
 import { LoginProvider } from "./contexts/LoginContext";
@@ -13,6 +14,7 @@ function MainContent()
 	return (
 		<>
 			{!isPlaying && <Hero />}
+			<Chat/>
 			{isPlaying  && <PongGame />}
 		</>
 	)

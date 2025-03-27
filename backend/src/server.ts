@@ -13,11 +13,15 @@ import addAccount from './usermanagement/addAccount';
 import deleteAccount from './usermanagement/deleteAccount';
 import getPlayers from './usermanagement/getPlayers';
 import login from './usermanagement/login';
+import { setupChat } from './chat';
 
 const fastify = Fastify();
+const prisma = new PrismaClient();
+
 fastify.register(fastifyCors);
 fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
-const prisma = new PrismaClient();
+
+setupChat(fastify);
 
 fastify.get('/', async (request, reply) =>
 {
