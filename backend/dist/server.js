@@ -20,7 +20,6 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const setupTotp_1 = __importDefault(require("./authenticator/setupTotp"));
 const verifyTotp_1 = __importDefault(require("./authenticator/verifyTotp"));
 const chat_1 = require("./chat");
-// import dotenv from 'dotenv';
 const fastify = (0, fastify_1.default)();
 const prisma = new client_1.PrismaClient();
 fastify.register(cors_1.default);

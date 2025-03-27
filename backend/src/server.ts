@@ -6,7 +6,6 @@ import bcrypt from 'bcrypt';
 import setupTotp from './authenticator/setupTotp';
 import verifyTotp from './authenticator/verifyTotp';
 import { setupChat } from './chat';
-// import dotenv from 'dotenv';
 
 const fastify = Fastify();
 const prisma = new PrismaClient();

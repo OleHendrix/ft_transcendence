@@ -20,8 +20,9 @@ interface message
 function Chat()
 {
 	const {players, loggedInPlayers} = usePlayerContext();
-	const [chatIndex, setChatIndex] = useState(-1);
+	const [receiverId, setReceiverId] = useState(-1);
 	const [isOpen, setIsOpen] = useState(false);
+	const [messageReceived, setMessageReceived] = useState(false);
 	const [testChats, setTestChats] = useState<message[]>([]);
 
 	useEffect(() =>
@@ -30,19 +31,19 @@ function Chat()
 		{
 			try
 			{
-				// console.log(loggedInPlayers[0].id);
 				const response = await axios.get('http://localhost:5001/api/get-messages',
 				{
 					params:
 					{
 						senderId: loggedInPlayers[0].id,
-						receiverId: loggedInPlayers[chatIndex].id
+						receiverId: receiverId
 						// last_message: null
 					}
 				})
 				if (response.data.success)
 				{
 					setTestChats(response.data.messages);
+					setMessageReceived(false);
 				}
 			}
 			catch (error: any)
@@ -51,7 +52,7 @@ function Chat()
 			}
 		}
 		fetchMessages();
-	}, [chatIndex])
+	}, [receiverId, messageReceived])
 
 	return(
 		<div className="absolute left-[2vw] bottom-[2vw] hover:cursor-pointer">
@@ -71,22 +72,22 @@ function Chat()
 						if (!target.closest('.chat'))
 							setIsOpen(false);
 					}}>
-  					<div className="chat absolute left-[2vw] bottom-[2vw] flex justify-start flex-col items-start p-6 pt-10 h-[30vw] w-[23vw] bg-black/90 shadow-2xl rounded-2xl z-50">
+  					<div className="chat absolute left-[2vw] bottom-[2vw] flex justify-start flex-col items-start p-6 pt-10 h-[700px] w-[800px] bg-black/90 shadow-2xl rounded-2xl z-50">
 							<button className="absolute top-2 right-2 text-gray-400 hover:text-white hover:cursor-pointer"
 								onClick={() => setIsOpen(false)}>
 								<IoMdClose size={24} />
 							</button>
 						<div className="flex justify-end space-x-2 w-full flex-wrap mb-2">
-							{players.map((player, index) =>
+							{players.filter(player => player.id !== loggedInPlayers[0].id).map((player, index) =>
 								<div className="flex items-center flex-col space-y-0.5 w-12">
 									<motion.img src={Player} className="h-10 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}}
-										onClick={() => setChatIndex(index)}/>
+										onClick={() => setReceiverId(player.id)}/>
 									<p className="text-[10px] opacity-50 w-full text-center truncate">{player.username}</p>
 								</div>
 							)}
 								<div className="flex items-center flex-col space-y-0.5 w-12">
 									<motion.div whileHover={{scale: 1.07}} whileTap={{scale: 0.93}}
-										onClick={() => setChatIndex(-1)}>
+										onClick={() => setReceiverId(-1)}>
 										<RiGroup2Line className="h-10 w-auto hover:cursor-pointer text-[#ff914d] hover:text-[#ab5a28] transition-colors"/>
 									</motion.div>
 									<p className="text-[10px] text-[#ff914d] opacity-90 font-bold w-full text-center truncate">Group</p>
@@ -99,7 +100,7 @@ function Chat()
 						<div className="h-full w-full flex gap-4 justify-start flex-col items-start overflow-y-auto">
 							<div className="h-[35vw] w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
 							{testChats.map((message, index) =>
-								<div className={`chat ${index % 2 == 0 ? 'chat-start' : 'chat-end'}`}>
+								<div className={`chat ${loggedInPlayers[0].id !== message.senderId ? 'chat-start' : 'chat-end'}`}>
 									<div className="chat-header">
 										{message.senderId}
 										<time className="text-xs opacity-50">{message.timestamp}</time>
@@ -113,6 +114,7 @@ function Chat()
 							{
 								if (e.key === 'Enter')
 								{
+
 									console.log("enter pressed");
 									const target = e.target as HTMLInputElement
 									const message = target.value.trim();
@@ -123,9 +125,12 @@ function Chat()
 											const response = await axios.post('http://localhost:5001/api/send-message',
 											{
 												senderId: loggedInPlayers[0].id,
-												receiverId: (chatIndex !== -1 ? loggedInPlayers[chatIndex].id : 1),
+												receiverId: receiverId,
 												content: message
 											})
+											if (response.data.success)
+												setMessageReceived(true);
+											target.value = '';
 											console.log(response);
 										}
 										sendMessage();
