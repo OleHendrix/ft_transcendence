@@ -4,7 +4,7 @@ import fastifyCors from '@fastify/cors';
 import fastifyJwt from 'fastify-jwt';
 import bcrypt from 'bcrypt';
 import { postGame, deleteGame, getGame } from './PongServer';
-import { PongState, Match } from '../../frontend/src/types';
+import { PongState, Match } from './types';
 
 import setupTotp from './authenticator/setupTotp';
 import verifyTotp from './authenticator/verifyTotp';

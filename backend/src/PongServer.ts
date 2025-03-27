@@ -1,5 +1,5 @@
 import { match } from "assert";
-import { PongState, Match, Statics, Paddle, Ball } from "../../frontend/src/types";
+import { PongState, Match, Statics, Paddle, Ball } from "./types";
 
 let gameTable = new Map<number, PongState>([]);
 
