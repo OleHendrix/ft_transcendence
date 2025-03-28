@@ -13,9 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_1 = __importDefault(require("fastify"));
-const client_1 = require("@prisma/client");
-const cors_1 = __importDefault(require("@fastify/cors"));
 const fastify_jwt_1 = __importDefault(require("fastify-jwt"));
+const cors_1 = __importDefault(require("@fastify/cors"));
+const client_1 = require("@prisma/client");
 const PongServer_1 = require("./PongServer");
 const setupTotp_1 = __importDefault(require("./authenticator/setupTotp"));
 const verifyTotp_1 = __importDefault(require("./authenticator/verifyTotp"));
@@ -24,10 +24,12 @@ const addAccount_1 = __importDefault(require("./usermanagement/addAccount"));
 const deleteAccount_1 = __importDefault(require("./usermanagement/deleteAccount"));
 const getPlayers_1 = __importDefault(require("./usermanagement/getPlayers"));
 const login_1 = __importDefault(require("./usermanagement/login"));
+const chat_1 = require("./chat");
 const fastify = (0, fastify_1.default)();
+const prisma = new client_1.PrismaClient();
 fastify.register(cors_1.default);
 fastify.register(fastify_jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
-const prisma = new client_1.PrismaClient();
+(0, chat_1.setupChat)(fastify);
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     return { message: 'Server is running!' };
 }));

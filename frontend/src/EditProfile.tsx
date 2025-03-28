@@ -5,31 +5,26 @@ import { useLoginContext } from "./contexts/LoginContext";
 
 function Enable2FA()
 {
-	const { loggedInPlayers }  = usePlayerContext();
+	const { loggedInAccounts }  = usePlayerContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	const [token, setToken]     = useState('');
 	const [qrCode, setQrCode]   = useState<string | null>(null);
 	const [scannedQrCode, setScannedQrCode ] = useState(false);
 
-	useEffect(() =>
-	{
-		const handleEnable2FA = async () =>
-		{
-			try
+	const handleEnable2FA = async () => {
+		try {
+			const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
 			{
-				const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
-				{
-					username: loggedInPlayers[indexPlayerStats].username
-				});
-		
-				setQrCode(res.data.qrCodeUrl);
-				console.log('QR Code:', qrCode);
-			}
-			catch (err)
-			{
-				console.error('Error enabling 2FA:', err);
-			}
+				username: loggedInAccounts[indexPlayerStats].username
+			});
+	
+			setQrCode(res.data.qrCodeUrl);
+			setShow2FA(true);
+			console.log('QR Code:', qrCode);
+		} catch (err) {
+			console.error('Error enabling 2FA:', err);
+		}
 		};
 		handleEnable2FA();
 	}, [loggedInPlayers]);
@@ -40,7 +35,7 @@ function Enable2FA()
 		{
 			const res = await axios.post('http://localhost:5001/api/auth/verify-totp',
 			{
-				username: loggedInPlayers[indexPlayerStats].username,
+				username: loggedInAccounts[indexPlayerStats].username,
 				token
 			});
 	
@@ -93,7 +88,7 @@ function Enable2FA()
 
 function EditProfile()
 {
-	const { loggedInPlayers }  = usePlayerContext();
+	const { loggedInAccounts }  = usePlayerContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	const [ settingUp2FA, setSettingUp2FA ] = useState(false);
@@ -118,11 +113,11 @@ function EditProfile()
 			{!settingUp2FA && (<>
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">Username</p>
-					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.username}</p>
+					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInAccounts[indexPlayerStats]?.username}</p>
 				</div>
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">Email</p>
-					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.email}</p>
+					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInAccounts[indexPlayerStats]?.email}</p>
 				</div>
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">Password</p>

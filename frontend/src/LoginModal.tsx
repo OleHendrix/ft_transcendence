@@ -8,14 +8,14 @@ import axios from "axios";
 
 interface CheckLoginProps
 {
-  formData: LoginFormType;
-  token: String;
-  setLoggedInPlayers: Dispatch<SetStateAction<PlayerType[]>>;
-  setValidation: Dispatch<SetStateAction<LoginValidationType>>;
-  setShow2FA: Dispatch<SetStateAction<boolean>>;
+	formData: LoginFormType;
+	token: String;
+	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	setValidation: Dispatch<SetStateAction<LoginValidationType>>;
+	setShow2FA: Dispatch<SetStateAction<boolean>>;
 }
 
-async function check2FA({ formData, token, setLoggedInPlayers, setValidation }  : CheckLoginProps)
+async function check2FA({ formData, token, setLoggedInAccounts, setValidation }  : CheckLoginProps)
 {
 	const { username }= formData;
 	try
@@ -28,12 +28,12 @@ async function check2FA({ formData, token, setLoggedInPlayers, setValidation }  
 		const user = response.data.user;
 		if (response.data.success)
 		{
-			setLoggedInPlayers((prev) =>
+			setLoggedInAccounts((prev) =>
 			{
 				if (prev.some((p) => p.username === username))
 					return prev;
 				const updatedPlayers = [...prev, user];
-				localStorage.setItem("loggedInPlayers", JSON.stringify([...prev, user]));
+				localStorage.setItem("loggedInAccounts", JSON.stringify([...prev, user]));
 				return updatedPlayers;
 			});
 			console.log("authorized:", username);
@@ -48,7 +48,7 @@ async function check2FA({ formData, token, setLoggedInPlayers, setValidation }  
 	return false;
 }
 
-async function checkLogin( { formData, setLoggedInPlayers, setValidation, setShow2FA }  : CheckLoginProps)
+async function checkLogin( { formData, setLoggedInAccounts, setValidation, setShow2FA }  : CheckLoginProps)
 {
 	const {username, password } = formData;
 	try
@@ -62,12 +62,12 @@ async function checkLogin( { formData, setLoggedInPlayers, setValidation, setSho
 				setShow2FA(true);
 				return false;
 			}
-			setLoggedInPlayers((prev) =>
+			setLoggedInAccounts((prev) =>
 			{
 				if (prev.some((p) => p.username === user.username))
 					return prev;
 				const updatedPlayers = [...prev, user];
-				localStorage.setItem("loggedInPlayers", JSON.stringify([...prev, user]));
+				localStorage.setItem("loggedInAccounts", JSON.stringify([...prev, user]));
 				return updatedPlayers;
 			});
 			return true;
@@ -85,7 +85,7 @@ async function checkLogin( { formData, setLoggedInPlayers, setValidation, setSho
 
 function LoginModal()
 {
-	const { loggedInPlayers, setLoggedInPlayers } = usePlayerContext();
+	const { loggedInAccounts, setLoggedInAccounts } = usePlayerContext();
 	const { setShowLoginModal } = useLoginContext();
 	
 	const [show2FA, setShow2FA] = useState(false);
@@ -106,19 +106,19 @@ function LoginModal()
 		setValidation(prev => (
 		{
 			...prev,
-			'Already logged in': loggedInPlayers.some(player => player.username === formData.username),
+			'Already logged in': loggedInAccounts.some(player => player.username === formData.username),
 			'Username not found': false, 
 			'Password incorrect': false,
 			'2FA Code incorrect': false
 		}));
 		setEmptyForm(Object.values(formData).some(field => field === ""));
-	}, [formData, loggedInPlayers]);
+	}, [formData, loggedInAccounts]);
 
 	return(
 	<div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
 		<div className="bg-[#2a2a2a] text-white p-8 rounded-lg w-full max-w-md relative shadow-xl">
 		<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer" 
-			onClick={() =>{setShowLoginModal(false)}}>
+			onClick={() => setShowLoginModal(false)}>
 			<IoMdClose size={24} />
 		</button>
 
@@ -130,12 +130,12 @@ function LoginModal()
 				e.preventDefault();
 				if (show2FA)
 				{
-					const success = await check2FA({ formData, token, setLoggedInPlayers, setValidation, setShow2FA});
+					const success = await check2FA({ formData, token, setLoggedInAccounts, setValidation, setShow2FA});
 					if (success) setShowLoginModal(false);
 				}
 				else
 				{
-					const success = await checkLogin({ formData, setLoggedInPlayers, setValidation, setShow2FA });
+					const success = await checkLogin({ formData, setLoggedInAccounts, setValidation, setShow2FA });
 					if (success) setShowLoginModal(false); 
 				}
 			}} 

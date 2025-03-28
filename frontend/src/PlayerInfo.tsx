@@ -15,18 +15,18 @@ import axios from "axios";
 
 function ShowInfo()
 {
-	const { loggedInPlayers }  = usePlayerContext();
+	const { loggedInAccounts }  = usePlayerContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	return (
 		<div className="flex flex-col w-full text-left items-start space-y-4">
 			<div className="w-full">
 				<p className="block text-sm font-medium mb-1">Username</p>
-				<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.username}</p>
+				<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInAccounts[indexPlayerStats]?.username}</p>
 			</div>
 			<div className="w-full">
 				<p className="block text-sm font-medium mb-1">Email</p>
-				<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.email}</p>
+				<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInAccounts[indexPlayerStats]?.email}</p>
 			</div>
 			<div className="w-full">
 				<p className="block text-sm font-medium mb-1">Password</p>
@@ -34,7 +34,7 @@ function ShowInfo()
 			</div>
 			<div className="w-full">
 				<p className="block text-sm font-medium mb-1">2FA Enabled</p>
-				<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.totpSecret ? 'Yes' : 'No'}</p>
+				<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInAccounts[indexPlayerStats]?.totpSecret ? 'Yes' : 'No'}</p>
 			</div>
 		</div>
 	);
@@ -42,7 +42,7 @@ function ShowInfo()
 
 function PlayerInfo()
 {
-	const { loggedInPlayers, setLoggedInPlayers }  = usePlayerContext();
+	const { loggedInAccounts, setLoggedInAccounts }  = usePlayerContext();
 	const { setShowPlayerStats, indexPlayerStats } = useLoginContext();
 
 	const [editProfile, setEditProfile] = useState(false);
@@ -71,8 +71,8 @@ function PlayerInfo()
 						<IoMdClose size={24} />
 					</button>
 					<div className="flex flex-col items-center gap-2">
-						<h2 className="text-2xl font-bold text-center">{loggedInPlayers[indexPlayerStats]?.username}</h2>
-						<img src={loggedInPlayers.length > 2 ? Player : indexPlayerStats === 0 ? Player1 : indexPlayerStats === 1 ? Player2 : Player} className="h-16 w-auto"/>
+						<h2 className="text-2xl font-bold text-center">{loggedInAccounts[indexPlayerStats]?.username}</h2>
+						<img src={loggedInAccounts.length > 2 ? Player : indexPlayerStats === 0 ? Player1 : indexPlayerStats === 1 ? Player2 : Player} className="h-16 w-auto"/>
 					</div>
 					{!editProfile && <motion.button className="items-center"
 						whileHover={ {scale: 1.03}}
@@ -92,9 +92,9 @@ function PlayerInfo()
 						whileTap={ {scale: 0.97}}
 						onClick={() =>
 						{
-							const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
-							setLoggedInPlayers(updatedPlayers);
-							localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
+							const updatedPlayers = loggedInAccounts.filter((player, index) => index !== indexPlayerStats)
+							setLoggedInAccounts(updatedPlayers);
+							localStorage.setItem('loggedInAccounts', JSON.stringify(updatedPlayers));
 							setShowPlayerStats(false)
 						}}>Logout
 					</motion.button>}

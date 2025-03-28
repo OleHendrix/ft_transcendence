@@ -5,7 +5,7 @@ import PlayerInfo from './PlayerInfo';
 
 function PlayerStats()
 {
-	const { loggedInPlayers } = usePlayerContext();
+	const { loggedInAccounts } = usePlayerContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	return (
@@ -14,15 +14,15 @@ function PlayerStats()
 			<div className="w-full grid grid-cols-3 gap-2 p-2 mt-2">
 				<div className="stat flex flex-col items-center">
 					<div className="stat-title text-green-800 font-black">Wins</div>
-					<div className="stat-value">{loggedInPlayers[indexPlayerStats]?.wins}</div>
+					<div className="stat-value">{loggedInAccounts[indexPlayerStats]?.wins}</div>
 				</div>
 				<div className="stat flex flex-col items-center">
 					<div className="stat-title font-black">Draws</div>
-					<div className="stat-value">{loggedInPlayers[indexPlayerStats]?.draws}</div>
+					<div className="stat-value">{loggedInAccounts[indexPlayerStats]?.draws}</div>
 				</div>
 				<div className="stat flex flex-col items-center">
 					<div className="stat-title text-red-800 font-black">Losses</div>
-					<div className="stat-value">{loggedInPlayers[indexPlayerStats]?.loses}</div>
+					<div className="stat-value">{loggedInAccounts[indexPlayerStats]?.loses}</div>
 				</div>
 			</div>
 		</div>

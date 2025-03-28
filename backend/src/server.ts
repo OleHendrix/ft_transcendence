@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
-import { PrismaClient } from '@prisma/client';
-import fastifyCors from '@fastify/cors';
 import fastifyJwt from 'fastify-jwt';
+import fastifyCors from '@fastify/cors';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { postGame, deleteGame, getGame } from './PongServer';
 import { PongState, Match } from './types';
@@ -13,15 +13,25 @@ import addAccount from './usermanagement/addAccount';
 import deleteAccount from './usermanagement/deleteAccount';
 import getPlayers from './usermanagement/getPlayers';
 import login from './usermanagement/login';
+import { setupChat } from './chat';
 
 const fastify = Fastify();
-fastify.register(fastifyCors);
-fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
 const prisma = new PrismaClient();
 
-fastify.get('/', async (request, reply) =>
+fastify.register(fastifyCors);
+fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
+
+setupChat(fastify);
+
+interface AddAccountRequest
 {
-  return { message: 'Server is running!' };
+	username: string;
+	email: string;
+	password: string;
+}
+
+fastify.get('/', async (request, reply) => {
+	return { message: 'Server is running!' };
 });
 
 const start = async () =>

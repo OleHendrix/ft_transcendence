@@ -9,21 +9,21 @@ import PlayerAdd from "./assets/PlayerAdd.svg"
 
 const Players = React.memo(function Players()
 {
-	const { loggedInPlayers } = usePlayerContext();
+	const { loggedInAccounts } = usePlayerContext();
 	const { setShowSignUpModal, setShowPlayerStats, setIndexPlayerStats } = useLoginContext();
 
 	return(
 		<>
 			<div className="flex items-center">
-				{loggedInPlayers?.map((player, index) => 
+				{loggedInAccounts?.map((player, index) => 
 				<div className="flex items-center flex-col space-y-0.5 w-18">
-					<motion.img src={loggedInPlayers.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStats(index); setShowPlayerStats(true)}}/>
+					<motion.img src={loggedInAccounts.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStats(index); setShowPlayerStats(true)}}/>
 					<p className="text-[12px] opacity-35 w-full text-center truncate">{player.username}</p>
 				</div>
 				)}
 				<div className="flex items-center flex-col space-y-0.5 w-18">
 					<motion.img src={PlayerAdd} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => setShowSignUpModal(true)}/>
-					{loggedInPlayers.length > 0 && (<p className="text-[12px] w-full text-center truncate invisible">placeholder</p>)}
+					{loggedInAccounts.length > 0 && (<p className="text-[12px] w-full text-center truncate invisible">placeholder</p>)}
 				</div>
 			</div>
 		</>

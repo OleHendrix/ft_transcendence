@@ -7,14 +7,54 @@ datasource db {
   url      = "file:./database.db"
 }
 
-
 model Account {
-  id         Int  @id @default(autoincrement())
-  email      String  @unique
-  username   String  @unique
-  password   String
+  id          Int        @id @default(autoincrement())
+  email       String     @unique
+  username    String     @unique
+  password    String
   totpSecret String?
-  wins       Int    @default(0)
-  draws      Int    @default(0)
-  loses      Int    @default(0)
+  wins        Int        @default(0)
+  draws       Int        @default(0)
+  loses       Int        @default(0)
+
+  Blocks                Block[]          @relation("Blocks")
+  BlockedBy             Block[]          @relation("BlockedBy")
+  sentMessages          Message[]        @relation("SentMessages")     // This represents the sender
+  receivedMessages      Message[]        @relation("ReceivedMessages") // This represents the receiver
+  account1ChatSessions  ChatSession[]    @relation("account1ChatSessions")
+  account2ChatSessions  ChatSession[]    @relation("account2ChatSessions")
+}
+
+model Message {
+  id            Int      @id @default(autoincrement())
+  content       String
+  timestamp     DateTime @default(now())
+  senderId      Int
+  receiverId    Int
+  chatSessionId Int
+
+  chatSession   ChatSession   @relation(fields: [chatSessionId], references: [id])
+  sender        Account       @relation("SentMessages", fields: [senderId], references: [id])
+  receiver      Account       @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+model ChatSession {
+  id         Int      @id @default(autoincrement())
+  account1Id Int
+  account2Id Int
+  createdAt  DateTime @default(now())
+  messages   Message[]
+
+  account1   Account  @relation("account1ChatSessions", fields: [account1Id], references: [id])
+  account2   Account  @relation("account2ChatSessions", fields: [account2Id], references: [id])
+}
+
+model Block {
+  id          Int      @id @default(autoincrement())
+  blockerId   Int
+  blockedId   Int
+
+  blocker     Account  @relation("Blocks", fields: [blockerId], references: [id])
+  blocked     Account  @relation("BlockedBy", fields: [blockedId], references: [id])
+  createdAt   DateTime @default(now())
 }
