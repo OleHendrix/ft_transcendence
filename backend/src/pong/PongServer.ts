@@ -5,22 +5,22 @@ let gameTable = new Map<number, PongState>([]);
 
 const s: Statics =
 ({
-	BOUNCE:		{ x: -1.02, y: -0.9 },
-	CARRYOVER:	0.5,
-	VELOCITY:	0.3,
+	BOUNCE:		{ x: -1.03, y: -0.85 },
+	CARRYOVER:	0.4,
+	VELOCITY:	0.2,
 	FRICTION:	0.9,
 });
 
 function resetBall(p1Score: number, p2Score: number): Ball
 {
 	const goRight: boolean	= (p1Score + p2Score) % 2 === 0;
-	const pos: number		= goRight ? 70 : 30;
+	const pos: number		= goRight ? 30 : 70;
 
 	return ({
-		pos:		{ x: pos,				y: 50					},
-		prevPos:	{ x: pos,				y: 50					},
-		size:		{ x: 2,					y: 2					},
-		dir:		{ x: 0.5 - +goRight,	y: Math.random() - 0.5	}
+		pos:		{ x: pos,						y: 50					},
+		prevPos:	{ x: pos,						y: 50					},
+		size:		{ x: 2,							y: 2					},
+		dir:		{ x: 0.35 * (goRight ? 1 : -1),	y: Math.random() - 0.5	}
 	});
 }
 
@@ -71,12 +71,12 @@ function handleColision(game: PongState)
 		ball.pos.y = ball.pos.y <= 50 ? ball.size.y : 100 - ball.size.y;
 		ball.dir.y *= s.BOUNCE.y;
 	}
-	if (ball.pos.x <= 0)
+	if (ball.pos.x <= -2)
 	{
 		game.p2Score++;
 		game.ball = resetBall(game.p1Score, game.p2Score);
 	}
-	if (ball.pos.x >= 100)
+	if (ball.pos.x >= 102)
 	{
 		game.p1Score++;
 		game.ball = resetBall(game.p1Score, game.p2Score);
@@ -91,31 +91,78 @@ function updateBall(ball: Ball)
 	ball.pos.y += ball.dir.y;
 }
 
-function tick(game: PongState, match: Match, keysPressed: {[key: string]: boolean}): void
+function manageAIInput(match: Match, game: PongState, ticks: number): void
 {
-	const p1Dir = Number(keysPressed['s']         ?? false) - Number(keysPressed['w']       ?? false);
-	const p2Dir = Number(keysPressed['ArrowDown'] ?? false) - Number(keysPressed['ArrowUp'] ?? false);
+	if (match.isPlayer1 && match.vsAI)
+	{
+		if (game.ai.desiredY > game.p2.pos.y + game.p2.size.y / 2)
+			game.p2Input = 1;
+		else if (game.ai.desiredY < game.p2.pos.y - game.p2.size.y / 2)
+			game.p2Input = -1;
+		if (ticks % 2 === 0 && Math.abs(game.ai.desiredY - game.p2.pos.y) < game.p2.size.y)
+			game.p2Input = 0;
+	}
+}
 
-	managePaddle(game.p1, p1Dir);
-	managePaddle(game.p2, p2Dir);
+function tick(match: Match, game: PongState, ticks: number): void
+{
+	manageAIInput(match, game, ticks);
+	managePaddle(game.p1, game.p1Input);
+	managePaddle(game.p2, game.p2Input);
 	updateBall(game.ball);
-	// console.log("ball pos:", game.ball);
 	handleColision(game);
+}
+
+function updateInput(match: Match, game: PongState, keysPressed: {[key: string]: boolean})
+{
+	if (match.isPlayer1)
+		game.p1Input = Number(keysPressed['s']         ?? false) - Number(keysPressed['w']       ?? false);
+	else
+		game.p2Input = Number(keysPressed['ArrowDown'] ?? false) - Number(keysPressed['ArrowUp'] ?? false);
+}
+
+function manageAI(game: PongState): void
+{
+	const ballCopy = structuredClone(game.ball);
+	const p1collX = game.p1.pos.x + game.p1.size.x + ballCopy.size.x / 2;
+	const p2collX = game.p2.pos.x - ballCopy.size.x / 2;
+
+	while (ballCopy.pos.x < p2collX)
+	{
+		if (ballCopy.pos.y < ballCopy.size.y || ballCopy.pos.y > 100 - ballCopy.size.y)
+		{
+			ballCopy.pos.y = ballCopy.pos.y <= 50 ? ballCopy.size.y : 100 - ballCopy.size.y;
+			ballCopy.dir.y *= s.BOUNCE.y
+		}
+		if (ballCopy.pos.x < p1collX)
+		{
+			ballCopy.pos.x = p1collX;
+			ballCopy.dir.x *= s.BOUNCE.x;
+		}
+		updateBall(ballCopy);
+	}
+	game.ai.desiredY = Math.max(game.p2.size.y / 2, Math.min(100 - game.p2.size.y / 2, ballCopy.pos.y));
 }
 
 function updateGame(match: Match, keysPressed: {[key: string]: boolean}): void
 {
 	let game = gameTable.get(match.ID);
-	const ticks = Math.floor(Date.now() / 10);
+	const now = Math.floor(Date.now() / 10);
 
 	if (game === undefined)
 		return;
 	if (game.lastUpdate === -1)
-		game.lastUpdate = ticks;
-	for (; game.lastUpdate < ticks; game.lastUpdate++)
+		game.lastUpdate = now;
+	for (; game.lastUpdate < now; game.lastUpdate++)
 	{
-		tick(game, match, keysPressed);
+		if (match.vsAI && game.ai.lastActivation + 100 <= game.lastUpdate)
+		{
+			manageAI(game);
+			game.ai.lastActivation = game.lastUpdate;
+		}
+		tick(match, game, game.lastUpdate);
 	}
+	updateInput(match, game, keysPressed);
 	gameTable.set(match.ID, game);
 }
 
@@ -152,8 +199,11 @@ export function postGame(): number
 		},
 		p1Score: 0,
 		p2Score: 0,
+		p1Input: 0,
+		p2Input: 0,
 		ball: resetBall(0, 0),
 		lastUpdate: -1,
+		ai: { lastActivation: 0, desiredY: 0 },
 	};
 	gameTable.set(key, state);
 	return key;
@@ -165,15 +215,3 @@ export function deleteGame(matchID: number): void
 		throw "Invalid matchID in delete";
 	gameTable.delete(matchID);
 }
-
-// export function runGames(): void
-// {
-// 	console.log("updating...", gameTable.size);
-// 	gameTable.forEach((game, key) =>
-// 	{
-// 		console.log("updating:", key);
-// 		game.ball.pos.x += game.ball.dir.x;
-// 		game.ball.pos.y += game.ball.dir.y;
-// 	});
-// 	setTimeout(runGames, 1000 / 60);
-// }
