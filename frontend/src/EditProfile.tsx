@@ -1,11 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { usePlayerContext } from "./contexts/PlayerContext";
+import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
 
 function Enable2FA()
 {
-	const { loggedInAccounts }  = usePlayerContext();
+	const { loggedInAccounts }  = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	const [token, setToken]     = useState('');
@@ -89,7 +89,7 @@ function Enable2FA()
 
 function EditProfile()
 {
-	const { loggedInAccounts }  = usePlayerContext();
+	const { loggedInAccounts }  = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	const [ settingUp2FA, setSettingUp2FA ] = useState(false);

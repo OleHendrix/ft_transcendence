@@ -5,13 +5,13 @@ import { BiSolidChat, BiSearch } from "react-icons/bi";
 import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
 import axios from 'axios';
-import { usePlayerContext } from "./contexts/PlayerContext";
+import { useAccountContext } from "./contexts/AccountContext";
 import { useChatContext } from "./contexts/ChatContext";
 
 
 function Chat()
 {
-	const {loggedInAccounts} 												= usePlayerContext();
+	const {loggedInAccounts} 												= useAccountContext();
 	const {receiverId, chatSessionId, isOpen, messageReceived} 				= useChatContext();
 	const {setTestChats, setChatSessionId, setMessageReceived, setIsOpen}	= useChatContext();
 
@@ -105,7 +105,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } ) {
 }
 
 function ChatHeader() {
-	const {accounts, loggedInAccounts} 	= usePlayerContext();
+	const {accounts, loggedInAccounts} 	= useAccountContext();
 	const {setReceiverId} 				= useChatContext();
 
 	return (
@@ -137,7 +137,7 @@ function ChatHeader() {
 }
 
 function MessageList() {
-	const {loggedInAccounts} 	= usePlayerContext();
+	const {loggedInAccounts} 	= useAccountContext();
 	const {testChats} 			= useChatContext();
 
 	return (
@@ -158,7 +158,7 @@ function MessageList() {
 }
 
 function MessageInput() {
-	const {loggedInAccounts} 	= usePlayerContext();
+	const {loggedInAccounts} 	= useAccountContext();
 	const {receiverId, setMessageReceived} 	= useChatContext();
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {

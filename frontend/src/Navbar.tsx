@@ -1,11 +1,11 @@
 import logo from "./assets/Logo.png";
 import Players from "./Players";
 import Logo42 from "./assets/Logo42.svg"
-import { usePlayerContext } from "./contexts/PlayerContext";
+import { useAccountContext } from "./contexts/AccountContext";
 
 function Navbar()
 {
-  const { setIsPlaying } = usePlayerContext();
+  const { setIsPlaying } = useAccountContext();
 	return (
     <>
       <nav className="bg-[#313131] text-white h-[8vh] p-5 px-[6vw] flex justify-between items-center shadow-xl text-lg font-medium">

@@ -5,12 +5,12 @@ import PongGame from "./PongGame";
 import Chat from "./Chat";
 import { ChatProvider } from "./contexts/ChatContext";
 import './css/index.css'
-import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
+import { AccountProvider, useAccountContext } from './contexts/AccountContext';
 import { LoginProvider } from "./contexts/LoginContext";
 
 function MainContent()
 {
-	const { isPlaying } = usePlayerContext();
+	const { isPlaying } = useAccountContext();
 
 	return (
 		<>
@@ -27,13 +27,13 @@ function App()
 {
 	return (
 		<div className='h-screen w-screen bg-[#222222] font-satoshi text-white'>
-			<PlayerProvider>
+			<AccountProvider>
 				<LoginProvider>
 					<Navbar />
 					<MainContent />
 					<Modals />
 				</LoginProvider>
-			</PlayerProvider>
+			</AccountProvider>
 		</div>
 	)
 }

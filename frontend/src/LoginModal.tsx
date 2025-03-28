@@ -2,7 +2,7 @@ import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
 import { PlayerType, LoginFormType, LoginValidationType } from "./types"
-import { usePlayerContext } from "./contexts/PlayerContext";
+import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
 import axios from "axios";
 
@@ -85,7 +85,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 
 function LoginModal()
 {
-	const { loggedInAccounts, setLoggedInAccounts } = usePlayerContext();
+	const { loggedInAccounts, setLoggedInAccounts } = useAccountContext();
 	const { setShowLoginModal } = useLoginContext();
 	
 	const [show2FA, setShow2FA] = useState(false);

@@ -21,7 +21,7 @@ const verifyTotp_1 = __importDefault(require("./auth/verifyTotp"));
 const deleteTotp_1 = __importDefault(require("./auth/deleteTotp"));
 const addAccount_1 = __importDefault(require("./user/addAccount"));
 const deleteAccount_1 = __importDefault(require("./user/deleteAccount"));
-const getPlayers_1 = __importDefault(require("./user/getPlayers"));
+const getAccounts_1 = __importDefault(require("./user/getAccounts"));
 const login_1 = __importDefault(require("./user/login"));
 const logout_1 = __importDefault(require("./user/logout"));
 const initPongServer_1 = __importDefault(require("./pong/initPongServer"));
@@ -37,7 +37,7 @@ fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function*
 const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, addAccount_1.default)(fastify, prisma);
     yield (0, deleteAccount_1.default)(fastify, prisma);
-    yield (0, getPlayers_1.default)(fastify, prisma);
+    yield (0, getAccounts_1.default)(fastify, prisma);
     yield (0, login_1.default)(fastify, prisma);
     yield (0, logout_1.default)(fastify, prisma);
     yield (0, setupTotp_1.default)(fastify, prisma);

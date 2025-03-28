@@ -11,10 +11,12 @@ interface AddAccountRequest
 
 export default async function addAccount(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post('/api/addaccount', async (request, reply) =>
-	{
+	fastify.post('/api/add-account', async (request, reply) =>
+		{
+		console.log("mebalzak");
 		const { username, email, password }: AddAccountRequest = request.body as AddAccountRequest;
 		const hashedPassword = await bcrypt.hash(password, 10);
+		console.log("adding account: ", username);
 		const existingAccount = await prisma.account.findFirst(
 		{
 			where:
@@ -37,11 +39,7 @@ export default async function addAccount(fastify: FastifyInstance, prisma: Prism
 			{
 				username: username,
 				email: email,
-				password: hashedPassword,
-				// wins: 0,
-				// draws: 0,
-				// loses: 0,
-				// online: false
+				password: hashedPassword
 			}
 		});
 		return reply.send({ success: true, account: newAccount });

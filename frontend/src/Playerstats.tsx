@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePlayerContext } from "./contexts/PlayerContext";
+import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
 import PlayerInfo from './PlayerInfo';
 
 function PlayerStats()
 {
-	const { loggedInAccounts } = usePlayerContext();
+	const { loggedInAccounts } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	return (

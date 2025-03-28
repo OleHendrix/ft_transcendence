@@ -9,7 +9,7 @@ import deleteTotp from './auth/deleteTotp';
 
 import addAccount from './user/addAccount';
 import deleteAccount from './user/deleteAccount';
-import getPlayers from './user/getPlayers';
+import getAccounts from './user/getAccounts';
 import login from './user/login';
 import logout from './user/logout'
 
@@ -34,7 +34,7 @@ const start = async () =>
 {
 	await addAccount(fastify, prisma);
 	await deleteAccount(fastify, prisma);
-	await getPlayers(fastify, prisma);
+	await getAccounts(fastify, prisma);
 	await login(fastify, prisma);
 	await logout(fastify, prisma);
 
