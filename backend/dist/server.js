@@ -24,6 +24,8 @@ const addAccount_1 = __importDefault(require("./usermanagement/addAccount"));
 const deleteAccount_1 = __importDefault(require("./usermanagement/deleteAccount"));
 const getPlayers_1 = __importDefault(require("./usermanagement/getPlayers"));
 const login_1 = __importDefault(require("./usermanagement/login"));
+const logout_1 = __importDefault(require("./usermanagement/logout"));
+const getOnlineAccounts_1 = __importDefault(require("./usermanagement/getOnlineAccounts"));
 const fastify = (0, fastify_1.default)();
 fastify.register(cors_1.default);
 fastify.register(fastify_jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
@@ -35,7 +37,9 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, addAccount_1.default)(fastify, prisma);
     yield (0, deleteAccount_1.default)(fastify, prisma);
     yield (0, getPlayers_1.default)(fastify, prisma);
+    yield (0, getOnlineAccounts_1.default)(fastify, prisma);
     yield (0, login_1.default)(fastify, prisma);
+    yield (0, logout_1.default)(fastify, prisma);
     yield (0, setupTotp_1.default)(fastify, prisma);
     yield (0, verifyTotp_1.default)(fastify, prisma);
     yield (0, deleteTotp_1.default)(fastify, prisma);

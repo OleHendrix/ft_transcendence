@@ -51,7 +51,7 @@ function PlayerInfo()
 	{
 		try
 		{
-			const response = await axios.post('http://localhost:5001/api/delete-account',
+			await axios.post('http://localhost:5001/api/delete-account',
 			{
 				username: loggedInPlayers[indexPlayerStats].username
 			});
@@ -60,6 +60,25 @@ function PlayerInfo()
 		{
 			console.error('Error deleting account:', error);
 		}
+	}
+
+	const logoutAccount = async () =>
+	{
+		try
+		{
+			await axios.post('http://localhost:5001/api/logout',
+			{
+				username: loggedInPlayers[indexPlayerStats].username
+			});
+		}
+		catch (error)
+		{
+			console.error('Error deleting account:', error);
+		}
+		const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
+		setLoggedInPlayers(updatedPlayers);
+		localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
+		setShowPlayerStats(false)
 	}
 
 	return (
@@ -90,25 +109,12 @@ function PlayerInfo()
 					{!editProfile && <motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
 						whileHover={ {scale: 1.03}}
 						whileTap={ {scale: 0.97}}
-						onClick={() =>
-						{
-							const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
-							setLoggedInPlayers(updatedPlayers);
-							localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
-							setShowPlayerStats(false)
-						}}>Logout
+						onClick={() =>{ logoutAccount() }}>Logout
 					</motion.button>}
 					{editProfile && <motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
 						whileHover={ {scale: 1.03}}
 						whileTap={ {scale: 0.97}}
-						onClick={() =>
-						{
-							deleteAccount();
-							const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
-							setLoggedInPlayers(updatedPlayers);
-							localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
-							setShowPlayerStats(false);
-						}}>Delete Account
+						onClick={() =>{ logoutAccount(), deleteAccount() }}>Delete Account
 					</motion.button>}
 				</motion.div>
 			</motion.div>

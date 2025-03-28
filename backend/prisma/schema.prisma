@@ -9,12 +9,13 @@ datasource db {
 
 
 model Account {
-  id         Int  @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
   email      String  @unique
   username   String  @unique
   password   String
   totpSecret String?
-  wins       Int    @default(0)
-  draws      Int    @default(0)
-  loses      Int    @default(0)
+  wins       Int     @default(0)
+  draws      Int     @default(0)
+  loses      Int     @default(0)
+  online     Boolean @default(false)
 }

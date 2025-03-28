@@ -2,17 +2,19 @@ import Fastify from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import fastifyCors from '@fastify/cors';
 import fastifyJwt from 'fastify-jwt';
-import bcrypt from 'bcrypt';
 import { postGame, deleteGame, getGame } from './PongServer';
 import { PongState, Match } from './types';
 
 import setupTotp from './authenticator/setupTotp';
 import verifyTotp from './authenticator/verifyTotp';
 import deleteTotp from './authenticator/deleteTotp';
+
 import addAccount from './usermanagement/addAccount';
 import deleteAccount from './usermanagement/deleteAccount';
 import getPlayers from './usermanagement/getPlayers';
 import login from './usermanagement/login';
+import logout from './usermanagement/logout';
+import getOnlineAccounts from './usermanagement/getOnlineAccounts';
 
 const fastify = Fastify();
 fastify.register(fastifyCors);
@@ -29,7 +31,9 @@ const start = async () =>
 	await addAccount(fastify, prisma);
 	await deleteAccount(fastify, prisma);
 	await getPlayers(fastify, prisma);
+	await getOnlineAccounts(fastify, prisma);
 	await login(fastify, prisma);
+	await logout(fastify, prisma);
 
 	await setupTotp(fastify, prisma);
 	await verifyTotp(fastify, prisma);
