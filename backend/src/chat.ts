@@ -1,6 +1,7 @@
 import { FastifyInstance } 	from 'fastify';
 import { PrismaClient } 	from '@prisma/client';
 import fastifyWebsocket 	from '@fastify/websocket';
+import WebSocket 			from 'ws';
 
 const prisma 		= new PrismaClient();
 const activeChats 	= new Map<number, Set<WebSocket>>();
@@ -10,22 +11,22 @@ export async function setupChat(server: FastifyInstance)
 	server.register(fastifyWebsocket);
 
 	server.get("/ws/chat", { websocket: true }, (connection, req) => {
-		const url = new URL(connection.raw.url, "http://localhost");
+		const url = new URL(connection.url, "http://localhost");
 
 		const chatSessionId  = Number(url.searchParams.get("chatSessionId"));
 		if (!chatSessionId) {
 			console.log("chat session socket failed");
-			connection.socket.close();
+			connection.close();
 			return;
 		}
 
 		console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
 
-		activeChats.get(chatSessionId)!.add(connection.socket);
+		activeChats.get(chatSessionId)!.add(connection);
 
-		connection.socket.on("close", () => {
+		connection.on("close", () => {
 			console.log(`User ${chatSessionId} disconnected`);
-			activeChats.get(chatSessionId)!.delete(connection.socket);
+			activeChats.get(chatSessionId)!.delete(connection);
 			if (activeChats.get(chatSessionId)!.size === 0) {
 				activeChats.delete(chatSessionId);
 			}

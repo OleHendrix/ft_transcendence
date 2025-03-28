@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from 'framer-motion';
-import { usePlayerContext } from "./contexts/PlayerContext";
+import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
 import Player from "./assets/Player.svg";
 import Player1 from "./assets/Player1.svg";
@@ -9,7 +9,7 @@ import PlayerAdd from "./assets/PlayerAdd.svg"
 
 const Players = React.memo(function Players()
 {
-	const { loggedInAccounts } = usePlayerContext();
+	const { loggedInAccounts } = useAccountContext();
 	const { setShowSignUpModal, setShowPlayerStats, setIndexPlayerStats } = useLoginContext();
 
 	return(

@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RiGamepadLine } from "react-icons/ri";
 import { TbTournament } from "react-icons/tb";
 import { RiRobot2Line } from "react-icons/ri";
-import { usePlayerContext } from "./contexts/PlayerContext";
+import { useAccountContext } from "./contexts/AccountContext";
 import Players from "./Players";
 import "./css/ponganimation.css";
 
@@ -26,7 +26,7 @@ function AddGame()
 
 function Hero()
 {
-	const { loggedInAccounts, setIsPlaying } = usePlayerContext();
+	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 
 	return(
 		<div className="w-full flex justify-between items-start pt-[10vh]">

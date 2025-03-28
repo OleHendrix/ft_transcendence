@@ -1,25 +1,25 @@
 import { createContext, useState, useEffect, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType } from "./../types";
+import { PlayerType } from "../types";
 import axios from 'axios';
 
-type PlayerContextType = 
+type AccountContextType = 
 {
 	accounts: PlayerType[];
 	setAccounts: Dispatch<SetStateAction<PlayerType[]>>;
 	numberOfLoggedInAccounts: number;
-	setnumberOfLoggedInAccounts: Dispatch<SetStateAction<number>>;
+	setNumberOfLoggedInAccounts: Dispatch<SetStateAction<number>>;
 	loggedInAccounts: PlayerType[];
 	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
 	isPlaying: boolean;
 	setIsPlaying: Dispatch<SetStateAction<boolean>>
 };
 
-const PlayerContext = createContext<PlayerContextType | null>(null);
+const AccountContext = createContext<AccountContextType | null>(null);
 
-export function PlayerProvider({ children }: {children: ReactNode})
+export function AccountProvider({ children }: {children: ReactNode})
 {
 	const [accounts, setAccounts] = useState<PlayerType[]>([]);
-	const [numberOfLoggedInAccounts, setnumberOfLoggedInAccounts] = useState(0);
+	const [numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
 	const [loggedInAccounts, setLoggedInAccounts] = useState<PlayerType[]>([]);
 	const [isPlaying, setIsPlaying] = useState(false);
 
@@ -36,6 +36,8 @@ export function PlayerProvider({ children }: {children: ReactNode})
 				const response = await axios.get('http://localhost:5001/api/get-accounts');
 				if (response.data.success)
 					setAccounts(response.data.accounts);
+				else
+					console.log("what is happening");
 			}
 			catch (error: any)
 			{
@@ -45,15 +47,15 @@ export function PlayerProvider({ children }: {children: ReactNode})
 	}, [numberOfLoggedInAccounts])
 
 	return (
-		<PlayerContext.Provider value={{ accounts, setAccounts, numberOfLoggedInAccounts, setnumberOfLoggedInAccounts, loggedInAccounts, setLoggedInAccounts, isPlaying, setIsPlaying }}>
+		<AccountContext.Provider value={{ accounts, setAccounts, numberOfLoggedInAccounts, setNumberOfLoggedInAccounts, loggedInAccounts, setLoggedInAccounts, isPlaying, setIsPlaying }}>
 			{ children }
-		</PlayerContext.Provider>
+		</AccountContext.Provider>
 	);
 }
 
-export function usePlayerContext()
+export function useAccountContext()
 {
-	const context = useContext(PlayerContext);
+	const context = useContext(AccountContext);
 	if (!context)
 		throw new Error("Error");
 	return context;

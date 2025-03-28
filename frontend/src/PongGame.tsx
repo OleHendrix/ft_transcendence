@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from "axios";
 import { PongState } from './types';
-import { usePlayerContext } from './contexts/PlayerContext';
+import { useAccountContext } from './contexts/AccountContext';
 import { useLoginContext } from './contexts/LoginContext';
 
 function PongGame()
 {
-	const { loggedInAccounts }  = usePlayerContext();
+	const { loggedInAccounts }  = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	// loggedInPlayers[indexPlayerStats].id 

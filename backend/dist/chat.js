@@ -21,18 +21,18 @@ function setupChat(server) {
     return __awaiter(this, void 0, void 0, function* () {
         server.register(websocket_1.default);
         server.get("/ws/chat", { websocket: true }, (connection, req) => {
-            const url = new URL(connection.raw.url, "http://localhost");
+            const url = new URL(connection.url, "http://localhost");
             const chatSessionId = Number(url.searchParams.get("chatSessionId"));
             if (!chatSessionId) {
                 console.log("chat session socket failed");
-                connection.socket.close();
+                connection.close();
                 return;
             }
             console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
-            activeChats.get(chatSessionId).add(connection.socket);
-            connection.socket.on("close", () => {
+            activeChats.get(chatSessionId).add(connection);
+            connection.on("close", () => {
                 console.log(`User ${chatSessionId} disconnected`);
-                activeChats.get(chatSessionId).delete(connection.socket);
+                activeChats.get(chatSessionId).delete(connection);
                 if (activeChats.get(chatSessionId).size === 0) {
                     activeChats.delete(chatSessionId);
                 }
