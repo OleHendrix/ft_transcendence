@@ -53,7 +53,7 @@ function PlayerInfo()
 		{
 			const response = await axios.post('http://localhost:5001/api/delete-account',
 			{
-				username: loggedInPlayers[indexPlayerStats].username
+				username: loggedInAccounts[indexPlayerStats].username
 			});
 		}
 		catch (error)
@@ -104,8 +104,8 @@ function PlayerInfo()
 						onClick={() =>
 						{
 							deleteAccount();
-							const updatedPlayers = loggedInPlayers.filter((player, index) => index !== indexPlayerStats)
-							setLoggedInPlayers(updatedPlayers);
+							const updatedPlayers = loggedInAccounts.filter((player, index) => index !== indexPlayerStats)
+							setLoggedInAccounts(updatedPlayers);
 							localStorage.setItem('loggedInPlayers', JSON.stringify(updatedPlayers));
 							setShowPlayerStats(false);
 						}}>Delete Account

@@ -59,7 +59,6 @@ export interface Ball
 
 export interface AI
 {
-	enabled:		boolean;
 	lastActivation:	number;
 	desiredY:		number;
 }
@@ -78,8 +77,11 @@ export interface PongState
 	p2:			Paddle;
 	p1Score:	number;
 	p2Score:	number;
+	p1Input:	number;
+	p2Input:	number;
 	ball:		Ball;
 	lastUpdate:	number;
+	ai:			AI;
 }
 
 export interface Match

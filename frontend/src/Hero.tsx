@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { RiGamepadLine } from "react-icons/ri";
 import { TbTournament } from "react-icons/tb";
+import { RiRobot2Line } from "react-icons/ri";
 import { usePlayerContext } from "./contexts/PlayerContext";
 import Players from "./Players";
 import "./css/ponganimation.css";
@@ -16,6 +17,11 @@ function SimplePong()
 			</div>
 		</div>
 	)
+}
+
+function AddGame()
+{
+
 }
 
 function Hero()
@@ -35,6 +41,14 @@ function Hero()
 						onClick={() => setIsPlaying(true)}>
 						<p>Play</p>
 						<RiGamepadLine />
+					</motion.button>
+					<motion.button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white py-2 px-4 rounded-3xl
+						${loggedInAccounts.length !== 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`} 
+						whileHover={(loggedInAccounts.length === 1 ? {scale: 1.03} : {})} 
+						whileTap={(loggedInAccounts.length === 1 ? {scale: 0.97} : {})}
+						onClick={() => setIsPlaying(true)}>
+						<p>Play vs AI</p>
+						<RiRobot2Line />
 					</motion.button>
 					<motion.button className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white py-2 px-4 rounded-3xl
 						${loggedInAccounts.length < 3 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
