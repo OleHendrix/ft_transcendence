@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "./dist/server.js",
   "scripts": {
-    "dev": "concurrently \"tsc --watch\" \"nodemon dist/server.js\"",
+    "dev": "concurrently \"tsc --watch\" \"nodemon --ignore dist/ dist/server.js\"",
     "build": "tsc",
     "start": "node dist/server.js"
   },
