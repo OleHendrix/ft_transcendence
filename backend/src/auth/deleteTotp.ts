@@ -14,7 +14,7 @@ export default async function deleteTotp(fastify: FastifyInstance, prisma: Prism
 		await prisma.account.update(
 			{
 				where: { username },
-				data: { totpSecret: null }
+				data:  { totpSecret: null }
 			}
 		);
 

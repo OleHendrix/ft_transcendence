@@ -16,15 +16,19 @@ exports.default = login;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 function login(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post("/api/login", (req, res) => __awaiter(this, void 0, void 0, function* () {
+        fastify.post('/api/login', (req, res) => __awaiter(this, void 0, void 0, function* () {
             const { username, password } = req.body;
             const user = yield prisma.account.findUnique({ where: { username } });
             if (!user)
-                return res.status(400).send({ eror: "User not found" });
+                return res.status(400).send({ error: 'User not found' });
             const validPassword = yield bcrypt_1.default.compare(password, user.password);
             if (!validPassword)
-                return res.status(401).send({ error: "Incorrect password" });
-            const token = fastify.jwt.sign({ username: user.username, email: user.email }, { expiresIn: "1h" });
+                return res.status(401).send({ error: 'Incorrect password' });
+            yield prisma.account.update({
+                where: { username },
+                data: { online: true }
+            });
+            const token = fastify.jwt.sign({ username: user.username, email: user.email }, { expiresIn: '1h' });
             res.send({ success: true, token, user });
         }));
     });

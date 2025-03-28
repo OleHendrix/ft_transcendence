@@ -35,9 +35,10 @@ function addAccount(fastify, prisma) {
                     username: username,
                     email: email,
                     password: hashedPassword,
-                    wins: 0,
-                    draws: 0,
-                    loses: 0
+                    // wins: 0,
+                    // draws: 0,
+                    // loses: 0,
+                    // online: false
                 }
             });
             return reply.send({ success: true, account: newAccount });

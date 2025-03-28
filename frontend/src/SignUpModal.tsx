@@ -67,9 +67,9 @@ function SignUpModal()
 		setValidation(prev => (
 		{
 			...prev,
-			'Already logged in': (loggedInAccounts.some(player => player.username === formData.username) || loggedInAccounts.some(player => player.email === formData.email)),
-			'Username exists': accounts.some(player => player.username === formData.username),
-			'Email exists': accounts.some(player => player.email === formData.email),
+			'Already logged in': (loggedInAccounts.some(account => account.username === formData.username) || loggedInAccounts.some(account => account.email === formData.email)),
+			'Username exists': accounts.some(account => account.username === formData.username),
+			'Email exists': accounts.some(account => account.email === formData.email),
 			'Password don\'t matches': (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) ? true : false,
 			'Password matches!': (formData.password && formData.confirmPassword && formData.password === formData.confirmPassword) ? true : false
 		}));
@@ -155,7 +155,7 @@ function SignUpModal()
 							{
 								setShowSignUpModal(false);
 								setShowLoginModal(true)
-							}}>Please loggin here</a>
+							}}>Please login here</a>
 						</motion.div>
 					)}
 					<div className="pt-2">

@@ -23,6 +23,7 @@ const addAccount_1 = __importDefault(require("./user/addAccount"));
 const deleteAccount_1 = __importDefault(require("./user/deleteAccount"));
 const getPlayers_1 = __importDefault(require("./user/getPlayers"));
 const login_1 = __importDefault(require("./user/login"));
+const logout_1 = __importDefault(require("./user/logout"));
 const initPongServer_1 = __importDefault(require("./pong/initPongServer"));
 const chat_1 = require("./chat");
 const fastify = (0, fastify_1.default)();
@@ -38,6 +39,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, deleteAccount_1.default)(fastify, prisma);
     yield (0, getPlayers_1.default)(fastify, prisma);
     yield (0, login_1.default)(fastify, prisma);
+    yield (0, logout_1.default)(fastify, prisma);
     yield (0, setupTotp_1.default)(fastify, prisma);
     yield (0, verifyTotp_1.default)(fastify, prisma);
     yield (0, deleteTotp_1.default)(fastify, prisma);
