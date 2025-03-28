@@ -1,5 +1,6 @@
 import { match } from "assert";
 import { PongState, Match, Statics, Paddle, Ball } from "./types";
+import { useDragControls } from "framer-motion";
 
 let gameTable = new Map<number, PongState>([]);
 
@@ -166,15 +167,11 @@ function updateGame(match: Match, keysPressed: {[key: string]: boolean}): void
 	gameTable.set(match.ID, game);
 }
 
-export function getGame(match: Match, keysPressed: {[key: string]: boolean}): PongState
+export function getGame(match: Match, keysPressed: {[key: string]: boolean}): PongState | null
 {
 	if (gameTable.has(match.ID) === false)
-	{
-		//console.log(match.ID, ",", gameTable);
-		throw "Invalid matchID in get";
-	}
+		return null;
 	updateGame(match, keysPressed);
-	//console.log(gameTable.size);
 	return gameTable.get(match.ID) as PongState;
 }
 
@@ -182,7 +179,7 @@ export function postGame(): number
 {
 	let key = 0;
 	while (key in gameTable)
-		key++;
+		key++; //asuming that there'll be a gap eventually in the gameTable, should be fine
 
 	const state: PongState = {
 		p1: {
@@ -209,9 +206,9 @@ export function postGame(): number
 	return key;
 }
 
-export function deleteGame(matchID: number): void
+export function deleteGame(matchID: number): void | null
 {
 	if ((matchID in gameTable) === false)
-		throw "Invalid matchID in delete";
+		return null;
 	gameTable.delete(matchID);
 }

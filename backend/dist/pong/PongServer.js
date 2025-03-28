@@ -128,18 +128,15 @@ function updateGame(match, keysPressed) {
     gameTable.set(match.ID, game);
 }
 function getGame(match, keysPressed) {
-    if (gameTable.has(match.ID) === false) {
-        //console.log(match.ID, ",", gameTable);
-        throw "Invalid matchID in get";
-    }
+    if (gameTable.has(match.ID) === false)
+        return null;
     updateGame(match, keysPressed);
-    //console.log(gameTable.size);
     return gameTable.get(match.ID);
 }
 function postGame() {
     let key = 0;
     while (key in gameTable)
-        key++;
+        key++; //asuming that there'll be a gap eventually in the gameTable, should be fine
     const state = {
         p1: {
             pos: { x: 3, y: 50 },
@@ -166,6 +163,6 @@ function postGame() {
 }
 function deleteGame(matchID) {
     if ((matchID in gameTable) === false)
-        throw "Invalid matchID in delete";
+        return null;
     gameTable.delete(matchID);
 }

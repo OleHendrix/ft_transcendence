@@ -47,20 +47,17 @@ function PongGame()
 
 	const handleKeyDown = (e: KeyboardEvent) =>
 	{
-		console.log("keydown");
 		setKeysPressed(prev => ({ ...prev, [e.key]: true }));
 	};
 
 	const handleKeyUp = (e: KeyboardEvent) =>
 	{
-		console.log("keyup");
 		setKeysPressed(prev => ({ ...prev, [e.key]: false }));
 	};
 
 	async function initGame()
 	{
 		const response = await axios.post("http://localhost:5001/pong/add", { userID1: userID, userID2: aiID });
-		//console.log("init status:", response.status);
 	};
 
 	useEffect(() =>
@@ -71,7 +68,6 @@ function PongGame()
 			{
 				try
 				{
-					console.log("keys pressed:", keysPressed);
 					const response = await axios.post("http://localhost:5001/pong", { userID: userID, keysPressed: keysPressed });
 					if (response.data)
 					{
@@ -80,12 +76,10 @@ function PongGame()
 				}
 				catch (error)
 				{
-					//console.log("error while getting pong state");
 				}
 			}
 			fetchGame();
 		}
-		// loop();
 		animationId = requestAnimationFrame(loop);
 	}, [pong]);
 

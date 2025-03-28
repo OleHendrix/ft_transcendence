@@ -21,12 +21,8 @@ export default async function initPongServer(fastify: FastifyInstance)
 			reply.status(400);
 			return;
 		}
-		let state: PongState;
-		try
-		{
-			state = getGame(userTable.get(userID) as Match, keysPressed);
-		}
-		catch (error)
+		let state = getGame(userTable.get(userID) as Match, keysPressed);
+		if (state === null)
 		{
 			reply.status(400);
 			return;
@@ -48,7 +44,7 @@ export default async function initPongServer(fastify: FastifyInstance)
 			reply.status(200);
 			return;
 		}
-		let matchID = postGame();
+		const matchID = postGame();
 		userTable.set(userID1, { ID: matchID, isPlayer1: true,  vsAI: userID2 === -1 });
 		userTable.set(userID2, { ID: matchID, isPlayer1: false, vsAI: false });
 		reply.status(201);
@@ -63,18 +59,15 @@ export default async function initPongServer(fastify: FastifyInstance)
 			reply.status(400);
 			return;
 		}
-		try
-		{
-			const ID = userTable.get(userID1)?.ID; // shits the bed if userTable doenst contain userID1
-			userTable.delete(userID1);
-			userTable.delete(userID2); // fine because delete userTable[-1] throws no error
-			deleteGame(ID as number);
-		}
-		catch
+		if (userTable.has(userID1) === false)
 		{
 			reply.status(404);
 			return;
 		}
-		reply.status(200);
+		const ID = userTable.get(userID1)?.ID as number; // shits the bed if userTable doenst contain userID1
+		userTable.delete(userID1);
+		userTable.delete(userID2); // fine because delete userTable[-1] throws no error
+		const result = deleteGame(ID);
+		reply.status(result === null ? 404 : 200);
 	});
 }

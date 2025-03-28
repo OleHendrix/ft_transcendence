@@ -26,11 +26,8 @@ function initPongServer(fastify) {
                 reply.status(400);
                 return;
             }
-            let state;
-            try {
-                state = (0, PongServer_1.getGame)(userTable.get(userID), keysPressed);
-            }
-            catch (error) {
+            let state = (0, PongServer_1.getGame)(userTable.get(userID), keysPressed);
+            if (state === null) {
                 reply.status(400);
                 return;
             }
@@ -47,7 +44,7 @@ function initPongServer(fastify) {
                 reply.status(200);
                 return;
             }
-            let matchID = (0, PongServer_1.postGame)();
+            const matchID = (0, PongServer_1.postGame)();
             userTable.set(userID1, { ID: matchID, isPlayer1: true, vsAI: userID2 === -1 });
             userTable.set(userID2, { ID: matchID, isPlayer1: false, vsAI: false });
             reply.status(201);
@@ -60,17 +57,15 @@ function initPongServer(fastify) {
                 reply.status(400);
                 return;
             }
-            try {
-                const ID = (_a = userTable.get(userID1)) === null || _a === void 0 ? void 0 : _a.ID; // shits the bed if userTable doenst contain userID1
-                userTable.delete(userID1);
-                userTable.delete(userID2); // fine because delete userTable[-1] throws no error
-                (0, PongServer_1.deleteGame)(ID);
-            }
-            catch (_b) {
+            if (userTable.has(userID1) === false) {
                 reply.status(404);
                 return;
             }
-            reply.status(200);
+            const ID = (_a = userTable.get(userID1)) === null || _a === void 0 ? void 0 : _a.ID; // shits the bed if userTable doenst contain userID1
+            userTable.delete(userID1);
+            userTable.delete(userID2); // fine because delete userTable[-1] throws no error
+            const result = (0, PongServer_1.deleteGame)(ID);
+            reply.status(result === null ? 404 : 200);
         }));
     });
 }
