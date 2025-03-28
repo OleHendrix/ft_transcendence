@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType } from "./types";
+import { PlayerType } from "./../types";
 import axios from 'axios';
 
 type PlayerContextType = 
