@@ -13,9 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_1 = __importDefault(require("fastify"));
-const client_1 = require("@prisma/client");
-const cors_1 = __importDefault(require("@fastify/cors"));
 const fastify_jwt_1 = __importDefault(require("fastify-jwt"));
+const cors_1 = __importDefault(require("@fastify/cors"));
+const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const setupTotp_1 = __importDefault(require("./authenticator/setupTotp"));
 const verifyTotp_1 = __importDefault(require("./authenticator/verifyTotp"));
@@ -41,6 +41,7 @@ fastify.post('/api/addaccount', (request, reply) => __awaiter(void 0, void 0, vo
             return reply.status(400).send({ error: 'Username already exists' });
         if (existingAccount.email === email)
             return reply.status(400).send({ error: 'Email already exists' });
+        return reply.status(500).send({ error: 'Something went wrong' });
     }
     const newAccount = yield prisma.account.create({
         data: {
@@ -65,13 +66,13 @@ fastify.post("/api/login", (req, res) => __awaiter(void 0, void 0, void 0, funct
     const token = fastify.jwt.sign({ username: user.username, email: user.email }, { expiresIn: "1h" });
     res.send({ success: true, token, user });
 }));
-fastify.get('/api/getplayers', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+fastify.get('/api/get-accounts', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const players = yield prisma.account.findMany();
-        return reply.send({ success: true, players });
+        const accounts = yield prisma.account.findMany();
+        return reply.send({ success: true, accounts });
     }
     catch (error) {
-        return reply.status(500).send({ error: 'Error getting players from database' });
+        return reply.status(500).send({ error: 'Error getting accounts from database' });
     }
 }));
 const start = () => __awaiter(void 0, void 0, void 0, function* () {

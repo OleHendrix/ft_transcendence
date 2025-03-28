@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
+import { createContext, useState, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
 
 type LoginContextType = 
 {

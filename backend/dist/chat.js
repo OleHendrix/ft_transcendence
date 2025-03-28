@@ -21,19 +21,14 @@ function setupChat(server) {
     return __awaiter(this, void 0, void 0, function* () {
         server.register(websocket_1.default);
         server.get("/ws/chat", { websocket: true }, (connection, req) => {
-            console.log("/ws/chat");
             const url = new URL(connection.raw.url, "http://localhost");
             const chatSessionId = Number(url.searchParams.get("chatSessionId"));
-            console.log(chatSessionId);
             if (!chatSessionId) {
                 console.log("chat session socket failed");
                 connection.socket.close();
                 return;
             }
             console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
-            // if (!activeChats.has(chatSessionId)) {
-            // 	activeChats.set(chatSessionId, new Set());
-            // }
             activeChats.get(chatSessionId).add(connection.socket);
             connection.socket.on("close", () => {
                 console.log(`User ${chatSessionId} disconnected`);
@@ -83,7 +78,7 @@ function setupChat(server) {
             const sender = yield prisma.account.findUnique({ where: { id: senderId } });
             const receiver = yield prisma.account.findUnique({ where: { id: receiverId } });
             if (!sender || !receiver)
-                return reply.status(400).send({ error: 'Invalid sender or receiver' });
+                return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
             let chatSession = yield prisma.chatSession.findFirst({
                 where: {
                     OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]

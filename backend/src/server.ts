@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
-import { PrismaClient } from '@prisma/client';
-import fastifyCors from '@fastify/cors';
 import fastifyJwt from 'fastify-jwt';
+import fastifyCors from '@fastify/cors';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import setupTotp from './authenticator/setupTotp';
 import verifyTotp from './authenticator/verifyTotp';
@@ -22,35 +22,30 @@ interface AddAccountRequest
 	password: string;
 }
 
-fastify.get('/', async (request, reply) =>
-{
-  return { message: 'Server is running!' };
+fastify.get('/', async (request, reply) => {
+	return { message: 'Server is running!' };
 });
 
 fastify.post('/api/addaccount', async (request, reply) =>
 {
-	const { username, email, password }: AddAccountRequest = request.body as AddAccountRequest;
+	const { username, email, password } = request.body as AddAccountRequest;
 	const hashedPassword = await bcrypt.hash(password, 10);
-	const existingAccount = await prisma.account.findFirst(
-	{
-    	where:
-		{
-      		OR: [ { username: username }, { email: email } ]
+	const existingAccount = await prisma.account.findFirst({
+		where: {
+			OR: [ { username: username }, { email: email } ]
 		}
 	});
-	
-	if (existingAccount)
-	{
-    	if (existingAccount.username === username)
+
+	if (existingAccount) {
+		if (existingAccount.username === username)
 			return reply.status(400).send({ error: 'Username already exists' });
 		if (existingAccount.email === email)
-      		return reply.status(400).send({ error: 'Email already exists' });
+			return reply.status(400).send({ error: 'Email already exists' });
+		return reply.status(500).send({ error: 'Something went wrong' });
 	}
-	
-	const newAccount = await prisma.account.create(
-	{
-		data:
-		{
+
+	const newAccount = await prisma.account.create({
+		data: {
 			username: username,
 			email: email,
 			password: hashedPassword,
@@ -66,28 +61,22 @@ fastify.post("/api/login", async (req, res) => {
 	const { username, password } = req.body as { username: string; password: string };
 
 	const user = await prisma.account.findUnique({ where: { username } });
-	if (!user) 
-		return res.status(400).send({ eror: "User not found" })
-	
+	if (!user) return res.status(400).send({ eror: "User not found" })
+
 	const validPassword = await bcrypt.compare(password, user.password);
-	if (!validPassword) 
-		return res.status(401).send({ error: "Incorrect password"});
+	if (!validPassword) return res.status(401).send({ error: "Incorrect password"});
 
 	const token = fastify.jwt.sign({ username: user.username, email: user.email}, { expiresIn: "1h"});
 	res.send({ success: true, token, user});
 });
 
 
-fastify.get('/api/getplayers', async (request, reply) => 
-{
-	try
-	{
-		const players = await prisma.account.findMany();
-		return reply.send({ success: true, players });
-	}
-	catch (error)
-	{
-		return reply.status(500).send({ error: 'Error getting players from database' });
+fastify.get('/api/get-accounts', async (request, reply) => { //change so it dont fetch passwords
+	try {
+		const accounts = await prisma.account.findMany();
+		return reply.send({ success: true, accounts });
+	} catch (error) {
+		return reply.status(500).send({ error: 'Error getting accounts from database' });
 	}
 });
 

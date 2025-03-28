@@ -9,17 +9,17 @@ import Loader from "./Loader";
 
 interface CheckSubmitProps
 {
-  formData: SignUpFormType;
-  setPlayerCount: React.Dispatch<React.SetStateAction<number>>;
-  setIsLoading: (value: boolean) => void;
+	formData: SignUpFormType;
+	setnumberOfLoggedInAccounts: React.Dispatch<React.SetStateAction<number>>;
+	setIsLoading: (value: boolean) => void;
 }
 
-async function checkSubmit({ formData, setPlayerCount, setIsLoading}: CheckSubmitProps)
+async function checkSubmit({ formData, setnumberOfLoggedInAccounts, setIsLoading}: CheckSubmitProps)
 {
 	const { username, email, password, confirmPassword } = formData;
 	setIsLoading(true);
 	let success = false;
-    const startTime = Date.now();
+	const startTime = Date.now();
 
 	try
 	{
@@ -27,7 +27,7 @@ async function checkSubmit({ formData, setPlayerCount, setIsLoading}: CheckSubmi
 		if (response.data.success)
 		{
 
-			setPlayerCount((count: number) => count + 1);
+			setnumberOfLoggedInAccounts((count: number) => count + 1);
 			success = true;
 		}
 		else
@@ -47,7 +47,7 @@ async function checkSubmit({ formData, setPlayerCount, setIsLoading}: CheckSubmi
 
 function SignUpModal()
 {
-	const { players, setPlayerCount, loggedInPlayers } = usePlayerContext();
+	const { accounts, setnumberOfLoggedInAccounts, loggedInAccounts } = usePlayerContext();
 	const { setShowSignUpModal, setShowLoginModal } = useLoginContext();
 
 	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
@@ -67,9 +67,9 @@ function SignUpModal()
 		setValidation(prev => (
 		{
 			...prev,
-			'Already logged in': (loggedInPlayers.some(player => player.username === formData.username) || loggedInPlayers.some(player => player.email === formData.email)),
-			'Username exists': players.some(player => player.username === formData.username),
-			'Email exists': players.some(player => player.email === formData.email),
+			'Already logged in': (loggedInAccounts.some(player => player.username === formData.username) || loggedInAccounts.some(player => player.email === formData.email)),
+			'Username exists': accounts.some(player => player.username === formData.username),
+			'Email exists': accounts.some(player => player.email === formData.email),
 			'Password don\'t matches': (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) ? true : false,
 			'Password matches!': (formData.password && formData.confirmPassword && formData.password === formData.confirmPassword) ? true : false
 		}));
@@ -95,7 +95,7 @@ function SignUpModal()
 					onSubmit={(e) => 
 					{
 						e.preventDefault();
-						checkSubmit({formData, setPlayerCount, setIsLoading}).then(success => 
+						checkSubmit({formData, setnumberOfLoggedInAccounts, setIsLoading}).then(success => 
 						{
 							if (success)
 							{

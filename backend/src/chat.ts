@@ -1,21 +1,18 @@
-import { FastifyInstance } from 'fastify';
-import { PrismaClient } from '@prisma/client';
-import fastifyWebsocket from '@fastify/websocket';
+import { FastifyInstance } 	from 'fastify';
+import { PrismaClient } 	from '@prisma/client';
+import fastifyWebsocket 	from '@fastify/websocket';
 
-const prisma = new PrismaClient();
-const activeChats = new Map<number, Set<WebSocket>>(); 
+const prisma 		= new PrismaClient();
+const activeChats 	= new Map<number, Set<WebSocket>>();
 
 export async function setupChat(server: FastifyInstance)
 {
 	server.register(fastifyWebsocket);
 
 	server.get("/ws/chat", { websocket: true }, (connection, req) => {
-		console.log("/ws/chat");
 		const url = new URL(connection.raw.url, "http://localhost");
 
 		const chatSessionId  = Number(url.searchParams.get("chatSessionId"));
-		console.log(chatSessionId);
-
 		if (!chatSessionId) {
 			console.log("chat session socket failed");
 			connection.socket.close();
@@ -23,10 +20,6 @@ export async function setupChat(server: FastifyInstance)
 		}
 
 		console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
-
-		// if (!activeChats.has(chatSessionId)) {
-		// 	activeChats.set(chatSessionId, new Set());
-		// }
 
 		activeChats.get(chatSessionId)!.add(connection.socket);
 
@@ -51,7 +44,7 @@ export async function setupChat(server: FastifyInstance)
 		let chatSession = await prisma.chatSession.findFirst({
 			where: {
 				OR: [
-					{ account1Id: senderIdNum, account2Id: receiverIdNum }, 
+					{ account1Id: senderIdNum, account2Id: receiverIdNum },
 					{ account1Id: receiverIdNum, account2Id: senderIdNum }
 				]
 			}
@@ -59,8 +52,7 @@ export async function setupChat(server: FastifyInstance)
 		
 		if (!chatSession)
 		{
-			chatSession = await prisma.chatSession.create(
-			{
+			chatSession = await prisma.chatSession.create({
 				data:
 				{ 
 					account1Id: senderIdNum,
@@ -96,7 +88,7 @@ export async function setupChat(server: FastifyInstance)
 		const receiver = await prisma.account.findUnique({ where: { id: receiverId } });
 		
 		if (!sender || !receiver)
-			return reply.status(400).send({ error: 'Invalid sender or receiver' });
+			return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
 
 		let chatSession = await prisma.chatSession.findFirst(
 		{
@@ -105,11 +97,10 @@ export async function setupChat(server: FastifyInstance)
 				OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
 			}
 		});
-		
+	
 		if (!chatSession)
 		{
-			chatSession = await prisma.chatSession.create(
-			{
+			chatSession = await prisma.chatSession.create({
 				data:
 				{ 
 					account1Id: senderId,
@@ -117,9 +108,8 @@ export async function setupChat(server: FastifyInstance)
 				}
 			});
 		}
-		
-		const message = await prisma.message.create(
-		{
+	
+		const message = await prisma.message.create({
 			data:
 			{
 				content,

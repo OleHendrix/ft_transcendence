@@ -10,7 +10,7 @@ import { IoMdClose } from "react-icons/io";
 
 function Enable2FA()
 {
-	const { loggedInPlayers }  = usePlayerContext();
+	const { loggedInAccounts }  = usePlayerContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	const [token, setToken]     = useState('');
@@ -21,7 +21,7 @@ function Enable2FA()
 		try {
 			const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
 			{
-				username: loggedInPlayers[indexPlayerStats].username
+				username: loggedInAccounts[indexPlayerStats].username
 			});
 	
 			setQrCode(res.data.qrCodeUrl);
@@ -36,7 +36,7 @@ function Enable2FA()
 		try {
 			const res = await axios.post('http://localhost:5001/api/auth/verify-totp',
 			{
-				username: loggedInPlayers[indexPlayerStats].username,
+				username: loggedInAccounts[indexPlayerStats].username,
 				token
 			});
 	
@@ -88,18 +88,18 @@ function Enable2FA()
 
 function EditProfile()
 {
-	const { loggedInPlayers }  = usePlayerContext();
+	const { loggedInAccounts }  = usePlayerContext();
 	const { indexPlayerStats } = useLoginContext();
 
 		return (
 			<div className="flex flex-col w-full text-left items-start space-y-4">
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">Username</p>
-					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.username}</p>
+					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInAccounts[indexPlayerStats]?.username}</p>
 				</div>
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">Email</p>
-					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInPlayers[indexPlayerStats]?.email}</p>
+					<p className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600">{loggedInAccounts[indexPlayerStats]?.email}</p>
 				</div>
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">Password</p>
