@@ -12,23 +12,24 @@ function Enable2FA()
 	const [qrCode, setQrCode]   = useState<string | null>(null);
 	const [scannedQrCode, setScannedQrCode ] = useState(false);
 
-	const handleEnable2FA = async () => {
-		try {
-			const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
-			{
-				username: loggedInAccounts[indexPlayerStats].username
-			});
-	
-			setQrCode(res.data.qrCodeUrl);
-			setShow2FA(true);
-			console.log('QR Code:', qrCode);
-		} catch (err) {
-			console.error('Error enabling 2FA:', err);
-		}
-		};
-		handleEnable2FA();
-	}, [loggedInPlayers]);
-	
+	useEffect(() => 
+	{
+		const handleEnable2FA = async () => {
+			try {
+				const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
+					{
+						username: loggedInAccounts[indexPlayerStats].username
+					});
+					
+					setQrCode(res.data.qrCodeUrl);
+					console.log('QR Code:', qrCode);
+				} catch (err) {
+					console.error('Error enabling 2FA:', err);
+				}
+			};
+			handleEnable2FA();
+	}, [loggedInAccounts]);
+			
 	const verify2FA = async () =>
 	{
 		try
@@ -99,7 +100,7 @@ function EditProfile()
 		{
 			const response = await axios.post('http://localhost:5001/api/auth/delete-totp',
 			{
-				username: loggedInPlayers[indexPlayerStats].username
+				username: loggedInAccounts[indexPlayerStats].username
 			});
 		}
 		catch (error)
@@ -125,11 +126,11 @@ function EditProfile()
 				</div>
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">2FA</p>
-					{!loggedInPlayers[indexPlayerStats].totpSecret && <button className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition"
+					{!loggedInAccounts[indexPlayerStats].totpSecret && <button className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition"
 						onClick={() => { setSettingUp2FA(true) } }>
 						Enable
 					</button>}
-					{loggedInPlayers[indexPlayerStats].totpSecret && <button className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition"
+					{loggedInAccounts[indexPlayerStats].totpSecret && <button className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition"
 						onClick={disable2FA}>
 						Disable
 					</button>}
