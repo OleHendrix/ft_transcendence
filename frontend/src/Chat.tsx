@@ -20,6 +20,7 @@ function Chat()
 	{
 		async function getMessages()
 		{
+			console.log("getMessages called: messageReceived status:", messageReceived);
 			try {
 				const response = await axios.get('http://localhost:5001/api/get-messages',
 				{
@@ -42,6 +43,7 @@ function Chat()
 		getMessages();
 	}, [receiverId, messageReceived])
 
+	/* open webSocket */
 	useEffect(() => {
 		if (!chatSessionId) return;
 	
@@ -53,10 +55,10 @@ function Chat()
 			setMessageReceived(true);
 		};
 	
-		return () => {
-			console.log("closed");
-			socket.close();
-		}
+		// return () => {
+		// 	console.log("closed");
+		// 	socket.close();
+		// }
 	}, [chatSessionId]);
 
 	return(
@@ -174,12 +176,16 @@ function MessageInput() {
 			const response = await axios.post('http://localhost:5001/api/send-message', {
 				senderId: loggedInAccounts[0]?.id,
 				receiverId: receiverId,
-				content: message
+				content: message,
 			});
 
 			if (response.data.success)
+			{
 				setMessageReceived(true);
+				console.log("MessageInput: setMessageReceived(true)");
+			}
 			target.value = '';
+			setMessageReceived(false);
 		} catch (error) {
 			console.error("Error sending message:", error);
 		}

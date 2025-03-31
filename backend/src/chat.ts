@@ -20,10 +20,10 @@ export async function setupChat(server: FastifyInstance)
 			return;
 		}
 
-		console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
-
 		activeChats.get(chatSessionId)!.add(connection);
 
+		console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
+		
 		connection.on("close", () => {
 			console.log(`User ${chatSessionId} disconnected`);
 			activeChats.get(chatSessionId)!.delete(connection);
@@ -35,9 +35,7 @@ export async function setupChat(server: FastifyInstance)
 
 	server.get("/api/get-messages", async (request, reply) =>
 	{
-
 		const { senderId, receiverId } = request.query as { senderId: string; receiverId: string };
-		
 		const senderIdNum = parseInt(senderId as string);
 		const receiverIdNum = parseInt(receiverId as string);
 		
@@ -51,11 +49,9 @@ export async function setupChat(server: FastifyInstance)
 			}
 		});
 		
-		if (!chatSession)
-		{
+		if (!chatSession) {
 			chatSession = await prisma.chatSession.create({
-				data:
-				{ 
+				data: { 
 					account1Id: senderIdNum,
 					account2Id: receiverIdNum
 				}
@@ -73,11 +69,11 @@ export async function setupChat(server: FastifyInstance)
 
 	async function notifyClients(newMessage: any) {
 		const { chatSessionId } = newMessage;
-		console.log("notifyclient csid", chatSessionId);
+		console.log("notifyClient csid", chatSessionId);
 		const activeChatSockets = activeChats.get(chatSessionId);
 		
 		if (activeChatSockets) {
-
+			// setMessageReceived(true);
 		}
 	}
 

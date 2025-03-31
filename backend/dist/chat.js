@@ -28,8 +28,8 @@ function setupChat(server) {
                 connection.close();
                 return;
             }
-            console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
             activeChats.get(chatSessionId).add(connection);
+            console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
             connection.on("close", () => {
                 console.log(`User ${chatSessionId} disconnected`);
                 activeChats.get(chatSessionId).delete(connection);
@@ -67,9 +67,10 @@ function setupChat(server) {
         function notifyClients(newMessage) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { chatSessionId } = newMessage;
-                console.log("notifyclient csid", chatSessionId);
+                console.log("notifyClient csid", chatSessionId);
                 const activeChatSockets = activeChats.get(chatSessionId);
                 if (activeChatSockets) {
+                    // setMessageReceived(true);
                 }
             });
         }
