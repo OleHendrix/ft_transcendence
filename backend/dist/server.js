@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.prisma = void 0;
 const fastify_1 = __importDefault(require("fastify"));
 const fastify_jwt_1 = __importDefault(require("fastify-jwt"));
 const cors_1 = __importDefault(require("@fastify/cors"));
@@ -27,7 +28,7 @@ const logout_1 = __importDefault(require("./user/logout"));
 const initPongServer_1 = __importDefault(require("./pong/initPongServer"));
 const chat_1 = require("./chat");
 const fastify = (0, fastify_1.default)();
-const prisma = new client_1.PrismaClient();
+exports.prisma = new client_1.PrismaClient();
 fastify.register(cors_1.default);
 fastify.register(fastify_jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
 (0, chat_1.setupChat)(fastify);
@@ -35,14 +36,14 @@ fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function*
     return { message: 'Server is running!' };
 }));
 const start = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, addAccount_1.default)(fastify, prisma);
-    yield (0, deleteAccount_1.default)(fastify, prisma);
-    yield (0, getAccounts_1.default)(fastify, prisma);
-    yield (0, login_1.default)(fastify, prisma);
-    yield (0, logout_1.default)(fastify, prisma);
-    yield (0, setupTotp_1.default)(fastify, prisma);
-    yield (0, verifyTotp_1.default)(fastify, prisma);
-    yield (0, deleteTotp_1.default)(fastify, prisma);
+    yield (0, addAccount_1.default)(fastify, exports.prisma);
+    yield (0, deleteAccount_1.default)(fastify, exports.prisma);
+    yield (0, getAccounts_1.default)(fastify, exports.prisma);
+    yield (0, login_1.default)(fastify, exports.prisma);
+    yield (0, logout_1.default)(fastify, exports.prisma);
+    yield (0, setupTotp_1.default)(fastify, exports.prisma);
+    yield (0, verifyTotp_1.default)(fastify, exports.prisma);
+    yield (0, deleteTotp_1.default)(fastify, exports.prisma);
     yield (0, initPongServer_1.default)(fastify);
     fastify.listen({ port: 5001, host: 'localhost' }, (err, address) => {
         if (err) {

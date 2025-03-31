@@ -1,8 +1,5 @@
-import { match } from "assert";
 import { PongState, Match, Statics, Paddle, Ball } from "./types";
-import { useDragControls } from "framer-motion";
-
-let gameTable = new Map<number, PongState>([]);
+import { prisma } from './../server';
 
 const s: Statics =
 ({
@@ -61,7 +58,7 @@ function paddleColision(paddle: Paddle, ball: Ball)
 	}
 }
 
-function handleColision(game: PongState)
+function handleColision(game: PongState, match: Match)
 {
 	let ball: Ball = game.ball;
 
@@ -75,12 +72,21 @@ function handleColision(game: PongState)
 	if (ball.pos.x <= -2)
 	{
 		game.p2Score++;
+		if (game.p2Score >= game.maxPoints)
+		{
+			endGame(match, false);
+		}
 		game.ball = resetBall(game.p1Score, game.p2Score);
 	}
 	if (ball.pos.x >= 102)
 	{
 		game.p1Score++;
+		if (game.p1Score >= game.maxPoints)
+		{
+			endGame(match, true);
+		}
 		game.ball = resetBall(game.p1Score, game.p2Score);
+			
 	}
 }
 
@@ -94,32 +100,22 @@ function updateBall(ball: Ball)
 
 function manageAIInput(match: Match, game: PongState, ticks: number): void
 {
-	if (match.isPlayer1 && match.vsAI)
-	{
-		if (game.ai.desiredY > game.p2.pos.y + game.p2.size.y / 2)
-			game.p2Input = 1;
-		else if (game.ai.desiredY < game.p2.pos.y - game.p2.size.y / 2)
-			game.p2Input = -1;
-		if (ticks % 2 === 0 && Math.abs(game.ai.desiredY - game.p2.pos.y) < game.p2.size.y)
-			game.p2Input = 0;
-	}
+	if (game.ai.desiredY > game.p2.pos.y + game.p2.size.y / 2)
+		game.p2Input = 1;
+	else if (game.ai.desiredY < game.p2.pos.y - game.p2.size.y / 2)
+		game.p2Input = -1;
+	if (ticks % 2 === 0 && Math.abs(game.ai.desiredY - game.p2.pos.y) < game.p2.size.y)
+		game.p2Input = 0;
 }
 
 function tick(match: Match, game: PongState, ticks: number): void
 {
-	manageAIInput(match, game, ticks);
+	if (match.p2 === -1)
+		manageAIInput(match, game, ticks);
 	managePaddle(game.p1, game.p1Input);
 	managePaddle(game.p2, game.p2Input);
 	updateBall(game.ball);
-	handleColision(game);
-}
-
-function updateInput(match: Match, game: PongState, keysPressed: {[key: string]: boolean})
-{
-	if (match.isPlayer1)
-		game.p1Input = Number(keysPressed['s']         ?? false) - Number(keysPressed['w']       ?? false);
-	else
-		game.p2Input = Number(keysPressed['ArrowDown'] ?? false) - Number(keysPressed['ArrowUp'] ?? false);
+	handleColision(game, match);
 }
 
 function manageAI(game: PongState): void
@@ -145,43 +141,37 @@ function manageAI(game: PongState): void
 	game.ai.desiredY = Math.max(game.p2.size.y / 2, Math.min(100 - game.p2.size.y / 2, ballCopy.pos.y));
 }
 
-function updateGame(match: Match, keysPressed: {[key: string]: boolean}): void
+function updateInput(match: Match, userID: number, game: PongState, keysPressed: {[key: string]: boolean})
 {
-	let game = gameTable.get(match.ID);
+	// console.log ("1:", match.p1, "2:", match.p2, "isLocal:", match.isLocalGame);
+	if (match.p1 === userID || match.isLocalGame)
+		game.p1Input = Number(keysPressed['s']         ?? false) - Number(keysPressed['w']       ?? false);
+	if (match.p2 === userID || match.isLocalGame)
+		game.p2Input = Number(keysPressed['ArrowDown'] ?? false) - Number(keysPressed['ArrowUp'] ?? false);
+}
+
+export function updateGame(match: Match, userID: number, keysPressed: {[key: string]: boolean}): void
+{
+	let game = match.state;
 	const now = Math.floor(Date.now() / 10);
 
-	if (game === undefined)
-		return;
 	if (game.lastUpdate === -1)
 		game.lastUpdate = now;
-	for (; game.lastUpdate < now; game.lastUpdate++)
+	for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++)
 	{
-		if (match.vsAI && game.ai.lastActivation + 100 <= game.lastUpdate)
+		if (match.p2 === -1 && game.ai.lastActivation + 100 <= game.lastUpdate)
 		{
 			manageAI(game);
 			game.ai.lastActivation = game.lastUpdate;
 		}
 		tick(match, game, game.lastUpdate);
 	}
-	updateInput(match, game, keysPressed);
-	gameTable.set(match.ID, game);
+	updateInput(match, userID, game, keysPressed);
 }
 
-export function getGame(match: Match, keysPressed: {[key: string]: boolean}): PongState | null
+export function initGame(): PongState
 {
-	if (gameTable.has(match.ID) === false)
-		return null;
-	updateGame(match, keysPressed);
-	return gameTable.get(match.ID) as PongState;
-}
-
-export function postGame(): number
-{
-	let key = 0;
-	while (key in gameTable)
-		key++; //asuming that there'll be a gap eventually in the gameTable, should be fine
-
-	const state: PongState = {
+	return {
 		p1: {
 			pos: { x: 3, y: 50},
 			size: { x: 2, y: 20 },
@@ -201,14 +191,32 @@ export function postGame(): number
 		ball: resetBall(0, 0),
 		lastUpdate: -1,
 		ai: { lastActivation: 0, desiredY: 0 },
+		maxPoints: 3,
+		p1Won: null,
 	};
-	gameTable.set(key, state);
-	return key;
 }
 
-export function deleteGame(matchID: number): void | null
+export async function endGame(match: Match, p1Wins: boolean)
 {
-	if ((matchID in gameTable) === false)
-		return null;
-	gameTable.delete(matchID);
+	match.state.p1Won = p1Wins;
+	let winner = match.p1;
+	let loser  = match.p2;
+	if (p1Wins === false)
+	{
+		[winner, loser] = [loser, winner];
+	}
+
+	await prisma.account.update(
+		{
+			where: { id: winner },
+			data:  { wins: { increment: 1 } }
+		}
+	);
+
+	await prisma.account.update(
+		{
+			where: { id: loser },
+			data:  { loses: { increment: 1 } }
+		}
+	);
 }

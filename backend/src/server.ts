@@ -18,7 +18,7 @@ import initPongServer from './pong/initPongServer';
 import { setupChat } from './chat';
 
 const fastify = Fastify();
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 fastify.register(fastifyCors);
 fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});

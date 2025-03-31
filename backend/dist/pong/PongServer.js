@@ -1,9 +1,18 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGame = getGame;
-exports.postGame = postGame;
-exports.deleteGame = deleteGame;
-let gameTable = new Map([]);
+exports.updateGame = updateGame;
+exports.initGame = initGame;
+exports.endGame = endGame;
+const server_1 = require("./../server");
 const s = ({
     BOUNCE: { x: -1.03, y: -0.85 },
     CARRYOVER: 0.4,
@@ -46,7 +55,7 @@ function paddleColision(paddle, ball) {
         ball.dir.y += paddle.dir.y * s.CARRYOVER;
     }
 }
-function handleColision(game) {
+function handleColision(game, match) {
     let ball = game.ball;
     paddleColision(game.p1, ball);
     paddleColision(game.p2, ball);
@@ -56,10 +65,16 @@ function handleColision(game) {
     }
     if (ball.pos.x <= -2) {
         game.p2Score++;
+        if (game.p2Score >= game.maxPoints) {
+            endGame(match, false);
+        }
         game.ball = resetBall(game.p1Score, game.p2Score);
     }
     if (ball.pos.x >= 102) {
         game.p1Score++;
+        if (game.p1Score >= game.maxPoints) {
+            endGame(match, true);
+        }
         game.ball = resetBall(game.p1Score, game.p2Score);
     }
 }
@@ -70,28 +85,20 @@ function updateBall(ball) {
     ball.pos.y += ball.dir.y;
 }
 function manageAIInput(match, game, ticks) {
-    if (match.isPlayer1 && match.vsAI) {
-        if (game.ai.desiredY > game.p2.pos.y + game.p2.size.y / 2)
-            game.p2Input = 1;
-        else if (game.ai.desiredY < game.p2.pos.y - game.p2.size.y / 2)
-            game.p2Input = -1;
-        if (ticks % 2 === 0 && Math.abs(game.ai.desiredY - game.p2.pos.y) < game.p2.size.y)
-            game.p2Input = 0;
-    }
+    if (game.ai.desiredY > game.p2.pos.y + game.p2.size.y / 2)
+        game.p2Input = 1;
+    else if (game.ai.desiredY < game.p2.pos.y - game.p2.size.y / 2)
+        game.p2Input = -1;
+    if (ticks % 2 === 0 && Math.abs(game.ai.desiredY - game.p2.pos.y) < game.p2.size.y)
+        game.p2Input = 0;
 }
 function tick(match, game, ticks) {
-    manageAIInput(match, game, ticks);
+    if (match.p2 === -1)
+        manageAIInput(match, game, ticks);
     managePaddle(game.p1, game.p1Input);
     managePaddle(game.p2, game.p2Input);
     updateBall(game.ball);
-    handleColision(game);
-}
-function updateInput(match, game, keysPressed) {
-    var _a, _b, _c, _d;
-    if (match.isPlayer1)
-        game.p1Input = Number((_a = keysPressed['s']) !== null && _a !== void 0 ? _a : false) - Number((_b = keysPressed['w']) !== null && _b !== void 0 ? _b : false);
-    else
-        game.p2Input = Number((_c = keysPressed['ArrowDown']) !== null && _c !== void 0 ? _c : false) - Number((_d = keysPressed['ArrowUp']) !== null && _d !== void 0 ? _d : false);
+    handleColision(game, match);
 }
 function manageAI(game) {
     const ballCopy = structuredClone(game.ball);
@@ -110,34 +117,30 @@ function manageAI(game) {
     }
     game.ai.desiredY = Math.max(game.p2.size.y / 2, Math.min(100 - game.p2.size.y / 2, ballCopy.pos.y));
 }
-function updateGame(match, keysPressed) {
-    let game = gameTable.get(match.ID);
+function updateInput(match, userID, game, keysPressed) {
+    var _a, _b, _c, _d;
+    // console.log ("1:", match.p1, "2:", match.p2, "isLocal:", match.isLocalGame);
+    if (match.p1 === userID || match.isLocalGame)
+        game.p1Input = Number((_a = keysPressed['s']) !== null && _a !== void 0 ? _a : false) - Number((_b = keysPressed['w']) !== null && _b !== void 0 ? _b : false);
+    if (match.p2 === userID || match.isLocalGame)
+        game.p2Input = Number((_c = keysPressed['ArrowDown']) !== null && _c !== void 0 ? _c : false) - Number((_d = keysPressed['ArrowUp']) !== null && _d !== void 0 ? _d : false);
+}
+function updateGame(match, userID, keysPressed) {
+    let game = match.state;
     const now = Math.floor(Date.now() / 10);
-    if (game === undefined)
-        return;
     if (game.lastUpdate === -1)
         game.lastUpdate = now;
-    for (; game.lastUpdate < now; game.lastUpdate++) {
-        if (match.vsAI && game.ai.lastActivation + 100 <= game.lastUpdate) {
+    for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++) {
+        if (match.p2 === -1 && game.ai.lastActivation + 100 <= game.lastUpdate) {
             manageAI(game);
             game.ai.lastActivation = game.lastUpdate;
         }
         tick(match, game, game.lastUpdate);
     }
-    updateInput(match, game, keysPressed);
-    gameTable.set(match.ID, game);
+    updateInput(match, userID, game, keysPressed);
 }
-function getGame(match, keysPressed) {
-    if (gameTable.has(match.ID) === false)
-        return null;
-    updateGame(match, keysPressed);
-    return gameTable.get(match.ID);
-}
-function postGame() {
-    let key = 0;
-    while (key in gameTable)
-        key++; //asuming that there'll be a gap eventually in the gameTable, should be fine
-    const state = {
+function initGame() {
+    return {
         p1: {
             pos: { x: 3, y: 50 },
             size: { x: 2, y: 20 },
@@ -157,12 +160,25 @@ function postGame() {
         ball: resetBall(0, 0),
         lastUpdate: -1,
         ai: { lastActivation: 0, desiredY: 0 },
+        maxPoints: 3,
+        p1Won: null,
     };
-    gameTable.set(key, state);
-    return key;
 }
-function deleteGame(matchID) {
-    if ((matchID in gameTable) === false)
-        return null;
-    gameTable.delete(matchID);
+function endGame(match, p1Wins) {
+    return __awaiter(this, void 0, void 0, function* () {
+        match.state.p1Won = p1Wins;
+        let winner = match.p1;
+        let loser = match.p2;
+        if (p1Wins === false) {
+            [winner, loser] = [loser, winner];
+        }
+        yield server_1.prisma.account.update({
+            where: { id: winner },
+            data: { wins: { increment: 1 } }
+        });
+        yield server_1.prisma.account.update({
+            where: { id: loser },
+            data: { loses: { increment: 1 } }
+        });
+    });
 }

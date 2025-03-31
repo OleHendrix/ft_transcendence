@@ -11,7 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = initPongServer;
 const PongServer_1 = require("./PongServer");
-let userTable = new Map([]);
+let matchTable = new Map([]);
+let matchIDTable = new Map([]);
 function initPongServer(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
         // gets userID's match and sends it's inputs
@@ -22,50 +23,82 @@ function initPongServer(fastify) {
                 reply.status(400);
                 return;
             }
-            if (userTable.has(userID) === false) {
+            if (matchIDTable.has(userID) === false) {
                 reply.status(400);
                 return;
             }
-            let state = (0, PongServer_1.getGame)(userTable.get(userID), keysPressed);
-            if (state === null) {
+            const key = matchIDTable.get(userID);
+            if (matchTable.has(key) === false) {
                 reply.status(400);
                 return;
             }
-            reply.status(200).send(state);
+            let match = matchTable.get(key);
+            (0, PongServer_1.updateGame)(match, userID, keysPressed);
+            reply.status(200).send(match.state);
         }));
         // adds a new match between userID1 and userID2
         fastify.post('/pong/add', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { userID1, userID2 } = request.body;
-            if (userID1 === undefined || userID2 === undefined) {
+            const { userID1, userID2, isLocalGame } = request.body;
+            if (userID1 === undefined || userID2 === undefined || isLocalGame === undefined) {
                 reply.status(400);
                 return;
             }
-            if (userTable.has(userID1) && (userID2 === -1 || userTable.has(userID2))) {
-                reply.status(200);
-                return;
+            let newMatch = {
+                state: (0, PongServer_1.initGame)(),
+                p1: userID1,
+                p2: userID2,
+                isLocalGame: isLocalGame,
+            };
+            let key = 0;
+            while (matchTable.has(key)) {
+                key++;
             }
-            const matchID = (0, PongServer_1.postGame)();
-            userTable.set(userID1, { ID: matchID, isPlayer1: true, vsAI: userID2 === -1 });
-            userTable.set(userID2, { ID: matchID, isPlayer1: false, vsAI: false });
+            matchTable.set(key, newMatch);
+            matchIDTable.set(userID1, key);
+            if (userID2 !== -1)
+                matchIDTable.set(userID2, key);
             reply.status(201);
         }));
-        // deletes the match userID1 is in
+        fastify.post('/pong/end-game', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { userID } = request.body;
+            if (userID === undefined) {
+                reply.status(204);
+                return;
+            }
+            if (matchIDTable.has(userID) === false) {
+                reply.status(204);
+                return;
+            }
+            const key = matchIDTable.get(userID);
+            if (matchTable.has(key) === false) {
+                reply.status(204);
+                return;
+            }
+            const match = matchTable.get(key);
+            (0, PongServer_1.endGame)(match, match.p1 !== userID);
+            reply.status(200);
+        }));
         fastify.post('/pong/delete', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            const { userID1, userID2 } = request.body;
-            if (userID1 === undefined || userID2 === undefined) {
-                reply.status(400);
+            const { userID } = request.body;
+            if (userID === undefined) {
+                reply.status(204);
                 return;
             }
-            if (userTable.has(userID1) === false) {
-                reply.status(404);
+            if (matchIDTable.has(userID) === false) {
+                reply.status(204);
                 return;
             }
-            const ID = (_a = userTable.get(userID1)) === null || _a === void 0 ? void 0 : _a.ID; // shits the bed if userTable doenst contain userID1
-            userTable.delete(userID1);
-            userTable.delete(userID2); // fine because delete userTable[-1] throws no error
-            const result = (0, PongServer_1.deleteGame)(ID);
-            reply.status(result === null ? 404 : 200);
+            const key = matchIDTable.get(userID);
+            matchIDTable.delete(userID);
+            if (matchTable.has(key) === false) {
+                reply.status(204);
+                return;
+            }
+            const match = matchTable.get(key);
+            if (matchIDTable.has(match.p1) === false && matchIDTable.has(match.p2) === false) {
+                matchTable.delete(key);
+            }
+            reply.status(200);
         }));
     });
 }

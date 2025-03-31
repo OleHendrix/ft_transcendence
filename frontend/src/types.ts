@@ -63,14 +63,6 @@ export interface AI
 	desiredY:		number;
 }
 
-export interface Statics
-{
-	BOUNCE:		Vec2;
-	CARRYOVER:	number,
-	VELOCITY:	number,
-	FRICTION:	number,
-}
-
 export interface PongState
 {
 	p1:			Paddle;
@@ -82,11 +74,7 @@ export interface PongState
 	ball:		Ball;
 	lastUpdate:	number;
 	ai:			AI;
+	maxPoints:	number,
+	p1Won:		boolean | null;
 }
 
-export interface Match
-{
-	ID:			number;
-	isPlayer1:	boolean;
-	vsAI:		boolean;
-};

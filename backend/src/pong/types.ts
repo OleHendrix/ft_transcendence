@@ -81,11 +81,14 @@ export interface PongState
 	ball:		Ball;
 	lastUpdate:	number;
 	ai:			AI;
+	maxPoints:	number,
+	p1Won:		boolean | null;
 }
 
 export interface Match
 {
-	ID:			number;
-	isPlayer1:	boolean;
-	vsAI:		boolean;
+	state:			PongState;
+	p1:				number;
+	p2:				number;
+	isLocalGame:	boolean;
 };
