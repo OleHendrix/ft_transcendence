@@ -3,13 +3,14 @@ import { PrismaClient } from '@prisma/client';
 import fastifyWebsocket from '@fastify/websocket';
 
 const prisma = new PrismaClient();
-const activeChats = new Map<number, Set<WebSocket>>(); 
+// const activeChats = new Map<number, Set<WebSocket>>(); 
 
 export async function setupChat(server: FastifyInstance)
 {
 	server.register(fastifyWebsocket);
 
-	server.get("/ws/chat", { websocket: true }, (connection, req) => {
+	server.get("/ws/chat", { websocket: true }, (connection, req) =>
+	{
 		console.log("/ws/chat");
 		const url = new URL(connection.raw.url, "http://localhost");
 
@@ -48,9 +49,12 @@ export async function setupChat(server: FastifyInstance)
 		const receiverIdNum = parseInt(receiverId as string);
 		
 		
-		let chatSession = await prisma.chatSession.findFirst({
-			where: {
-				OR: [
+		let chatSession = await prisma.chatSession.findFirst(
+		{
+			where:
+			{
+				OR:
+				[
 					{ account1Id: senderIdNum, account2Id: receiverIdNum }, 
 					{ account1Id: receiverIdNum, account2Id: senderIdNum }
 				]
@@ -77,17 +81,6 @@ export async function setupChat(server: FastifyInstance)
 
 		return (reply.send({ success: true, messages: messages, chatSessionId: chatSession.id}));
 	});
-
-	async function notifyClients(newMessage: any) {
-		const { chatSessionId } = newMessage;
-		console.log("notifyclient csid", chatSessionId);
-		const activeChatSockets = activeChats.get(chatSessionId);
-		
-		if (activeChatSockets) {
-
-		}
-	}
-
 	
 	server.post('/api/send-message', async (request, reply) =>
 	{
@@ -128,8 +121,6 @@ export async function setupChat(server: FastifyInstance)
 				chatSessionId: chatSession.id
 			}
 		});
-
-		notifyClients(message);
 		
 		return reply.send({ success: true, message });
 	});

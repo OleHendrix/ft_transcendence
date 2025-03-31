@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { usePlayerContext } from "./contexts/PlayerContext";
 import { useLoginContext } from "./contexts/LoginContext";
 
-function Enable2FA()
+export function Enable2FA()
 {
 	const { loggedInPlayers }  = usePlayerContext();
 	const { indexPlayerStats } = useLoginContext();
@@ -57,37 +57,43 @@ function Enable2FA()
 	};
 
 	return (
-		<div className="w-full">
-			<div className="mt-4 p-4 rounded-xl">
-				{!scannedQrCode && (<>
-					<p className="text-sm font-medium mb-2">Scan this QR code with Google Authenticator:</p>
-					{qrCode && <img src={qrCode} alt="2FA QR Code" className="mb-4" />}
-					<button
-					onClick={() => setScannedQrCode(true)}
-					className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition">
-						Done
-					</button>
-				</>)}
+	<div className="flex flex-col justify-center items-center w-full h-full">
+  <div className="mt-4 p-4 rounded-xl bg-[#2a2a2a] text-center max-w-md w-full">
+    {!scannedQrCode && (<>
+      <p className="text-sm font-medium mb-2">Scan this QR code with Google Authenticator:</p>
+      {qrCode && <div className="flex justify-center mb-4">
+        <img src={qrCode} alt="2FA QR Code" />
+      </div>}
+      <div className="flex justify-center">
+        <button
+          onClick={() => setScannedQrCode(true)}
+          className="bg-[#ff914d] text-white px-4 py-1 rounded-2xl cursor-pointer font-semibold hover:bg-[#ab5a28] transition">
+          Done
+        </button>
+      </div>
+    </>)}
 
-				{scannedQrCode && (<>
-					<input
-					type="text"
-					maxLength={6}
-					value={token}
-					onChange={(e) => setToken(e.target.value)}
-					placeholder="Enter 6-digit code"
-					className="w-full px-3 py-2 rounded-xl bg-[#3a3a3a] text-white mb-2"
-					/>
+    {scannedQrCode && (<>
+      <input
+        type="text"
+        maxLength={6}
+        value={token}
+        onChange={(e) => setToken(e.target.value)}
+        placeholder="Enter 6-digit code"
+        className="w-full px-3 py-2 rounded-xl bg-[#3a3a3a] text-white mb-4"
+      />
 
-					<button
-					onClick={verify2FA}
-					className="bg-[#ff914d] text-white px-4 py-2 rounded-xl font-semibold hover:bg-[#ab5a28] transition"
-					>
-					Verify
-					</button>
-				</>)}
-			</div>
-		</div>
+      <div className="flex justify-center">
+        <button
+          onClick={verify2FA}
+          className="bg-[#ff914d] text-white px-4 py-1 rounded-2xl font-semibold hover:bg-[#ab5a28] cursor-pointer transition"
+        >
+          Verify
+        </button>
+      </div>
+    </>)}
+  </div>
+</div>
 	);
 }
 

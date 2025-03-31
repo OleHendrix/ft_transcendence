@@ -16,7 +16,7 @@ exports.setupChat = setupChat;
 const client_1 = require("@prisma/client");
 const websocket_1 = __importDefault(require("@fastify/websocket"));
 const prisma = new client_1.PrismaClient();
-const activeChats = new Map();
+// const activeChats = new Map<number, Set<WebSocket>>(); 
 function setupChat(server) {
     return __awaiter(this, void 0, void 0, function* () {
         server.register(websocket_1.default);
@@ -69,15 +69,6 @@ function setupChat(server) {
             });
             return (reply.send({ success: true, messages: messages, chatSessionId: chatSession.id }));
         }));
-        function notifyClients(newMessage) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const { chatSessionId } = newMessage;
-                console.log("notifyclient csid", chatSessionId);
-                const activeChatSockets = activeChats.get(chatSessionId);
-                if (activeChatSockets) {
-                }
-            });
-        }
         server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { senderId, receiverId, content } = request.body;
             const sender = yield prisma.account.findUnique({ where: { id: senderId } });
@@ -105,7 +96,6 @@ function setupChat(server) {
                     chatSessionId: chatSession.id
                 }
             });
-            notifyClients(message);
             return reply.send({ success: true, message });
         }));
     });

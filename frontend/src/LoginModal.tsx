@@ -161,15 +161,18 @@ function LoginModal()
 					onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
 
-			{show2FA && <div>
-				<label className="block text-sm font-medium mb-1">2FA Code</label>
-				<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border 
-					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
-					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
-					: 'border-red-800'} focus:outline-none`} 
-					name="username" type="text" placeholder="Enter 6 digit code"
-					onChange={(e) => {setToken(e.target.value)}}/>
-			</div>}
+			{show2FA &&
+			(
+				<div>
+					<label className="block text-sm font-medium mb-1">2FA Code</label>
+					<input className={`w-full p-2 bg-[#3a3a3a] rounded-3xl border 
+						${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
+						: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
+						: 'border-red-800'} focus:outline-none`} 
+						name="username" type="text" placeholder="Enter 6 digit code"
+						onChange={(e) => {setToken(e.target.value)}}/>
+				</div>
+			)}
 			{validation['Already logged in'] && 
 			(
 				<div className="text-center text-sm text-[#ff914d]">

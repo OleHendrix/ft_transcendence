@@ -23,6 +23,7 @@ const deleteTotp_1 = __importDefault(require("./authenticator/deleteTotp"));
 const addAccount_1 = __importDefault(require("./usermanagement/addAccount"));
 const deleteAccount_1 = __importDefault(require("./usermanagement/deleteAccount"));
 const getPlayers_1 = __importDefault(require("./usermanagement/getPlayers"));
+const updateAccount_1 = __importDefault(require("./usermanagement/updateAccount"));
 const login_1 = __importDefault(require("./usermanagement/login"));
 const chat_1 = require("./chat");
 const fastify = (0, fastify_1.default)();
@@ -37,6 +38,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, addAccount_1.default)(fastify, prisma);
     yield (0, deleteAccount_1.default)(fastify, prisma);
     yield (0, getPlayers_1.default)(fastify, prisma);
+    yield (0, updateAccount_1.default)(fastify, prisma);
     yield (0, login_1.default)(fastify, prisma);
     yield (0, setupTotp_1.default)(fastify, prisma);
     yield (0, verifyTotp_1.default)(fastify, prisma);

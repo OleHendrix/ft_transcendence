@@ -12,6 +12,7 @@ import deleteTotp from './authenticator/deleteTotp';
 import addAccount from './usermanagement/addAccount';
 import deleteAccount from './usermanagement/deleteAccount';
 import getPlayers from './usermanagement/getPlayers';
+import updateAccount from './usermanagement/updateAccount';
 import login from './usermanagement/login';
 import { setupChat } from './chat';
 
@@ -33,6 +34,7 @@ const start = async () =>
 	await addAccount(fastify, prisma);
 	await deleteAccount(fastify, prisma);
 	await getPlayers(fastify, prisma);
+	await updateAccount(fastify, prisma);
 	await login(fastify, prisma);
 
 	await setupTotp(fastify, prisma);
