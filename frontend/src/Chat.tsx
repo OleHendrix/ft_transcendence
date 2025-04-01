@@ -23,7 +23,7 @@ function Chat()
 			console.log(`getMessages: Messagereceived: ${messageReceived}`);
 			try
 			{
-				const response = await axios.get('http://localhost:5001/api/get-messages',
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-messages`,
 				{
 					params:
 					{
@@ -53,7 +53,7 @@ function Chat()
 		if (!chatSessionId) return;
 
 		console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
-		const socket = new WebSocket(`ws://localhost:5001/ws/chat?chatSessionId=${chatSessionId}`);
+		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/chat?chatSessionId=${chatSessionId}`);
 
 		socket.onmessage = function(message)
 		{
@@ -179,7 +179,7 @@ function MessageInput()
 			return;
 		try
 		{
-			const response = await axios.post('http://localhost:5001/api/send-message',
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-message`,
 			{
 				senderId: loggedInAccounts[0]?.id,
 				receiverId: receiverId,

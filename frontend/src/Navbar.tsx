@@ -14,8 +14,8 @@ function Navbar()
 		setIsPlaying(PlayerState.idle)
 		try
 		{
-			await axios.post("http://localhost:5001/pong/end-game", { userID: loggedInAccounts[0].id });
-			await axios.post("http://localhost:5001/pong/delete", { userID: loggedInAccounts[0].id });
+			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
+			await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: loggedInAccounts[0].id });
 		}
 		catch (error)
 		{

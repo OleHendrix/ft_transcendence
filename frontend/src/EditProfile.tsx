@@ -18,7 +18,7 @@ export function Enable2FA()
 		{
 			try
 			{
-				const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
+				const res = await axios.post(`http://${window.location.hostname}:5001/api/auth/setup-totp`,
 				{
 					username: loggedInAccounts[indexPlayerStats].username
 				});
@@ -38,7 +38,7 @@ export function Enable2FA()
 	{
 		try
 		{
-			const res = await axios.post('http://localhost:5001/api/auth/verify-totp',
+			const res = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-totp`,
 			{
 				username: loggedInAccounts[indexPlayerStats].username,
 				token
@@ -108,7 +108,7 @@ function EditProfile()
 	{
 		try
 		{
-			const response = await axios.post('http://localhost:5001/api/auth/delete-totp',
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`,
 			{
 				username: loggedInAccounts[indexPlayerStats].username
 			});

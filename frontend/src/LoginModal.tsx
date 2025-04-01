@@ -20,7 +20,7 @@ async function check2FA({ formData, token, setLoggedInAccounts, setValidation } 
 	const { username }= formData;
 	try
 	{
-		const response = await axios.post("http://localhost:5001/api/auth/verify-totp",
+		const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-totp`,
 		{
 			username: username,
 			token
@@ -53,7 +53,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 	const {username, password } = formData;
 	try
 	{
-		const response = await axios.post("http://localhost:5001/api/login", { username, password });
+		const response = await axios.post(`http://${window.location.hostname}:5001/api/login`, { username, password });
 		if (response.data.success)
 		{
 			const user = response.data.user;

@@ -28,7 +28,7 @@ let socket: WebSocket | null = null;
 
 function startQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 {
-	socket = new WebSocket("ws://localhost:5001/matchmake");
+	socket = new WebSocket(`ws://${window.location.hostname}:5001/matchmake`);
 
 	if (socket === null)
 		return;
@@ -71,7 +71,7 @@ function Buttons()
 
 	async function AddGame(userID1: number, userID2: number, isLocalGame: boolean)
 	{
-		const response = await axios.post("http://localhost:5001/pong/add", { userID1, userID2, isLocalGame });
+		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { userID1, userID2, isLocalGame });
 		if (response.status >= 400)
 		{
 			console.log("Failed to create match");

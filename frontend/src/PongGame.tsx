@@ -48,7 +48,7 @@ function PongGame()
 			{
 				try
 				{
-					const response = await axios.post("http://localhost:5001/pong", { userID: loggedInAccounts[0].id, keysPressed: keysPressed });
+					const response = await axios.post(`http://${window.location.hostname}:5001/pong`, { userID: loggedInAccounts[0].id, keysPressed: keysPressed });
 					if (response.data)
 					{
 						setPong(response.data);
@@ -80,7 +80,7 @@ function PongGame()
 	async function leaveMatch(userID: number)
 	{
 		setIsPlaying(PlayerState.idle);
-		await axios.post("http://localhost:5001/pong/delete", { userID: userID});
+		await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID});
 	}
 
 	const textSize: number = 1250 - Math.max(pong.p1Score.toString().length, pong.p2Score.toString().length, 1) * 250;

@@ -36,7 +36,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 		{
 			try
 			{
-				const response = await axios.get('http://localhost:5001/api/get-accounts');
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
 				if (response.data.success)
 					setAccounts(response.data.accounts);
 				else
