@@ -20,6 +20,7 @@ function Chat()
 		async function getMessages()
 		{
 			console.log("getMessages called: messageReceived status:", messageReceived);
+			console.log(`getMessages: Messagereceived: ${messageReceived}`);
 			try
 			{
 				const response = await axios.get('http://localhost:5001/api/get-messages',
@@ -35,26 +36,28 @@ function Chat()
 					setTestChats(response.data.messages);
 					setChatSessionId(response.data.chatSessionId);
 				}
-			}
-			catch (error: any)
-			{
+			} catch (error: any) {
 				console.log(error.response);
+			} finally {
+				setTimeout(() => setMessageReceived(false), 0);
 			}
 		}
-		getMessages();
-		setMessageReceived(false);
-	}, [receiverId, messageReceived, isOpen])
+
+		if (receiverId !== null && loggedInAccounts.length > 0) {
+			getMessages();
+		}
+	}, [receiverId, messageReceived])
 
 	useEffect(() =>
 	{
 		if (!chatSessionId) return;
-	
-		console.log("frontend csid:", chatSessionId);
+
+		console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
 		const socket = new WebSocket(`ws://localhost:5001/ws/chat?chatSessionId=${chatSessionId}`);
 
 		socket.onmessage = function(message)
 		{
-			// console.log("socket on message")
+			console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
 			setMessageReceived(true);
 		};
 	}, [chatSessionId]);
@@ -133,10 +136,10 @@ function MessageList()
 	const {testChats} 			= useChatContext();
 	const messagesEndRef 		= useRef<HTMLDivElement>(null);
 
-    useEffect(() =>
+	useEffect(() =>
 	{
-   		if (messagesEndRef.current)
-     		messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+		if (messagesEndRef.current)
+			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
 	}, [testChats]);
 
 	return (
@@ -161,7 +164,7 @@ function MessageList()
 
 function MessageInput()
 {
-	const {loggedInAccounts} 						= useAccountContext();
+	const {loggedInAccounts} 				= useAccountContext();
 	const {receiverId, setMessageReceived} 			= useChatContext();
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) =>
@@ -185,8 +188,8 @@ function MessageInput()
 
 			if (response.data.success)
 			{
-				setMessageReceived(true);
 				console.log("MessageInput: setMessageReceived(true)");
+				setMessageReceived(true);
 			}
 			target.value = '';
 		} 
