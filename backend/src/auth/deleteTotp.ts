@@ -12,11 +12,10 @@ export default async function deleteTotp(fastify: FastifyInstance, prisma: Prism
 			return reply.status(404).send({ error: 'User not found' });
 
 		await prisma.account.update(
-			{
-				where: { username },
-				data:  { totpSecret: null }
-			}
-		);
+		{
+			where: { username },
+			data:  { totpSecret: null }
+		});
 
 		return reply.send({ message: '2FA Disabled'});
 	});

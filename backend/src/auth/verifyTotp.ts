@@ -15,13 +15,12 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 
 		console.log("found user with totp:", username);
 		const isValid = speakeasy.totp.verify(
-			{
-				secret: account.totpSecret,
-				encoding: 'base32',
-				token,
-				window: 1,
-			}
-		);
+		{
+			secret: account.totpSecret,
+			encoding: 'base32',
+			token,
+			window: 1,
+		});
 
 		if (!isValid)
 			return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });

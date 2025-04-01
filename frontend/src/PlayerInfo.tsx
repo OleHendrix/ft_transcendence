@@ -12,9 +12,56 @@ import { FiEdit3 } from "react-icons/fi";
 
 import axios from "axios";
 
+interface EditIconProps
+{
+  onClick: () => void;
+  keyName: string;
+}
+
+function EditIcon({ onClick, keyName }: EditIconProps)
+{
+	return(
+		<motion.button className="items-start mb-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer opacity-30 hover:opacity-100"
+			key="edit-username" 
+			whileHover={ {scale: 1.17}}
+			whileTap={ {scale: 0.87}}
+			onClick={onClick}><FiEdit3 size={18} />
+		</motion.button>
+	)
+}
+
+interface InputFieldProps
+{
+	name: string;
+	value?: string;
+	placeholder?: string;
+	validation: Record<string, boolean>;
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	isPasswordField?: boolean; 
+}
+
+function InputField({ name, value, placeholder, validation, onChange, isPasswordField } : InputFieldProps)
+{
+	function getBorderColor()
+	{
+		if (validation['Already logged in'] || validation['Username exists'] || validation['Email exists'])
+      		return 'border-[#ff914d] focus:border-[#ff914d]';
+		else if (isPasswordField && validation['Password don\'t matches'])
+      		return 'border-red-800';
+		else if (isPasswordField && validation['Password matches!'])
+      		return 'border-green-500';
+		else
+      		return 'border-gray-600 focus:border-white';
+	}
+	return (
+		<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border ${getBorderColor()} focus:outline-none`}
+      		name={name} type={name === "email" ? 'email' : (name === "password" || name === "confirmPassowrd") ? 'password' : 'text'} value={value} placeholder={placeholder} onChange={onChange}/>
+		);
+}
+
 export function Enable2FA()
 {
-	const { loggedInAccounts }  = useAccountContext();
+	const { loggedInAccounts, setTriggerFetchAccounts }  = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 
 	const [token, setToken]     = useState('');
@@ -56,6 +103,7 @@ export function Enable2FA()
 				alert('2FA enabled!');
 			else
 				alert('Invalid code');
+			setTriggerFetchAccounts(true);
 		}
 		catch (err)
 		{
@@ -109,7 +157,6 @@ export function Enable2FA()
 	);
 }
 
-
 interface ShowInfoProps
 {
 	editProfile: boolean,
@@ -139,7 +186,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 	useEffect(() =>
 	{
 		let passwordDontMatch = false;
-		if (editPassword && (formData.password || formData.confirmPassword))
+		if (editPassword && (formData.password && formData.confirmPassword))
   			passwordDontMatch = formData.password !== formData.confirmPassword;
 
 		let passwordMatches = false;
@@ -255,8 +302,8 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 					}>Save changes
 				</motion.button>
 				<motion.button className={`w-full bg-red-900 hover:bg-red-700 hover:cursor-pointer text-white py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
-					whileHover={!(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches']) ? { scale: 1.03 } : {}}
-					whileTap={!(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches']) ? { scale: 0.97 } : {}}
+					whileHover={{ scale: 1.03 }}
+					whileTap={{scale: 0.97 }}
 					onClick={() => {cancelEdit()}}>Cancel
 				</motion.button>
 			</div>
@@ -265,78 +312,35 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 				<div className="flex items-end justify-between gap-2">
 					<p className="block text-sm font-medium mb-1">Username</p>
 				</div>
-				{editProfile ?
-				(
-					<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-					${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
-					: 'border-gray-600 focus:border-white'} focus:outline-none`}
-					name="username" type="text" value={formData.username}
-					onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
-				) :
-				(
+				{editProfile ? <InputField name={"username"} value={formData.username} validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/> :
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
 						<p>{loggedInAccounts[indexPlayerStats]?.username}</p>
-					</div>
-				)}
+					</div>}
 			</div>
 			<div className="w-full">
 				<div className="flex items-end justify-between gap-2">
 					<p className="block text-sm font-medium mb-1">Email</p>
 				</div>
-				{editProfile ?
-				(
-					<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-					${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
-					: 'border-gray-600 focus:border-white'} focus:outline-none`}
-					name="email" type="email" value={formData.email}
-					onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
-				) :
-				(
+				{editProfile ? <InputField name={"email"} value={formData.email} validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/> :
 					<div className=" w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
 						<p className="">{loggedInAccounts[indexPlayerStats]?.email}</p>
-					</div>
-				)}
+					</div>}
 			</div>
 			<div className="w-full">
 				<div className="flex items-end justify-between gap-2">
 					<p className="block text-sm font-medium mb-1">Password</p>
 				</div>
-				{editPassword ?
-				(
-					<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-					${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
-					: validation['Password don\'t matches'] ? 'border-red-800'
-					: validation['Password matches!'] ? 'border-green-500'
-					: 'border-gray-600 focus:border-white'}  focus:outline-none`}
-					name="password" type="password" placeholder="Choose a new password"
-					onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
-				) :
-				(
+				{editPassword ? <InputField name={"password"} placeholder="Choose a new password" validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})} isPasswordField={true}/> :
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
 						<p>{('').padStart(10, '*')}</p>
-						{editProfile &&
-						(
-							<motion.button className="items-start mb-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer opacity-30 hover:opacity-100"
-							key="edit-username" 
-							whileHover={ {scale: 1.17}}
-							whileTap={ {scale: 0.87}}
-							onClick={() => setEditPassword(true)}><FiEdit3 size={18} />
-							</motion.button>
-						)}
-					</div>
-				)}
+						{editProfile && <EditIcon onClick={() => setEditPassword(true)} keyName="edit-password"/>}
+					</div>}
 			</div>
 			{editPassword &&
 			(
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">Confirm Password</p>
-					<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-					${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
-					: validation['Password don\'t matches'] ? 'border-red-800'
-					: validation['Password matches!'] ? 'border-green-500'
-					: 'border-gray-600 focus:border-white'} focus:outline-none`}
-					name="confirmPassword" type="password" placeholder="Confirm your new password"
-					onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
+					<InputField name={"confirmPassword"} placeholder="Confirm your new password" validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})} isPasswordField={true}/>
 				</div>
 			)}
 			{!settingUp2FA && 
@@ -347,21 +351,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 					</div>
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
 						<p>{loggedInAccounts[indexPlayerStats]?.twofa ? 'Yes' : 'No'}</p>
-				{ editProfile &&
-				(
-					<motion.button className="items-start mb-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer opacity-30 hover:opacity-100"
-							key="edit-username" 
-							whileHover={ {scale: 1.17}}
-							whileTap={ {scale: 0.87}}
-							onClick={() =>
-							{
-								if (!loggedInAccounts[indexPlayerStats].twofa)
-									setSettingUp2FA(true)
-								else
-									disable2FA
-							}}><FiEdit3 size={18} />
-					</motion.button>
-				)}
+						{ editProfile && <EditIcon onClick={() => {!loggedInAccounts[indexPlayerStats].twofa ? setSettingUp2FA(true) : disable2FA}} keyName="edit-2fa"/>}
 					</div>
 				</div>
 			)}
