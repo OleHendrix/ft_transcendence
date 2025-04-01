@@ -12,10 +12,10 @@ export default async function logout(fastify: FastifyInstance, prisma: PrismaCli
 			return res.status(400).send({ error: 'User not found' })
 		
 		await prisma.account.update(
-			{
+		{
 				where: { username },
 				data:  { online: false }
-			}
+		}
 		);
 
 		res.send({ success: true });

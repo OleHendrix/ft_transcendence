@@ -1,27 +1,30 @@
-import Fastify from 'fastify';
-import fastifyJwt from 'fastify-jwt';
-import fastifyCors from '@fastify/cors';
-import { PrismaClient } from '@prisma/client';
+import Fastify 			from 'fastify';
+import fastifyJwt		from 'fastify-jwt';
+import fastifyCors		from '@fastify/cors';
+import { PrismaClient }	from '@prisma/client';
+import fastifyWebsocket 	from '@fastify/websocket';
+import WebSocket 			from 'ws';
 
-import setupTotp from './auth/setupTotp';
-import verifyTotp from './auth/verifyTotp';
-import deleteTotp from './auth/deleteTotp';
+import setupTotp		from './auth/setupTotp';
+import verifyTotp		from './auth/verifyTotp';
+import deleteTotp		from './auth/deleteTotp';
 
-import addAccount from './user/addAccount';
-import deleteAccount from './user/deleteAccount';
-import getAccounts from './user/getAccounts';
-import login from './user/login';
-import logout from './user/logout'
+import addAccount		from './user/addAccount';
+import deleteAccount	from './user/deleteAccount';
+import getAccounts		from './user/getAccounts';
+import login			from './user/login';
+import logout			from './user/logout'
+import updateAccount 	from './user/updateAccount';
 
-import initPongServer from './pong/initPongServer';
-
-import { setupChat } from './chat';
+import initPongServer 	from './pong/initPongServer';
+import { setupChat }	from './chat';
 
 const fastify = Fastify();
 export const prisma = new PrismaClient();
 
 fastify.register(fastifyCors);
 fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
+fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
 
 setupChat(fastify);
 
@@ -37,6 +40,7 @@ const start = async () =>
 	await getAccounts(fastify, prisma);
 	await login(fastify, prisma);
 	await logout(fastify, prisma);
+	await updateAccount(fastify, prisma);
 
 	await setupTotp(fastify, prisma);
 	await verifyTotp(fastify, prisma);

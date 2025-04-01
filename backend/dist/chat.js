@@ -14,62 +14,107 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupChat = setupChat;
 const client_1 = require("@prisma/client");
-const websocket_1 = __importDefault(require("@fastify/websocket"));
+const ws_1 = __importDefault(require("ws"));
 const prisma = new client_1.PrismaClient();
 const activeChats = new Map();
 function setupChat(server) {
     return __awaiter(this, void 0, void 0, function* () {
-        server.register(websocket_1.default);
-        server.get("/ws/chat", { websocket: true }, (connection, req) => {
-            const url = new URL(connection.url, "http://localhost");
-            const chatSessionId = Number(url.searchParams.get("chatSessionId"));
-            if (!chatSessionId) {
-                console.log("chat session socket failed");
-                connection.close();
-                return;
-            }
-            console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
-            activeChats.get(chatSessionId).add(connection);
-            connection.on("close", () => {
-                console.log(`User ${chatSessionId} disconnected`);
-                activeChats.get(chatSessionId).delete(connection);
-                if (activeChats.get(chatSessionId).size === 0) {
-                    activeChats.delete(chatSessionId);
-                }
+        server.register(function (server) {
+            return __awaiter(this, void 0, void 0, function* () {
+                server.get("/ws/chat", { websocket: true }, (connection, req) => {
+                    const query = req.query;
+                    const chatSessionId = query.chatSessionId ? Number(query.chatSessionId) : undefined;
+                    if (!chatSessionId) {
+                        console.log("/ws/chat: invalid chatSessionId passed to API call, closing connection");
+                        connection.close();
+                        return;
+                    }
+                    if (!activeChats.has(chatSessionId))
+                        activeChats.set(chatSessionId, new Set());
+                    activeChats.get(chatSessionId).add(connection);
+                    console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
+                    connection.on("close", () => {
+                        console.log(`User ${chatSessionId} disconnected`);
+                        activeChats.get(chatSessionId).delete(connection);
+                        if (activeChats.get(chatSessionId).size === 0) {
+                            console.log(`chatSessionId ${chatSessionId} no longer active, removing from active chats`);
+                            activeChats.delete(chatSessionId);
+                        }
+                    });
+                });
             });
         });
         server.get("/api/get-messages", (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { senderId, receiverId } = request.query;
             const senderIdNum = parseInt(senderId);
             const receiverIdNum = parseInt(receiverId);
-            let chatSession = yield prisma.chatSession.findFirst({
-                where: {
-                    OR: [
-                        { account1Id: senderIdNum, account2Id: receiverIdNum },
-                        { account1Id: receiverIdNum, account2Id: senderIdNum }
-                    ]
-                }
-            });
-            if (!chatSession) {
-                chatSession = yield prisma.chatSession.create({
-                    data: {
-                        account1Id: senderIdNum,
-                        account2Id: receiverIdNum
+            let chatSession;
+            if (receiverIdNum === -1) {
+                chatSession = yield prisma.chatSession.findFirst({
+                    where: {
+                        account1Id: 1,
+                        account2Id: 1
                     }
                 });
+                if (!chatSession) {
+                    chatSession = yield prisma.chatSession.create({
+                        data: {
+                            account1Id: 1,
+                            account2Id: 1
+                        }
+                    });
+                }
+            }
+            else {
+                chatSession = yield prisma.chatSession.findFirst({
+                    where: {
+                        OR: [
+                            { account1Id: senderIdNum, account2Id: receiverIdNum },
+                            { account1Id: receiverIdNum, account2Id: senderIdNum }
+                        ]
+                    }
+                });
+                if (!chatSession) {
+                    chatSession = yield prisma.chatSession.create({
+                        data: {
+                            account1Id: senderIdNum,
+                            account2Id: receiverIdNum
+                        }
+                    });
+                }
             }
             const messages = yield prisma.message.findMany({
                 where: { chatSessionId: chatSession.id },
-                orderBy: { timestamp: 'asc' }
+                orderBy: { timestamp: 'asc' },
+                include: {
+                    sender: {
+                        select: {
+                            username: true,
+                        }
+                    }
+                }
             });
-            return (reply.send({ success: true, messages: messages, chatSessionId: chatSession.id }));
+            // transform the messages for sending response
+            const transformedMessages = messages.map(message => ({
+                content: message.content,
+                timestamp: message.timestamp,
+                senderUsername: message.sender.username,
+                chatSessionId: message.chatSessionId
+            }));
+            return (reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id }));
         }));
         function notifyClients(newMessage) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { chatSessionId } = newMessage;
-                console.log("notifyclient csid", chatSessionId);
+                console.log(`Notifying all clients connected to ChatSessionId ${chatSessionId}`);
                 const activeChatSockets = activeChats.get(chatSessionId);
                 if (activeChatSockets) {
+                    activeChatSockets.forEach(socket => {
+                        if (socket.readyState === ws_1.default.OPEN) {
+                            socket.send(JSON.stringify(newMessage));
+                            console.log("client notified");
+                        }
+                    });
                 }
             });
         }
@@ -77,31 +122,63 @@ function setupChat(server) {
             const { senderId, receiverId, content } = request.body;
             const sender = yield prisma.account.findUnique({ where: { id: senderId } });
             const receiver = yield prisma.account.findUnique({ where: { id: receiverId } });
-            if (!sender || !receiver)
+            if (!sender || (!receiver && receiverId !== -1))
                 return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
-            let chatSession = yield prisma.chatSession.findFirst({
-                where: {
-                    OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
-                }
-            });
-            if (!chatSession) {
-                chatSession = yield prisma.chatSession.create({
-                    data: {
-                        account1Id: senderId,
-                        account2Id: receiverId
+            let chatSession;
+            if (receiverId === -1) {
+                chatSession = yield prisma.chatSession.findFirst({
+                    where: {
+                        account1Id: 1,
+                        account2Id: 1
                     }
                 });
+                if (!chatSession) {
+                    chatSession = yield prisma.chatSession.create({
+                        data: {
+                            account1Id: 1,
+                            account2Id: 1
+                        }
+                    });
+                }
+            }
+            else {
+                chatSession = yield prisma.chatSession.findFirst({
+                    where: {
+                        OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
+                    }
+                });
+                if (!chatSession) {
+                    chatSession = yield prisma.chatSession.create({
+                        data: {
+                            account1Id: senderId,
+                            account2Id: receiverId
+                        }
+                    });
+                }
             }
             const message = yield prisma.message.create({
                 data: {
                     content,
-                    senderId,
-                    receiverId,
+                    senderId: senderId,
+                    receiverId: (receiverId === -1 ? 1 : receiverId),
                     chatSessionId: chatSession.id
+                },
+                include: {
+                    sender: {
+                        select: {
+                            username: true
+                        }
+                    }
                 }
             });
-            notifyClients(message);
-            return reply.send({ success: true, message });
+            const messageToClient = {
+                content: message.content,
+                timestamp: message.timestamp,
+                senderUsername: message.sender.username,
+                chatSessionId: message.chatSessionId
+            };
+            notifyClients(messageToClient);
+            return reply.send({ success: true, messageToClient });
         }));
     });
 }
