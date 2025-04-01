@@ -12,11 +12,9 @@ interface AddAccountRequest
 export default async function addAccount(fastify: FastifyInstance, prisma: PrismaClient)
 {
 	fastify.post('/api/add-account', async (request, reply) =>
-		{
-		console.log("mebalzak");
+	{
 		const { username, email, password }: AddAccountRequest = request.body as AddAccountRequest;
 		const hashedPassword = await bcrypt.hash(password, 10);
-		console.log("adding account: ", username);
 		const existingAccount = await prisma.account.findFirst(
 		{
 			where:

@@ -17,10 +17,10 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 			return res.status(401).send({ error: 'Incorrect password'});
 
 		await prisma.account.update(
-			{
+		{
 				where: { username },
 				data:  { online: true }
-			}
+		}
 		);
 
 		const token = fastify.jwt.sign({ username: user.username, email: user.email}, { expiresIn: '1h'});
