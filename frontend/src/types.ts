@@ -78,7 +78,7 @@ export interface PongState
 	p1Won:		boolean | null;
 }
 
-enum PlayerState
+export enum PlayerState
 {
 	idle,
 	playing,

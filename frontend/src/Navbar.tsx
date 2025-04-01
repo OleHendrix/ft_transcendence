@@ -3,6 +3,7 @@ import axios from "axios";
 import Players from "./Players";
 import Logo42 from "./assets/Logo42.svg"
 import { useAccountContext } from "./contexts/AccountContext";
+import { PlayerState } from "./types";
 
 function Navbar()
 {
@@ -10,7 +11,7 @@ function Navbar()
 
 	async function toMenu()
 	{
-		setIsPlaying(false)
+		setIsPlaying(PlayerState.idle)
 		try
 		{
 			await axios.post("http://localhost:5001/pong/end-game", { userID: loggedInAccounts[0].id });

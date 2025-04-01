@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from "axios";
-import { PongState } from './types';
+import { PlayerState, PongState } from './types';
 import { useAccountContext } from './contexts/AccountContext';
 import { useLoginContext } from './contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,28 +16,10 @@ function PongGame()
 	const aiID = -1;
 	const [pong, setPong] = useState<PongState>
 	({
-		p1: {
-			pos: { x: 3, y: 50},
-			size: { x: 2, y: 10 },
-			dir: { x: 0, y: 0 },
-			colour: "#ff914d"
-		},
-		p2: {
-			pos: { x: 95, y: 50},
-			size: { x: 2, y: 10 },
-			dir: { x: 0, y: 0 },
-			colour: "#134588"
-		},
-		p1Score: 1,
-		p2Score: 1,
-		p1Input: 0,
-		p2Input: 0,
-		ball: {
-			pos: { x: 20, y: 20 },
-			prevPos: { x: 45, y: 50 },
-			size: { x: 2, y: 2 },
-			dir: { x: 1, y: 1 }
-		},
+		p1: { pos: { x: 3, y: 50}, size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#ff914d" },
+		p2: { pos: { x: 95, y: 50}, size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#134588" },
+		p1Score: 0, p2Score: 0, p1Input: 0, p2Input: 0,
+		ball: { pos: { x: 200, y: 200 }, prevPos: { x: 200, y: 200 }, size: { x: 2, y: 2 }, dir: { x: 1, y: 1 } },
 		lastUpdate: -1,
 		ai: { lastActivation: 0, desiredY: 0 },
 		maxPoints: 3,
@@ -97,7 +79,7 @@ function PongGame()
 
 	async function leaveMatch(userID: number)
 	{
-		setIsPlaying(false);
+		setIsPlaying(PlayerState.idle);
 		await axios.post("http://localhost:5001/pong/delete", { userID: userID});
 	}
 

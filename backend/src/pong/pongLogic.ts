@@ -1,5 +1,5 @@
 import { PongState, Match, Statics, Paddle, Ball } from "./types";
-import { prisma } from './../server';
+import { prisma } from '../server';
 
 const s: Statics =
 ({
@@ -199,6 +199,8 @@ export function initGame(): PongState
 export async function endGame(match: Match, p1Wins: boolean)
 {
 	match.state.p1Won = p1Wins;
+	if (match.p2 === -1)
+		return;
 	let winner = match.p1;
 	let loser  = match.p2;
 	if (p1Wins === false)
@@ -206,17 +208,15 @@ export async function endGame(match: Match, p1Wins: boolean)
 		[winner, loser] = [loser, winner];
 	}
 
-	await prisma.account.update(
-		{
-			where: { id: winner },
-			data:  { wins: { increment: 1 } }
-		}
-	);
+	await prisma.account.update
+	({
+		where: { id: winner },
+		data:  { wins: { increment: 1 } }
+	});
 
-	await prisma.account.update(
-		{
-			where: { id: loser },
-			data:  { loses: { increment: 1 } }
-		}
-	);
+	await prisma.account.update
+	({
+		where: { id: loser },
+		data:  { loses: { increment: 1 } }
+	});
 }

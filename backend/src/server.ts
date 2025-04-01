@@ -13,7 +13,8 @@ import getAccounts from './user/getAccounts';
 import login from './user/login';
 import logout from './user/logout'
 
-import initPongServer from './pong/initPongServer';
+import initPongServer from './pong/pongServer';
+import initMatchMaking from "./pong/matchMaking"
 
 import { setupChat } from './chat';
 
@@ -43,6 +44,7 @@ const start = async () =>
 	await deleteTotp(fastify, prisma);
 
 	await initPongServer(fastify);
+	initMatchMaking(fastify);
 
 	fastify.listen({ port: 5001, host: 'localhost' }, (err, address) =>
 	{

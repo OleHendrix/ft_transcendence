@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateGame = updateGame;
 exports.initGame = initGame;
 exports.endGame = endGame;
-const server_1 = require("./../server");
+const server_1 = require("../server");
 const s = ({
     BOUNCE: { x: -1.03, y: -0.85 },
     CARRYOVER: 0.4,

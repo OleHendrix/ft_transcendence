@@ -1,9 +1,29 @@
-import { initGame, updateGame, endGame } from './PongServer';
+import { initGame, updateGame, endGame } from './pongLogic';
 import { PongState, Match } from './types';
 import { FastifyInstance } from "fastify";
 
 let matchTable   = new Map<number, Match>([]);
 let matchIDTable = new Map<number, number>([]);
+
+export function addGame(userID1: number, userID2: number, isLocalGame: boolean)
+{
+	let newMatch: Match = 
+	{
+		state:			initGame(),
+		p1:				userID1,
+		p2:				userID2,
+		isLocalGame:	isLocalGame,
+	}
+	let key = 0;
+	while (matchTable.has(key))
+	{
+		key++;
+	}
+	matchTable.set(key, newMatch);
+	matchIDTable.set(userID1, key);
+	if (userID2 !== -1)
+		matchIDTable.set(userID2, key);
+}
 
 export default async function initPongServer(fastify: FastifyInstance)
 {
@@ -42,22 +62,7 @@ export default async function initPongServer(fastify: FastifyInstance)
 			reply.status(400);
 			return;
 		}
-		let newMatch: Match = 
-		{
-			state:			initGame(),
-			p1:				userID1,
-			p2:				userID2,
-			isLocalGame:	isLocalGame,
-		}
-		let key = 0;
-		while (matchTable.has(key))
-		{
-			key++;
-		}
-		matchTable.set(key, newMatch);
-		matchIDTable.set(userID1, key);
-		if (userID2 !== -1)
-			matchIDTable.set(userID2, key);
+		addGame(userID1, userID2, isLocalGame);
 		reply.status(201);
 	});
 
@@ -109,12 +114,10 @@ export default async function initPongServer(fastify: FastifyInstance)
 		{
 			matchIDTable.delete(match.p1);
 			matchIDTable.delete(match.p2);
-			console.log("fully deleted match");
 		}
 		else
 		{
 			matchIDTable.delete(userID);
-			console.log("soft deleted match");
 		}
 		if (matchIDTable.has(match.p1) === false && matchIDTable.has(match.p2) === false)
 		{
