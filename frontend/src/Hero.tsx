@@ -4,6 +4,8 @@ import { RiGamepadLine } from "react-icons/ri";
 import { TbTournament } from "react-icons/tb";
 import { RiRobot2Line } from "react-icons/ri";
 import { LuCable } from "react-icons/lu";
+import { BsBroadcast } from "react-icons/bs";
+import { BiRocket } from "react-icons/bi";
 import { useAccountContext } from "./contexts/AccountContext";
 import Players from "./Players";
 import "./css/ponganimation.css";
@@ -38,12 +40,18 @@ function Hero()
 		setIsPlaying(true);
 	}
 
+	async function queueGame(userID: number)
+	{
+		
+	}
+
 	return(
 		<div className="w-full flex justify-between items-start pt-[10vh]">
 			<div className="w-1/2 flex h-[calc(100vh - 8vh)] justify-start flex-col p-24 pr-16 space-y-12 px-[6vw]">
 				<h1 className="text-6xl  font-semibold text-brand-orange">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
 				<p className="text-2xl">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
 				<div className="flex flex-col items-start space-y-1.5 font-bold text-lg">
+
 					<p className="text-s text-lg font-medium">1 Player:</p>
 					<div className="flex flex-row space-x-4 ml-2">
 						<motion.button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-4 py-0 rounded-3xl w-auto
@@ -51,7 +59,7 @@ function Hero()
 							whileHover={(loggedInAccounts.length === 1 ? { scale: hoverScale } : {})}
 							whileTap={(loggedInAccounts.length === 1 ? { scale: tapScale } : {})}>
 							<p>Online Game</p>
-							<LuCable />
+							<BiRocket />
 						</motion.button>
 
 						<motion.button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-4 py-0 rounded-3xl w-auto
@@ -62,7 +70,6 @@ function Hero()
 							<p>Versus AI</p>
 							<RiRobot2Line />
 						</motion.button>
-
 					</div>
 
 					<p className="text-s text-lg font-medium">2 Players:</p>
@@ -87,6 +94,7 @@ function Hero()
 							<TbTournament />
 						</motion.button>
 					</div>
+
 				</div>
 				{/* <Players /> */}
 			</div>

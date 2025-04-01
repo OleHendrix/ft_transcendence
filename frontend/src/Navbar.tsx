@@ -14,6 +14,7 @@ function Navbar()
 		try
 		{
 			await axios.post("http://localhost:5001/pong/end-game", { userID: loggedInAccounts[0].id });
+			await axios.post("http://localhost:5001/pong/delete", { userID: loggedInAccounts[0].id });
 		}
 		catch (error)
 		{

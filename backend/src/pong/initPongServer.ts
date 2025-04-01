@@ -99,13 +99,23 @@ export default async function initPongServer(fastify: FastifyInstance)
 			return;
 		}
 		const key = matchIDTable.get(userID) as number;
-		matchIDTable.delete(userID);
 		if (matchTable.has(key) === false)
 		{
 			reply.status(204);
 			return;
 		}
 		const match = matchTable.get(key) as Match;
+		if (match.isLocalGame === true)
+		{
+			matchIDTable.delete(match.p1);
+			matchIDTable.delete(match.p2);
+			console.log("fully deleted match");
+		}
+		else
+		{
+			matchIDTable.delete(userID);
+			console.log("soft deleted match");
+		}
 		if (matchIDTable.has(match.p1) === false && matchIDTable.has(match.p2) === false)
 		{
 			matchTable.delete(key);
