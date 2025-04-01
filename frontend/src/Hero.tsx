@@ -88,7 +88,7 @@ function Hero()
 						</motion.button>
 					</div>
 				</div>
-				{/* <Players /> */}
+				<Players />
 			</div>
 			<div className="w-1/2 h-[calc(100vh - 8vh)] flex justify-start flex-col p-24 pl-16 space-y-12 max-w-[50vw] px-[6vw]">
 				<SimplePong />

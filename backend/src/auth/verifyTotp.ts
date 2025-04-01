@@ -25,6 +25,13 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 
 		if (!isValid)
 			return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
+
+		await prisma.account.update(
+		{
+				where: { username },
+				data: { twofa: true}
+		});
+
 		console.log("authorized:", username);
 		return { success: true, user: account };
 	});

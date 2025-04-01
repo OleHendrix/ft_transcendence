@@ -11,7 +11,8 @@ export interface PlayerType
 	wins: number;
 	draws: number;
 	loses: number;
-	totpSecret: boolean;
+	totpSecret: string;
+	twofa: boolean;
 }
 
 export interface SignUpFormType
