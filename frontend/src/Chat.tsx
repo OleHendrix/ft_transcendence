@@ -149,7 +149,7 @@ function MessageList()
 							{message.senderUsername}
 							<time className="text-xs opacity-50">{format(new Date(message.timestamp), 'HH:mm')}</time>
 						</div>
-						<div className={`chat-bubble ${loggedInAccounts[0]?.id !== message.senderId ? 'bg-[#134588]' : 'bg-[#ff914d]'}`}>{message.content}</div>
+						<div className={`chat-bubble ${loggedInAccounts[0]?.username !== message.senderUsername ? 'bg-[#134588]' : 'bg-[#ff914d]'}`}>{message.content}</div>
 					</div>
 				))}
 				<div ref={messagesEndRef} />

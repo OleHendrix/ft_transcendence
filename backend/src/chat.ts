@@ -112,7 +112,8 @@ export async function setupChat(server: FastifyInstance)
 		{
 			content: message.content,
 			timestamp: message.timestamp,
-			senderUsername: message.sender.username
+			senderUsername: message.sender.username,
+			chatSessionId: message.chatSessionId
 		}));
 
 		return (reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id}));
@@ -205,7 +206,8 @@ export async function setupChat(server: FastifyInstance)
 		{
     		content: message.content,
     		timestamp: message.timestamp,
-			senderUsername: message.sender.username
+			senderUsername: message.sender.username,
+			chatSessionId: message.chatSessionId
 		};
 
 		notifyClients(messageToClient);

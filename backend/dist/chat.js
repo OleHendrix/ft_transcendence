@@ -102,7 +102,8 @@ function setupChat(server) {
             const transformedMessages = messages.map(message => ({
                 content: message.content,
                 timestamp: message.timestamp,
-                senderUsername: message.sender.username
+                senderUsername: message.sender.username,
+                chatSessionId: message.chatSessionId
             }));
             return (reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id }));
         }));
@@ -169,7 +170,8 @@ function setupChat(server) {
             const messageToClient = {
                 content: message.content,
                 timestamp: message.timestamp,
-                senderUsername: message.sender.username
+                senderUsername: message.sender.username,
+                chatSessionId: message.chatSessionId
             };
             notifyClients(messageToClient);
             return reply.send({ success: true, messageToClient });
