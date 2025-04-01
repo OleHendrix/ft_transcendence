@@ -38,39 +38,84 @@ export async function setupChat(server: FastifyInstance)
 
 	server.get("/api/get-messages", async (request, reply) =>
 	{
-		const { senderUsername, receiverUsername } = request.query as { senderUsername: string; receiverUsername: string };
-		
-		let chatSession = await prisma.chatSession.findFirst(
-		{
-			where:
+		const { senderId, receiverId } = request.query as { senderId: string; receiverId: string };
+		const senderIdNum = parseInt(senderId as string);
+		const receiverIdNum = parseInt(receiverId as string);
+
+		let chatSession;
+
+		// if (receiverIdNum === -1)
+		// {
+		// 	chatSession = await prisma.chatSession.findFirst(
+		// 	{
+		// 		where:
+		// 		{
+		// 			account1Id: -1,
+		// 			account2Id: -1 
+		// 		}
+		// 	});
+		// 	if (!chatSession)
+		// 	{
+		// 		chatSession = await prisma.chatSession.create(
+		// 		{
+		// 			data:
+		// 			{ 
+		// 				account1Id: -1,
+		// 				account2Id: -1 
+		// 			}
+		// 		});
+		// 	}
+		// }
+		// else
+		// {
+			chatSession = await prisma.chatSession.findFirst(
 			{
-				OR: 
-				[
-					{ username1: senderUsername, username2: receiverUsername },
-					{ username1: receiverUsername, username2: senderUsername }
-				]
-			}
-		});
-		
-		if (!chatSession)
-		{
-			chatSession = await prisma.chatSession.create(
-			{
-				data:
-				{ 
-					username1: senderUsername,
-					username2: receiverUsername
+				where:
+				{
+					OR: 
+					[
+						{ account1Id: senderIdNum, account2Id: receiverIdNum },
+						{ account1Id: receiverIdNum, account2Id: senderIdNum }
+					]
 				}
 			});
-		}
-
+			
+			if (!chatSession)
+			{
+				chatSession = await prisma.chatSession.create(
+				{
+					data:
+					{ 
+						account1Id: senderIdNum,
+						account2Id: receiverIdNum
+					}
+				});
+			}
+		// }
 		const messages = await prisma.message.findMany(
 		{
 			where: { chatSessionId: chatSession.id },
-			orderBy: { timestamp: 'asc' }
+			orderBy: { timestamp: 'asc' },
+			include:
+			{
+				sender:
+				{
+					select:
+					{
+						username: true,
+					}
+				}
+			}
 		});
+		
+		const transformedMessages = messages.map(message => (
+		{
+			content: message.content,
+			timestamp: message.timestamp,
+			senderUsername: message.sender.username
+		}));
 
-		return (reply.send({ success: true, messages: messages, chatSessionId: chatSession.id}));
+		return (reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id}));
 	});
 
 	async function notifyClients(newMessage: any)
@@ -91,17 +136,35 @@ export async function setupChat(server: FastifyInstance)
 	
 	server.post('/api/send-message', async (request, reply) =>
 	{
-		const { senderUsername, receiverUsername, content } = request.body as { senderUsername: string; receiverUsername: string; content: string };
-		const sender = await prisma.account.findUnique({ where: { username: senderUsername } });
-		const receiver = await prisma.account.findUnique({ where: { username: receiverUsername } });
+		const { senderId, receiverId, content } = request.body as { senderId: number; receiverId: number; content: string };
+		const sender = await prisma.account.findUnique({ where: { id: senderId } });
+		const receiver = await prisma.account.findUnique({ where: { id: receiverId } });
 		if (!sender || !receiver)
 			return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
 
-		let chatSession = await prisma.chatSession.findFirst(
+		let chatSession;
+
+		// if (receiverId === -1)
+		// {
+		// 	chatSession = await prisma.chatSession.findFirst(
+		// 	{
+		// 		where:
+		// 		{
+		// 			account1Id: -1,
+		// 			account2Id: -1,
+		// 		}
+
+		// 	}
+		// 	)
+		// }
+
+
+
+		chatSession = await prisma.chatSession.findFirst(
 		{
 			where:
 			{
-				OR: [{ username1: senderUsername, username2: receiverUsername }, { username1: receiverUsername, username2: senderUsername }]
+				OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
 			}
 		});
 	
@@ -111,8 +174,8 @@ export async function setupChat(server: FastifyInstance)
 			{
 				data:
 				{ 
-					username1: senderUsername,
-					username2: receiverUsername
+					account1Id: senderId,
+					account2Id: receiverId
 				}
 			});
 		}
@@ -122,13 +185,30 @@ export async function setupChat(server: FastifyInstance)
 			data:
 			{
 				content,
-				senderUsername,
-				receiverUsername,
+				senderId,
+				receiverId,
 				chatSessionId: chatSession.id
+			},
+			include:
+			{
+				sender:
+				{
+					select:
+					{
+						username: true
+					}
+				}
 			}
 		});
+		
+		const messageToClient =
+		{
+    		content: message.content,
+    		timestamp: message.timestamp,
+			senderUsername: message.sender.username
+		};
 
-		notifyClients(message);
-		return reply.send({ success: true, message });
+		notifyClients(messageToClient);
+		return reply.send({ success: true, messageToClient });
 	});
-}}
+}

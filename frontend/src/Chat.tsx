@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 function Chat()
 {
 	const {loggedInAccounts} 												= useAccountContext();
-	const {receiverUsername, chatSessionId, isOpen, messageReceived} 		= useChatContext();
+	const {receiverId, chatSessionId, isOpen, messageReceived} 				= useChatContext();
 	const {setTestChats, setChatSessionId, setMessageReceived, setIsOpen}	= useChatContext();
 
 	useEffect(() =>
@@ -26,8 +26,8 @@ function Chat()
 				{
 					params:
 					{
-						senderUsername: loggedInAccounts[0].username,
-						receiverUsername: receiverUsername
+						senderId: loggedInAccounts[0].id,
+						receiverId: receiverId
 					}
 				})
 				if (response.data.success)
@@ -43,7 +43,7 @@ function Chat()
 		}
 		getMessages();
 		setMessageReceived(false);
-	}, [receiverUsername, messageReceived])
+	}, [receiverId, messageReceived])
 
 	useEffect(() =>
 	{
@@ -100,8 +100,8 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 
 function ChatHeader()
 {
-	const {accounts, loggedInAccounts} 	= useAccountContext();
-	const {setReceiverUsername} 				= useChatContext();
+	const {accounts, loggedInAccounts} 			= useAccountContext();
+	const {setReceiverId} 						= useChatContext();
 
 	return (
 		<div className="flex justify-end space-x-2 w-full flex-wrap mb-2">
@@ -113,12 +113,12 @@ function ChatHeader()
 							className="h-10 w-auto cursor-pointer"
 							whileHover={{ scale: 1.07 }}
 							whileTap={{ scale: 0.93 }}
-							onClick={() => setReceiverUsername(account.username)}/>
+							onClick={() => setReceiverId(account.id)}/>
 						<p className="text-[10px] opacity-50 w-full text-center truncate">{account.username}</p>
 					</div>
 				))}
 			<div className="flex items-center flex-col space-y-0.5 w-12">
-				<motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }} onClick={() => setReceiverUsername('')}>
+				<motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }} onClick={() => setReceiverId(-1)}>
 					<RiGroup2Line className="h-10 w-auto cursor-pointer text-[#ff914d] hover:text-[#ab5a28] transition-colors" />
 				</motion.div>
 				<p className="text-[10px] text-[#ff914d] opacity-90 font-bold w-full text-center truncate">Group</p>
@@ -149,7 +149,7 @@ function MessageList()
 							{message.senderUsername}
 							<time className="text-xs opacity-50">{format(new Date(message.timestamp), 'HH:mm')}</time>
 						</div>
-						<div className={`chat-bubble ${loggedInAccounts[0]?.username !== message.senderUsername ? 'bg-[#134588]' : 'bg-[#ff914d]'}`}>{message.content}</div>
+						<div className={`chat-bubble ${loggedInAccounts[0]?.id !== message.senderId ? 'bg-[#134588]' : 'bg-[#ff914d]'}`}>{message.content}</div>
 					</div>
 				))}
 				<div ref={messagesEndRef} />
@@ -162,7 +162,7 @@ function MessageList()
 function MessageInput()
 {
 	const {loggedInAccounts} 						= useAccountContext();
-	const {receiverUsername, setMessageReceived} 	= useChatContext();
+	const {receiverId, setMessageReceived} 	= useChatContext();
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) =>
 	{
@@ -178,8 +178,8 @@ function MessageInput()
 		{
 			const response = await axios.post('http://localhost:5001/api/send-message',
 			{
-				senderUsername: loggedInAccounts[0]?.username,
-				receiverUsername: receiverUsername,
+				senderId: loggedInAccounts[0]?.id,
+				receiverId: receiverId,
 				content: message,
 			});
 

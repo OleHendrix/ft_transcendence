@@ -251,6 +251,12 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 					<p className="block text-sm font-medium mb-1">2FA Enabled</p>
 				{ editProfile ?
 				(
+
+
+
+
+
+					
 					(!loggedInAccounts[indexPlayerStats].totpSecret  && <button className="bg-[#ff914d] text-white px-4 py-1 rounded-2xl font-semibold hover:bg-[#ab5a28] cursor-pointer transition"
 					onClick={() => { setSettingUp2FA(true) } }>
 					Enable

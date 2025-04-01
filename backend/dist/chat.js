@@ -43,28 +43,68 @@ function setupChat(server) {
             });
         });
         server.get("/api/get-messages", (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { senderUsername, receiverUsername } = request.query;
-            let chatSession = yield prisma.chatSession.findFirst({
+            const { senderId, receiverId } = request.query;
+            const senderIdNum = parseInt(senderId);
+            const receiverIdNum = parseInt(receiverId);
+            let chatSession;
+            // if (receiverIdNum === -1)
+            // {
+            // 	chatSession = await prisma.chatSession.findFirst(
+            // 	{
+            // 		where:
+            // 		{
+            // 			account1Id: -1,
+            // 			account2Id: -1 
+            // 		}
+            // 	});
+            // 	if (!chatSession)
+            // 	{
+            // 		chatSession = await prisma.chatSession.create(
+            // 		{
+            // 			data:
+            // 			{ 
+            // 				account1Id: -1,
+            // 				account2Id: -1 
+            // 			}
+            // 		});
+            // 	}
+            // }
+            // else
+            // {
+            chatSession = yield prisma.chatSession.findFirst({
                 where: {
                     OR: [
-                        { username1: senderUsername, username2: receiverUsername },
-                        { username1: receiverUsername, username2: senderUsername }
+                        { account1Id: senderIdNum, account2Id: receiverIdNum },
+                        { account1Id: receiverIdNum, account2Id: senderIdNum }
                     ]
                 }
             });
             if (!chatSession) {
                 chatSession = yield prisma.chatSession.create({
                     data: {
-                        username1: senderUsername,
-                        username2: receiverUsername
+                        account1Id: senderIdNum,
+                        account2Id: receiverIdNum
                     }
                 });
             }
+            // }
             const messages = yield prisma.message.findMany({
                 where: { chatSessionId: chatSession.id },
-                orderBy: { timestamp: 'asc' }
+                orderBy: { timestamp: 'asc' },
+                include: {
+                    sender: {
+                        select: {
+                            username: true,
+                        }
+                    }
+                }
             });
-            return (reply.send({ success: true, messages: messages, chatSessionId: chatSession.id }));
+            const transformedMessages = messages.map(message => ({
+                content: message.content,
+                timestamp: message.timestamp,
+                senderUsername: message.sender.username
+            }));
+            return (reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id }));
         }));
         function notifyClients(newMessage) {
             return __awaiter(this, void 0, void 0, function* () {
@@ -80,34 +120,59 @@ function setupChat(server) {
             });
         }
         server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { senderUsername, receiverUsername, content } = request.body;
-            const sender = yield prisma.account.findUnique({ where: { username: senderUsername } });
-            const receiver = yield prisma.account.findUnique({ where: { username: receiverUsername } });
+            const { senderId, receiverId, content } = request.body;
+            const sender = yield prisma.account.findUnique({ where: { id: senderId } });
+            const receiver = yield prisma.account.findUnique({ where: { id: receiverId } });
             if (!sender || !receiver)
                 return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
-            let chatSession = yield prisma.chatSession.findFirst({
+            let chatSession;
+            // if (receiverId === -1)
+            // {
+            // 	chatSession = await prisma.chatSession.findFirst(
+            // 	{
+            // 		where:
+            // 		{
+            // 			account1Id: -1,
+            // 			account2Id: -1,
+            // 		}
+            // 	}
+            // 	)
+            // }
+            chatSession = yield prisma.chatSession.findFirst({
                 where: {
-                    OR: [{ username1: senderUsername, username2: receiverUsername }, { username1: receiverUsername, username2: senderUsername }]
+                    OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
                 }
             });
             if (!chatSession) {
                 chatSession = yield prisma.chatSession.create({
                     data: {
-                        username1: senderUsername,
-                        username2: receiverUsername
+                        account1Id: senderId,
+                        account2Id: receiverId
                     }
                 });
             }
             const message = yield prisma.message.create({
                 data: {
                     content,
-                    senderUsername,
-                    receiverUsername,
+                    senderId,
+                    receiverId,
                     chatSessionId: chatSession.id
+                },
+                include: {
+                    sender: {
+                        select: {
+                            username: true
+                        }
+                    }
                 }
             });
-            notifyClients(message);
-            return reply.send({ success: true, message });
+            const messageToClient = {
+                content: message.content,
+                timestamp: message.timestamp,
+                senderUsername: message.sender.username
+            };
+            notifyClients(messageToClient);
+            return reply.send({ success: true, messageToClient });
         }));
     });
 }

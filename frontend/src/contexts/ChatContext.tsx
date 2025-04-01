@@ -5,15 +5,15 @@ interface message
 	id: 				number,
 	content: 			string,
 	timestamp: 			string,
-	receiverUsername: 	string,
+	receiverId: 		number,
 	chatSessionId: 		number,
-	senderUsername: 	string
+	senderId: 			number
 }
 
 type ChatContextType = 
 {
-	receiverUsername: string;
-	setReceiverUsername: Dispatch<SetStateAction<string>>;
+	receiverId: 	number;
+	setReceiverId: Dispatch<SetStateAction<number>>;
 	isOpen: boolean;
 	setIsOpen: Dispatch<SetStateAction<boolean>>;
 	messageReceived: boolean;
@@ -28,7 +28,7 @@ const ChatContext = createContext<ChatContextType | null>(null);
 
 export function ChatProvider({ children }: {children: ReactNode})
 {
-	const [receiverUsername, setReceiverUsername] 			= useState('');
+	const [receiverId, setReceiverId] 			= useState(-1);
 	const [isOpen, setIsOpen] 					= useState(false);
 	const [messageReceived, setMessageReceived] = useState(false);
 	const [chatSessionId, setChatSessionId] 	= useState(-1);
@@ -36,12 +36,12 @@ export function ChatProvider({ children }: {children: ReactNode})
 
 	const value = useMemo(() => (
 	{
-		receiverUsername, setReceiverUsername,
+		receiverId, setReceiverId,
 		isOpen, setIsOpen,
 		messageReceived, setMessageReceived,
 		chatSessionId, setChatSessionId,
 		testChats, setTestChats,
-	}), [receiverUsername, isOpen, messageReceived, chatSessionId, testChats]);
+	}), [receiverId, isOpen, messageReceived, chatSessionId, testChats]);
 
 	return (
 		<ChatContext.Provider value={value}>
