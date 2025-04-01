@@ -200,7 +200,7 @@ export async function setupChat(server: FastifyInstance)
 			data:
 			{
 				content,
-				senderId: (receiverId === -1 ? 1 : senderId),
+				senderId: senderId,
 				receiverId: (receiverId === -1 ? 1 : receiverId),
 				chatSessionId: chatSession.id
 			},

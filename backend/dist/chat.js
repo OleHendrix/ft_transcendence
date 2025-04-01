@@ -48,30 +48,12 @@ function setupChat(server) {
             const { senderId, receiverId } = request.query;
             const senderIdNum = parseInt(senderId);
             const receiverIdNum = parseInt(receiverId);
-<<<<<<< HEAD
             let chatSession;
             if (receiverIdNum === -1) {
                 chatSession = yield prisma.chatSession.findFirst({
                     where: {
                         account1Id: 1,
                         account2Id: 1
-=======
-            //get chatSessionId from api
-            let chatSession = yield prisma.chatSession.findFirst({
-                where: {
-                    OR: [
-                        { account1Id: senderIdNum, account2Id: receiverIdNum },
-                        { account1Id: receiverIdNum, account2Id: senderIdNum }
-                    ]
-                }
-            });
-            //create chatsession if not exist
-            if (!chatSession) {
-                chatSession = yield prisma.chatSession.create({
-                    data: {
-                        account1Id: senderIdNum,
-                        account2Id: receiverIdNum
->>>>>>> live_chat_jim
                     }
                 });
                 if (!chatSession) {
@@ -101,10 +83,6 @@ function setupChat(server) {
                     });
                 }
             }
-<<<<<<< HEAD
-=======
-            //get all messages from chatSessionId + username of sender(for display)
->>>>>>> live_chat_jim
             const messages = yield prisma.message.findMany({
                 where: { chatSessionId: chatSession.id },
                 orderBy: { timestamp: 'asc' },
@@ -146,27 +124,12 @@ function setupChat(server) {
             const receiver = yield prisma.account.findUnique({ where: { id: receiverId } });
             if (!sender || (!receiver && receiverId !== -1))
                 return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
-<<<<<<< HEAD
             let chatSession;
             if (receiverId === -1) {
                 chatSession = yield prisma.chatSession.findFirst({
                     where: {
                         account1Id: 1,
                         account2Id: 1
-=======
-            let chatSession = yield prisma.chatSession.findFirst({
-                where: {
-                    OR: [{ account1Id: senderId, account2Id: receiverId },
-                        { account1Id: receiverId, account2Id: senderId }]
-                }
-            });
-            // should be unneccecairy 
-            if (!chatSession) {
-                chatSession = yield prisma.chatSession.create({
-                    data: {
-                        account1Id: senderId,
-                        account2Id: receiverId
->>>>>>> live_chat_jim
                     }
                 });
                 if (!chatSession) {
@@ -196,7 +159,7 @@ function setupChat(server) {
             const message = yield prisma.message.create({
                 data: {
                     content,
-                    senderId: (receiverId === -1 ? 1 : senderId),
+                    senderId: senderId,
                     receiverId: (receiverId === -1 ? 1 : receiverId),
                     chatSessionId: chatSession.id
                 },

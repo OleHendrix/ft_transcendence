@@ -46,7 +46,7 @@ function Chat()
 		if (receiverId !== null && loggedInAccounts.length > 0) {
 			getMessages();
 		}
-	}, [receiverId, messageReceived])
+	}, [receiverId, messageReceived, isOpen])
 
 	useEffect(() =>
 	{
