@@ -19,7 +19,7 @@ function Chat()
 	{
 		async function getMessages()
 		{
-			// console.log("getMessages called: messageReceived status:", messageReceived);
+			console.log("getMessages called: messageReceived status:", messageReceived);
 			try
 			{
 				const response = await axios.get('http://localhost:5001/api/get-messages',
@@ -43,13 +43,13 @@ function Chat()
 		}
 		getMessages();
 		setMessageReceived(false);
-	}, [receiverId, messageReceived])
+	}, [receiverId, messageReceived, isOpen])
 
 	useEffect(() =>
 	{
 		if (!chatSessionId) return;
 	
-		// console.log("frontend csid:", chatSessionId);
+		console.log("frontend csid:", chatSessionId);
 		const socket = new WebSocket(`ws://localhost:5001/ws/chat?chatSessionId=${chatSessionId}`);
 
 		socket.onmessage = function(message)
@@ -162,7 +162,7 @@ function MessageList()
 function MessageInput()
 {
 	const {loggedInAccounts} 						= useAccountContext();
-	const {receiverId, setMessageReceived} 	= useChatContext();
+	const {receiverId, setMessageReceived} 			= useChatContext();
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) =>
 	{

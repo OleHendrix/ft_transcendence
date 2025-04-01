@@ -31,7 +31,7 @@ export function ChatProvider({ children }: {children: ReactNode})
 	const [receiverId, setReceiverId] 			= useState(-1);
 	const [isOpen, setIsOpen] 					= useState(false);
 	const [messageReceived, setMessageReceived] = useState(false);
-	const [chatSessionId, setChatSessionId] 	= useState(-1);
+	const [chatSessionId, setChatSessionId] 	= useState(1);
 	const [testChats, setTestChats] 			= useState<message[]>([]);
 
 	const value = useMemo(() => (

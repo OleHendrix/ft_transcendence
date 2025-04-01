@@ -44,30 +44,30 @@ export async function setupChat(server: FastifyInstance)
 
 		let chatSession;
 
-		// if (receiverIdNum === -1)
-		// {
-		// 	chatSession = await prisma.chatSession.findFirst(
-		// 	{
-		// 		where:
-		// 		{
-		// 			account1Id: -1,
-		// 			account2Id: -1 
-		// 		}
-		// 	});
-		// 	if (!chatSession)
-		// 	{
-		// 		chatSession = await prisma.chatSession.create(
-		// 		{
-		// 			data:
-		// 			{ 
-		// 				account1Id: -1,
-		// 				account2Id: -1 
-		// 			}
-		// 		});
-		// 	}
-		// }
-		// else
-		// {
+		if (receiverIdNum === -1)
+		{
+			chatSession = await prisma.chatSession.findFirst(
+			{
+				where:
+				{
+					account1Id: 1,
+					account2Id: 1 
+				}
+			});
+			if (!chatSession)
+			{
+				chatSession = await prisma.chatSession.create(
+				{
+					data:
+					{ 
+						account1Id: 1,
+						account2Id: 1 
+					}
+				});
+			}
+		}
+		else
+		{
 			chatSession = await prisma.chatSession.findFirst(
 			{
 				where:
@@ -91,7 +91,7 @@ export async function setupChat(server: FastifyInstance)
 					}
 				});
 			}
-		// }
+		}
 		const messages = await prisma.message.findMany(
 		{
 			where: { chatSessionId: chatSession.id },
@@ -140,54 +140,62 @@ export async function setupChat(server: FastifyInstance)
 		const { senderId, receiverId, content } = request.body as { senderId: number; receiverId: number; content: string };
 		const sender = await prisma.account.findUnique({ where: { id: senderId } });
 		const receiver = await prisma.account.findUnique({ where: { id: receiverId } });
-		if (!sender || !receiver)
+		if (!sender || (!receiver && receiverId !== -1))
 			return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
 
 		let chatSession;
 
-		// if (receiverId === -1)
-		// {
-		// 	chatSession = await prisma.chatSession.findFirst(
-		// 	{
-		// 		where:
-		// 		{
-		// 			account1Id: -1,
-		// 			account2Id: -1,
-		// 		}
-
-		// 	}
-		// 	)
-		// }
-
-
-
-		chatSession = await prisma.chatSession.findFirst(
+		if (receiverId === -1)
 		{
-			where:
+			chatSession = await prisma.chatSession.findFirst(
 			{
-				OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
+				where:
+				{
+					account1Id: 1,
+					account2Id: 1
+				}
+			})
+			if (!chatSession)
+			{
+				chatSession = await prisma.chatSession.create(
+				{
+					data:
+					{ 
+						account1Id: 1,
+						account2Id: 1 
+					}
+				});
 			}
-		});
-	
-		if (!chatSession)
+		}
+		else
 		{
-			chatSession = await prisma.chatSession.create(
+			chatSession = await prisma.chatSession.findFirst(
 			{
-				data:
-				{ 
-					account1Id: senderId,
-					account2Id: receiverId
+				where:
+				{
+					OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
 				}
 			});
+		
+			if (!chatSession)
+			{
+				chatSession = await prisma.chatSession.create(
+				{
+					data:
+					{ 
+						account1Id: senderId,
+						account2Id: receiverId
+					}
+				});
+			}
 		}
-	
 		const message = await prisma.message.create(
 		{
 			data:
 			{
 				content,
-				senderId,
-				receiverId,
+				senderId: (receiverId === -1 ? 1 : senderId),
+				receiverId: (receiverId === -1 ? 1 : receiverId),
 				chatSessionId: chatSession.id
 			},
 			include:

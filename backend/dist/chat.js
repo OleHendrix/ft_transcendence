@@ -47,47 +47,40 @@ function setupChat(server) {
             const senderIdNum = parseInt(senderId);
             const receiverIdNum = parseInt(receiverId);
             let chatSession;
-            // if (receiverIdNum === -1)
-            // {
-            // 	chatSession = await prisma.chatSession.findFirst(
-            // 	{
-            // 		where:
-            // 		{
-            // 			account1Id: -1,
-            // 			account2Id: -1 
-            // 		}
-            // 	});
-            // 	if (!chatSession)
-            // 	{
-            // 		chatSession = await prisma.chatSession.create(
-            // 		{
-            // 			data:
-            // 			{ 
-            // 				account1Id: -1,
-            // 				account2Id: -1 
-            // 			}
-            // 		});
-            // 	}
-            // }
-            // else
-            // {
-            chatSession = yield prisma.chatSession.findFirst({
-                where: {
-                    OR: [
-                        { account1Id: senderIdNum, account2Id: receiverIdNum },
-                        { account1Id: receiverIdNum, account2Id: senderIdNum }
-                    ]
-                }
-            });
-            if (!chatSession) {
-                chatSession = yield prisma.chatSession.create({
-                    data: {
-                        account1Id: senderIdNum,
-                        account2Id: receiverIdNum
+            if (receiverIdNum === -1) {
+                chatSession = yield prisma.chatSession.findFirst({
+                    where: {
+                        account1Id: 1,
+                        account2Id: 1
                     }
                 });
+                if (!chatSession) {
+                    chatSession = yield prisma.chatSession.create({
+                        data: {
+                            account1Id: 1,
+                            account2Id: 1
+                        }
+                    });
+                }
             }
-            // }
+            else {
+                chatSession = yield prisma.chatSession.findFirst({
+                    where: {
+                        OR: [
+                            { account1Id: senderIdNum, account2Id: receiverIdNum },
+                            { account1Id: receiverIdNum, account2Id: senderIdNum }
+                        ]
+                    }
+                });
+                if (!chatSession) {
+                    chatSession = yield prisma.chatSession.create({
+                        data: {
+                            account1Id: senderIdNum,
+                            account2Id: receiverIdNum
+                        }
+                    });
+                }
+            }
             const messages = yield prisma.message.findMany({
                 where: { chatSessionId: chatSession.id },
                 orderBy: { timestamp: 'asc' },
@@ -124,39 +117,45 @@ function setupChat(server) {
             const { senderId, receiverId, content } = request.body;
             const sender = yield prisma.account.findUnique({ where: { id: senderId } });
             const receiver = yield prisma.account.findUnique({ where: { id: receiverId } });
-            if (!sender || !receiver)
+            if (!sender || (!receiver && receiverId !== -1))
                 return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
             let chatSession;
-            // if (receiverId === -1)
-            // {
-            // 	chatSession = await prisma.chatSession.findFirst(
-            // 	{
-            // 		where:
-            // 		{
-            // 			account1Id: -1,
-            // 			account2Id: -1,
-            // 		}
-            // 	}
-            // 	)
-            // }
-            chatSession = yield prisma.chatSession.findFirst({
-                where: {
-                    OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
-                }
-            });
-            if (!chatSession) {
-                chatSession = yield prisma.chatSession.create({
-                    data: {
-                        account1Id: senderId,
-                        account2Id: receiverId
+            if (receiverId === -1) {
+                chatSession = yield prisma.chatSession.findFirst({
+                    where: {
+                        account1Id: 1,
+                        account2Id: 1
                     }
                 });
+                if (!chatSession) {
+                    chatSession = yield prisma.chatSession.create({
+                        data: {
+                            account1Id: 1,
+                            account2Id: 1
+                        }
+                    });
+                }
+            }
+            else {
+                chatSession = yield prisma.chatSession.findFirst({
+                    where: {
+                        OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
+                    }
+                });
+                if (!chatSession) {
+                    chatSession = yield prisma.chatSession.create({
+                        data: {
+                            account1Id: senderId,
+                            account2Id: receiverId
+                        }
+                    });
+                }
             }
             const message = yield prisma.message.create({
                 data: {
                     content,
-                    senderId,
-                    receiverId,
+                    senderId: (receiverId === -1 ? 1 : senderId),
+                    receiverId: (receiverId === -1 ? 1 : receiverId),
                     chatSessionId: chatSession.id
                 },
                 include: {
