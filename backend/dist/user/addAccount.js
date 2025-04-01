@@ -17,10 +17,8 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 function addAccount(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/add-account', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            console.log("mebalzak");
             const { username, email, password } = request.body;
             const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-            console.log("adding account: ", username);
             const existingAccount = yield prisma.account.findFirst({
                 where: {
                     OR: [{ username: username }, { email: email }]

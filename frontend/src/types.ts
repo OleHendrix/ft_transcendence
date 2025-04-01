@@ -4,13 +4,13 @@
 
 export interface PlayerType
 {
-	id: number,
 	username: string;
 	email: string;
 	password: string;
 	wins: number;
 	draws: number;
 	loses: number;
+	totpSecret: boolean;
 }
 
 export interface SignUpFormType

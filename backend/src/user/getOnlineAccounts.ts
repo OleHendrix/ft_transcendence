@@ -7,9 +7,7 @@ export default async function getOnlineAccounts(fastify: FastifyInstance, prisma
 	{
 		try
 		{
-			const accounts = await prisma.account.findMany(
-				{ where: { online: true }}
-			);
+			const accounts = await prisma.account.findMany({ where: { online: true }});
 			return reply.send({ success: true, accounts });
 		}
 		catch (error)

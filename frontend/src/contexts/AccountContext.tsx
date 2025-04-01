@@ -10,6 +10,8 @@ type AccountContextType =
 	setNumberOfLoggedInAccounts: Dispatch<SetStateAction<number>>;
 	loggedInAccounts: PlayerType[];
 	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	triggerFetchAccounts: boolean;
+	setTriggerFetchAccounts: Dispatch<SetStateAction<boolean>>;
 	isPlaying: boolean;
 	setIsPlaying: Dispatch<SetStateAction<boolean>>
 };
@@ -21,6 +23,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 	const [accounts, setAccounts] = useState<PlayerType[]>([]);
 	const [numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
 	const [loggedInAccounts, setLoggedInAccounts] = useState<PlayerType[]>([]);
+	const [triggerFetchAccounts, setTriggerFetchAccounts] = useState(false);
 	const [isPlaying, setIsPlaying] = useState(false);
 
 	useEffect(() =>
@@ -44,10 +47,11 @@ export function AccountProvider({ children }: {children: ReactNode})
 				console.log(error.response.data);
 			}
 		} fetchAccounts();
-	}, [numberOfLoggedInAccounts])
+		setTriggerFetchAccounts(false);
+	}, [numberOfLoggedInAccounts, triggerFetchAccounts])
 
 	return (
-		<AccountContext.Provider value={{ accounts, setAccounts, numberOfLoggedInAccounts, setNumberOfLoggedInAccounts, loggedInAccounts, setLoggedInAccounts, isPlaying, setIsPlaying }}>
+		<AccountContext.Provider value={{ accounts, setAccounts, numberOfLoggedInAccounts, setNumberOfLoggedInAccounts, loggedInAccounts, setLoggedInAccounts, triggerFetchAccounts, setTriggerFetchAccounts, isPlaying, setIsPlaying }}>
 			{ children }
 		</AccountContext.Provider>
 	);

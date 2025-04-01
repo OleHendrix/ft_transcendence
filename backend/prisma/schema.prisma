@@ -8,9 +8,8 @@ datasource db {
 }
 
 model Account {
-  id          Int           @id @default(autoincrement())
+  username    String     @id @unique
   email       String     @unique
-  username    String     @unique
   password    String
   totpSecret String?
   wins        Int        @default(0)
@@ -27,35 +26,35 @@ model Account {
 }
 
 model Message {
-  id            Int      @id @default(autoincrement())
-  content       String
-  timestamp     DateTime @default(now())
-  senderId      Int
-  receiverId    Int
-  chatSessionId Int
+  id           		Int      @id @default(autoincrement())
+  content       	String
+  timestamp     	DateTime @default(now())
+  senderUsername  	String
+  receiverUsername 	String
+  chatSessionId 	Int
 
   chatSession   ChatSession   @relation(fields: [chatSessionId], references: [id])
-  sender        Account       @relation("SentMessages", fields: [senderId], references: [id])
-  receiver      Account       @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender        Account       @relation("SentMessages", fields: [senderUsername], references: [username])
+  receiver      Account       @relation("ReceivedMessages", fields: [receiverUsername], references: [username])
 }
 
 model ChatSession {
-  id         Int      @id @default(autoincrement())
-  account1Id Int
-  account2Id Int
-  createdAt  DateTime @default(now())
-  messages   Message[]
+  id        	Int      @id @default(autoincrement())
+  username1		String
+  username2		String
+  createdAt 	DateTime @default(now())
+  messages  	Message[]
 
-  account1   Account  @relation("account1ChatSessions", fields: [account1Id], references: [id])
-  account2   Account  @relation("account2ChatSessions", fields: [account2Id], references: [id])
+  account1   Account  @relation("account1ChatSessions", fields: [username1], references: [username])
+  account2   Account  @relation("account2ChatSessions", fields: [username2], references: [username])
 }
 
 model Block {
-  id          Int      @id @default(autoincrement())
-  blockerId   Int
-  blockedId   Int
+  id         		Int      @id @default(autoincrement())
+  blockerUsername   String
+  blockedUsername   String
 
-  blocker     Account  @relation("Blocks", fields: [blockerId], references: [id])
-  blocked     Account  @relation("BlockedBy", fields: [blockedId], references: [id])
+  blocker     Account  @relation("Blocks", fields: [blockerUsername], references: [username])
+  blocked     Account  @relation("BlockedBy", fields: [blockedUsername], references: [username])
   createdAt   DateTime @default(now())
 }
