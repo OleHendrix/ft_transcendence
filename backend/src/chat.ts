@@ -11,11 +11,12 @@ export async function setupChat(server: FastifyInstance)
 	{
 		server.get("/ws/chat", { websocket: true }, (connection, req) =>
 		{
-			const query = req.query as { chatSessionId?: string };
+			const query = req.query as { chatSessionId?: string};
+			
 			const chatSessionId = query.chatSessionId ? Number(query.chatSessionId) : undefined;
 			if (!chatSessionId)
 			{
-				console.log("chatSessionId parse failed");
+				console.log("/ws/chat: invalid chatSessionId passed to API call, closing connection");
 				connection.close();
 				return;
 			}
@@ -24,14 +25,17 @@ export async function setupChat(server: FastifyInstance)
 				activeChats.set(chatSessionId, new Set());
 
 			activeChats.get(chatSessionId)!.add(connection);
-			// console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
+			console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
 			
 			connection.on("close", () =>
 			{
-				// console.log(`User ${chatSessionId} disconnected`);
+				console.log(`User ${chatSessionId} disconnected`);
 				activeChats.get(chatSessionId)!.delete(connection);
 				if (activeChats.get(chatSessionId)!.size === 0)
+				{
+					console.log(`chatSessionId ${chatSessionId} no longer active, removing from active chats`);
 					activeChats.delete(chatSessionId);
+				}
 			});
 		})
 	});
@@ -42,72 +46,47 @@ export async function setupChat(server: FastifyInstance)
 		const senderIdNum = parseInt(senderId as string);
 		const receiverIdNum = parseInt(receiverId as string);
 
-		let chatSession;
-
-		// if (receiverIdNum === -1)
-		// {
-		// 	chatSession = await prisma.chatSession.findFirst(
-		// 	{
-		// 		where:
-		// 		{
-		// 			account1Id: -1,
-		// 			account2Id: -1 
-		// 		}
-		// 	});
-		// 	if (!chatSession)
-		// 	{
-		// 		chatSession = await prisma.chatSession.create(
-		// 		{
-		// 			data:
-		// 			{ 
-		// 				account1Id: -1,
-		// 				account2Id: -1 
-		// 			}
-		// 		});
-		// 	}
-		// }
-		// else
-		// {
-			chatSession = await prisma.chatSession.findFirst(
+		//get chatSessionId from api
+		let chatSession = await prisma.chatSession.findFirst(
+		{
+			where:
 			{
-				where:
-				{
-					OR: 
-					[
-						{ account1Id: senderIdNum, account2Id: receiverIdNum },
-						{ account1Id: receiverIdNum, account2Id: senderIdNum }
-					]
+				OR: 
+				[
+					{ account1Id: senderIdNum, account2Id: receiverIdNum },
+					{ account1Id: receiverIdNum, account2Id: senderIdNum }
+				]
+			}
+		});
+		
+		//create chatsession if not exist
+		if (!chatSession)
+		{
+			chatSession = await prisma.chatSession.create(
+			{
+				data:
+				{ 
+					account1Id: senderIdNum,
+					account2Id: receiverIdNum
 				}
 			});
-			
-			if (!chatSession)
-			{
-				chatSession = await prisma.chatSession.create(
-				{
-					data:
-					{ 
-						account1Id: senderIdNum,
-						account2Id: receiverIdNum
-					}
-				});
-			}
-		// }
+		}
+
+		//get all messages from chatSessionId + username of sender(for display)
 		const messages = await prisma.message.findMany(
 		{
 			where: { chatSessionId: chatSession.id },
 			orderBy: { timestamp: 'asc' },
-			include:
-			{
-				sender:
-				{
-					select:
-					{
+			include: {
+				sender: {
+					select: {
 						username: true,
 					}
 				}
 			}
 		});
 		
+		// transform the messages for sending response
 		const transformedMessages = messages.map(message => (
 		{
 			content: message.content,
@@ -122,15 +101,19 @@ export async function setupChat(server: FastifyInstance)
 	async function notifyClients(newMessage: any)
 	{
 		const { chatSessionId } = newMessage;
-		// console.log("notifyClient csid", chatSessionId);
+
+		console.log(`Notifying all clients connected to ChatSessionId ${chatSessionId}`);
 		const activeChatSockets = activeChats.get(chatSessionId);
-		
+
 		if (activeChatSockets)
 		{
 			activeChatSockets.forEach(socket =>
 			{
 				if (socket.readyState === WebSocket.OPEN)
+				{
 					socket.send(JSON.stringify(newMessage));
+					console.log("client notified");
+				}
 			})
 		}
 	}
@@ -143,32 +126,16 @@ export async function setupChat(server: FastifyInstance)
 		if (!sender || !receiver)
 			return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
 
-		let chatSession;
-
-		// if (receiverId === -1)
-		// {
-		// 	chatSession = await prisma.chatSession.findFirst(
-		// 	{
-		// 		where:
-		// 		{
-		// 			account1Id: -1,
-		// 			account2Id: -1,
-		// 		}
-
-		// 	}
-		// 	)
-		// }
-
-
-
-		chatSession = await prisma.chatSession.findFirst(
+		let chatSession = await prisma.chatSession.findFirst(
 		{
 			where:
 			{
-				OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
+				OR: [{ account1Id: senderId, account2Id: receiverId },
+					 { account1Id: receiverId, account2Id: senderId }]
 			}
 		});
 	
+		// should be unneccecairy 
 		if (!chatSession)
 		{
 			chatSession = await prisma.chatSession.create(
@@ -204,8 +171,8 @@ export async function setupChat(server: FastifyInstance)
 		
 		const messageToClient =
 		{
-    		content: message.content,
-    		timestamp: message.timestamp,
+			content: message.content,
+			timestamp: message.timestamp,
 			senderUsername: message.sender.username,
 			chatSessionId: message.chatSessionId
 		};
