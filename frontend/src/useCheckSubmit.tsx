@@ -19,7 +19,7 @@ export function useCheckSubmit()
 
 		try
 		{
-			const response = await axios.post("http://localhost:5001/api/add-account", { username, email, password });
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/add-account`, { username, email, password });
 
 			if (response.data.success)
 			{

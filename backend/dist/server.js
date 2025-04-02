@@ -27,7 +27,8 @@ const getAccounts_1 = __importDefault(require("./user/getAccounts"));
 const login_1 = __importDefault(require("./user/login"));
 const logout_1 = __importDefault(require("./user/logout"));
 const updateAccount_1 = __importDefault(require("./user/updateAccount"));
-const initPongServer_1 = __importDefault(require("./pong/initPongServer"));
+const pongServer_1 = __importDefault(require("./pong/pongServer"));
+const matchMaking_1 = __importDefault(require("./pong/matchMaking"));
 const chat_1 = require("./chat");
 const fastify = (0, fastify_1.default)();
 exports.prisma = new client_1.PrismaClient();
@@ -48,7 +49,8 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, setupTotp_1.default)(fastify, exports.prisma);
     yield (0, verifyTotp_1.default)(fastify, exports.prisma);
     yield (0, deleteTotp_1.default)(fastify, exports.prisma);
-    yield (0, initPongServer_1.default)(fastify);
+    yield (0, pongServer_1.default)(fastify);
+    (0, matchMaking_1.default)(fastify);
     fastify.listen({ port: 5001, host: 'localhost' }, (err, address) => {
         if (err) {
             console.error(err);

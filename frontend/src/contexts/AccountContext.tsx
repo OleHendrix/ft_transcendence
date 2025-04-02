@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType } from "../types";
+import { PlayerType, PlayerState } from "../types";
 import axios from 'axios';
 
 type AccountContextType = 
@@ -12,8 +12,8 @@ type AccountContextType =
 	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
 	triggerFetchAccounts: boolean;
 	setTriggerFetchAccounts: Dispatch<SetStateAction<boolean>>;
-	isPlaying: boolean;
-	setIsPlaying: Dispatch<SetStateAction<boolean>>
+	isPlaying: PlayerState;
+	setIsPlaying: Dispatch<SetStateAction<PlayerState>>
 };
 
 const AccountContext = createContext<AccountContextType | null>(null);
@@ -24,7 +24,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 	const [numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
 	const [loggedInAccounts, setLoggedInAccounts] = useState<PlayerType[]>([]);
 	const [triggerFetchAccounts, setTriggerFetchAccounts] = useState(false);
-	const [isPlaying, setIsPlaying] = useState(false);
+	const [isPlaying, setIsPlaying] = useState(PlayerState.idle);
 
 	useEffect(() =>
 	{
@@ -36,7 +36,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 		{
 			try
 			{
-				const response = await axios.get('http://localhost:5001/api/get-accounts');
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
 				if (response.data.success)
 					setAccounts(response.data.accounts);
 				else

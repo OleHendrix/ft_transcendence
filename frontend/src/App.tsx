@@ -7,6 +7,7 @@ import { ChatProvider } from "./contexts/ChatContext";
 import './css/index.css'
 import { AccountProvider, useAccountContext } from './contexts/AccountContext';
 import { LoginProvider } from "./contexts/LoginContext";
+import { PlayerState } from "./types"
 
 function MainContent()
 {
@@ -14,11 +15,11 @@ function MainContent()
 
 	return (
 		<>
-			{!isPlaying && <Hero />}
+			{isPlaying !== PlayerState.playing && <Hero />}
 			<ChatProvider>
 				<Chat/>
 			</ChatProvider>
-			{isPlaying  && <PongGame />}
+			{isPlaying === PlayerState.playing  && <PongGame />}
 		</>
 	)
 }
