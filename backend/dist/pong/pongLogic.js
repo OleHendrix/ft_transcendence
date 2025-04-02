@@ -53,6 +53,7 @@ function paddleColision(paddle, ball) {
         ball.pos.x = collX;
         ball.dir.x *= s.BOUNCE.x;
         ball.dir.y += paddle.dir.y * s.CARRYOVER;
+        paddle.bounce = true;
     }
 }
 function handleColision(game, match) {
@@ -93,7 +94,7 @@ function manageAIInput(match, game, ticks) {
         game.p2Input = 0;
 }
 function tick(match, game, ticks) {
-    if (match.p2 === -1)
+    if (match.p2.id === -1)
         manageAIInput(match, game, ticks);
     managePaddle(game.p1, game.p1Input);
     managePaddle(game.p2, game.p2Input);
@@ -120,9 +121,9 @@ function manageAI(game) {
 function updateInput(match, userID, game, keysPressed) {
     var _a, _b, _c, _d;
     // console.log ("1:", match.p1, "2:", match.p2, "isLocal:", match.isLocalGame);
-    if (match.p1 === userID || match.isLocalGame)
+    if (match.p1.id === userID || match.isLocalGame)
         game.p1Input = Number((_a = keysPressed['s']) !== null && _a !== void 0 ? _a : false) - Number((_b = keysPressed['w']) !== null && _b !== void 0 ? _b : false);
-    if (match.p2 === userID || match.isLocalGame)
+    if (match.p2.id === userID || match.isLocalGame)
         game.p2Input = Number((_c = keysPressed['ArrowDown']) !== null && _c !== void 0 ? _c : false) - Number((_d = keysPressed['ArrowUp']) !== null && _d !== void 0 ? _d : false);
 }
 function updateGame(match, userID, keysPressed) {
@@ -130,8 +131,10 @@ function updateGame(match, userID, keysPressed) {
     const now = Math.floor(Date.now() / 10);
     if (game.lastUpdate === -1)
         game.lastUpdate = now;
+    game.p1.bounce = false;
+    game.p2.bounce = false;
     for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++) {
-        if (match.p2 === -1 && game.ai.lastActivation + 100 <= game.lastUpdate) {
+        if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate) {
             manageAI(game);
             game.ai.lastActivation = game.lastUpdate;
         }
@@ -139,19 +142,21 @@ function updateGame(match, userID, keysPressed) {
     }
     updateInput(match, userID, game, keysPressed);
 }
-function initGame() {
+function initGame(p1Data, p2Data) {
     return {
         p1: {
             pos: { x: 3, y: 50 },
             size: { x: 2, y: 20 },
             dir: { x: 0, y: 0 },
-            colour: "#ff914d"
+            colour: "#ff914d",
+            bounce: false
         },
         p2: {
             pos: { x: 95, y: 50 },
             size: { x: 2, y: 20 },
             dir: { x: 0, y: 0 },
-            colour: "#134588"
+            colour: "#134588",
+            bounce: false
         },
         p1Score: 0,
         p2Score: 0,
@@ -162,15 +167,17 @@ function initGame() {
         ai: { lastActivation: 0, desiredY: 0 },
         maxPoints: 3,
         p1Won: null,
+        p1Data: p1Data,
+        p2Data: p2Data,
     };
 }
 function endGame(match, p1Wins) {
     return __awaiter(this, void 0, void 0, function* () {
         match.state.p1Won = p1Wins;
-        if (match.p2 === -1)
+        if (match.p2.id === -1)
             return;
-        let winner = match.p1;
-        let loser = match.p2;
+        let winner = match.p1.id;
+        let loser = match.p2.id;
         if (p1Wins === false) {
             [winner, loser] = [loser, winner];
         }

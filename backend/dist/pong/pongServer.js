@@ -14,11 +14,11 @@ exports.default = initPongServer;
 const pongLogic_1 = require("./pongLogic");
 let matchTable = new Map([]);
 let matchIDTable = new Map([]);
-function addGame(userID1, userID2, isLocalGame) {
+function addGame(user1, user2, isLocalGame) {
     let newMatch = {
-        state: (0, pongLogic_1.initGame)(),
-        p1: userID1,
-        p2: userID2,
+        state: (0, pongLogic_1.initGame)(user1, user2),
+        p1: user1,
+        p2: user2,
         isLocalGame: isLocalGame,
     };
     let key = 0;
@@ -26,9 +26,9 @@ function addGame(userID1, userID2, isLocalGame) {
         key++;
     }
     matchTable.set(key, newMatch);
-    matchIDTable.set(userID1, key);
-    if (userID2 !== -1)
-        matchIDTable.set(userID2, key);
+    matchIDTable.set(user1.id, key);
+    if (user2.id !== -1)
+        matchIDTable.set(user2.id, key);
 }
 function initPongServer(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -55,12 +55,12 @@ function initPongServer(fastify) {
         }));
         // adds a new match between userID1 and userID2
         fastify.post('/pong/add', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { userID1, userID2, isLocalGame } = request.body;
-            if (userID1 === undefined || userID2 === undefined || isLocalGame === undefined) {
+            const { user1, user2, isLocalGame } = request.body;
+            if (user1 === undefined || user2 === undefined || isLocalGame === undefined) {
                 reply.status(400);
                 return;
             }
-            addGame(userID1, userID2, isLocalGame);
+            addGame(user1, user2, isLocalGame);
             reply.status(201);
         }));
         fastify.post('/pong/end-game', (request, reply) => __awaiter(this, void 0, void 0, function* () {
@@ -79,7 +79,7 @@ function initPongServer(fastify) {
                 return;
             }
             const match = matchTable.get(key);
-            (0, pongLogic_1.endGame)(match, match.p1 !== userID);
+            (0, pongLogic_1.endGame)(match, match.p1.id !== userID);
             reply.status(200);
         }));
         fastify.post('/pong/delete', (request, reply) => __awaiter(this, void 0, void 0, function* () {
@@ -99,13 +99,13 @@ function initPongServer(fastify) {
             }
             const match = matchTable.get(key);
             if (match.isLocalGame === true) {
-                matchIDTable.delete(match.p1);
-                matchIDTable.delete(match.p2);
+                matchIDTable.delete(match.p1.id);
+                matchIDTable.delete(match.p2.id);
             }
             else {
                 matchIDTable.delete(userID);
             }
-            if (matchIDTable.has(match.p1) === false && matchIDTable.has(match.p2) === false) {
+            if (matchIDTable.has(match.p1.id) === false && matchIDTable.has(match.p2.id) === false) {
                 matchTable.delete(key);
             }
             reply.status(200);

@@ -14,9 +14,9 @@ const pongServer_1 = require("./pongServer");
 const queue = new Map();
 function matchMake() {
     const match = Array.from(queue).slice(0, 2);
-    const [socket1, userID1] = match[0];
-    const [socket2, userID2] = match[1];
-    (0, pongServer_1.addGame)(userID1, userID2, false);
+    const [socket1, user1] = match[0];
+    const [socket2, user2] = match[1];
+    (0, pongServer_1.addGame)(user1, user2, false);
     socket1.send("Starting match");
     socket2.send("Starting match");
     queue.delete(socket1);
@@ -30,8 +30,8 @@ function initMatchMaking(fastify) {
                 console.log("Player connected");
                 connection.on("message", (message) => {
                     console.log("Got input");
-                    const userID = Number(message.toString());
-                    queue.set(connection, userID);
+                    const user = JSON.parse(message.toString());
+                    queue.set(connection, user);
                     if (queue.size >= 2)
                         matchMake();
                 });

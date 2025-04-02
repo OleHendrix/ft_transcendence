@@ -1,17 +1,17 @@
 import { initGame, updateGame, endGame } from './pongLogic';
-import { PongState, Match } from './types';
+import { PlayerData, Match } from './types';
 import { FastifyInstance } from "fastify";
 
 let matchTable   = new Map<number, Match>([]);
 let matchIDTable = new Map<number, number>([]);
 
-export function addGame(userID1: number, userID2: number, isLocalGame: boolean)
+export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
 {
 	let newMatch: Match = 
 	{
-		state:			initGame(),
-		p1:				userID1,
-		p2:				userID2,
+		state:			initGame(user1, user2),
+		p1:				user1,
+		p2:				user2,
 		isLocalGame:	isLocalGame,
 	}
 	let key = 0;
@@ -20,9 +20,9 @@ export function addGame(userID1: number, userID2: number, isLocalGame: boolean)
 		key++;
 	}
 	matchTable.set(key, newMatch);
-	matchIDTable.set(userID1, key);
-	if (userID2 !== -1)
-		matchIDTable.set(userID2, key);
+	matchIDTable.set(user1.id, key);
+	if (user2.id !== -1)
+		matchIDTable.set(user2.id, key);
 }
 
 export default async function initPongServer(fastify: FastifyInstance)
@@ -56,13 +56,13 @@ export default async function initPongServer(fastify: FastifyInstance)
 	// adds a new match between userID1 and userID2
 	fastify.post('/pong/add', async (request, reply) =>
 	{
-		const { userID1, userID2, isLocalGame } = request.body as { userID1?: number, userID2?: number, isLocalGame?: boolean };
-		if (userID1 === undefined || userID2 === undefined || isLocalGame === undefined)
+		const { user1, user2, isLocalGame } = request.body as { user1?: PlayerData, user2?: PlayerData, isLocalGame?: boolean };
+		if (user1 === undefined || user2 === undefined || isLocalGame === undefined)
 		{
 			reply.status(400);
 			return;
 		}
-		addGame(userID1, userID2, isLocalGame);
+		addGame(user1, user2, isLocalGame);
 		reply.status(201);
 	});
 
@@ -86,7 +86,7 @@ export default async function initPongServer(fastify: FastifyInstance)
 			return;
 		}
 		const match = matchTable.get(key) as Match;
-		endGame(match, match.p1 !== userID);
+		endGame(match, match.p1.id !== userID);
 		reply.status(200);
 	});
 
@@ -112,14 +112,14 @@ export default async function initPongServer(fastify: FastifyInstance)
 		const match = matchTable.get(key) as Match;
 		if (match.isLocalGame === true)
 		{
-			matchIDTable.delete(match.p1);
-			matchIDTable.delete(match.p2);
+			matchIDTable.delete(match.p1.id);
+			matchIDTable.delete(match.p2.id);
 		}
 		else
 		{
 			matchIDTable.delete(userID);
 		}
-		if (matchIDTable.has(match.p1) === false && matchIDTable.has(match.p2) === false)
+		if (matchIDTable.has(match.p1.id) === false && matchIDTable.has(match.p2.id) === false)
 		{
 			matchTable.delete(key);
 		}
