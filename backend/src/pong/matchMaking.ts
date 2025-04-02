@@ -1,16 +1,17 @@
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import { addGame } from "./pongServer";
+import { PlayerData } from "./types"
 
-const queue = new Map<WebSocket, number>();
+const queue = new Map<WebSocket, PlayerData>();
 
 function matchMake()
 {
 	const match = Array.from(queue).slice(0, 2);
-	const [socket1, userID1] = match[0];
-	const [socket2, userID2] = match[1];
+	const [socket1, user1] = match[0];
+	const [socket2, user2] = match[1];
 
-	addGame(userID1, userID2, false);
+	addGame(user1, user2, false);
 	socket1.send("Starting match");
 	socket2.send("Starting match");
 	queue.delete(socket1);
@@ -29,8 +30,8 @@ export default function initMatchMaking(fastify: FastifyInstance)
 			connection.on("message", (message) =>
 			{
 				console.log("Got input");
-				const userID = Number(message.toString());
-				queue.set(connection, userID);
+				const user: PlayerData = JSON.parse(message.toString());
+				queue.set(connection, user);
 				if (queue.size >= 2)
 					matchMake()
 			});

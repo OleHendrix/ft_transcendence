@@ -9,7 +9,8 @@ import { BiRocket } from "react-icons/bi";
 import { useAccountContext } from "./contexts/AccountContext";
 import Players from "./Players";
 import "./css/ponganimation.css";
-import { PlayerState } from './types';
+import { PlayerState, PlayerData } from './types';
+import { useState, useEffect } from 'react';
 
 function SimplePong()
 {
@@ -25,8 +26,9 @@ function SimplePong()
 }
 
 let socket: WebSocket | null = null;
+let queueStartTime = new Map<number, number>();
 
-function startQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
+function startQueue(user: PlayerData, setIsPlaying: (state: PlayerState) => void)
 {
 	socket = new WebSocket(`ws://${window.location.hostname}:5001/matchmake`);
 
@@ -36,7 +38,7 @@ function startQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 	{
 		console.log("Connected to matchmaking server");
 
-		socket?.send(userID.toString());
+		socket?.send(JSON.stringify(user));
 	});
 
 	socket.addEventListener("message", (event) =>
@@ -49,10 +51,21 @@ function startQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 			setIsPlaying(PlayerState.playing);
 		}
 	});
+	queueStartTime.set(user.id, Date.now());
 	setIsPlaying(PlayerState.queueing);
 }
 
-function endQueue(setIsPlaying: (state: PlayerState) => void)
+function getQueueTime(userID: number): number
+{
+	if (queueStartTime.has(userID) === false)
+	{
+		console.log("entry not found");
+		return 0;
+	}
+	return Math.floor((Date.now() - (queueStartTime.get(userID) as number)) / 1000);
+}
+
+function endQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 {
 	if (socket !== null)
 	{
@@ -61,6 +74,7 @@ function endQueue(setIsPlaying: (state: PlayerState) => void)
 		socket = null;
 	}
 	setIsPlaying(PlayerState.idle);
+	queueStartTime.delete(userID);
 }
 
 function Buttons()
@@ -69,9 +83,9 @@ function Buttons()
 	const hoverScale = 1.03;
 	const tapScale = 0.97;
 
-	async function AddGame(userID1: number, userID2: number, isLocalGame: boolean)
+	async function AddGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { userID1, userID2, isLocalGame });
+		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame });
 		if (response.status >= 400)
 		{
 			console.log("Failed to create match");
@@ -89,7 +103,7 @@ function Buttons()
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 					whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
 					whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
-					onClick={() => startQueue(loggedInAccounts[0].id, setIsPlaying)}>
+					onClick={() => startQueue(loggedInAccounts[0], setIsPlaying)}>
 					<p>Online Game</p>
 					<BiRocket />
 				</motion.button>
@@ -98,7 +112,7 @@ function Buttons()
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 					whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
 					whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
-					onClick={() => AddGame(loggedInAccounts[0].id, -1, false)}>
+					onClick={() => AddGame(loggedInAccounts[0], { id: -1, username: "AI" }, false)}>
 					<p>Versus AI</p>
 					<RiRobot2Line />
 				</motion.button>
@@ -110,7 +124,7 @@ function Buttons()
 				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 					whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
 					whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
-					onClick={() => AddGame(loggedInAccounts[0].id, loggedInAccounts[1].id, true)}>
+					onClick={() => AddGame(loggedInAccounts[0], loggedInAccounts[1], true)}>
 					<p>Local Game</p>
 					<RiGamepadLine />
 				</motion.button>
@@ -133,7 +147,20 @@ function Buttons()
 
 function Hero()
 {
-	const { isPlaying, setIsPlaying } = useAccountContext();
+	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
+	const [queueTime, setQueueTime] = useState(0);
+
+	useEffect(() => 
+	{
+		const interval = setInterval(() =>
+		{
+			if (loggedInAccounts.length !== 0)
+			{
+				setQueueTime(getQueueTime(loggedInAccounts[0].id));
+			}
+		}, 250);
+		return () => clearInterval(interval);
+	}, [isPlaying, loggedInAccounts])
 
 	return(
 		<>
@@ -152,13 +179,14 @@ function Hero()
 			<AnimatePresence>
 				<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 					<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-full max-w-md relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
-						<div>
-							<h1 className="block text-4xl font-medium mb-1">Looking for a match...</h1>
+						<div className="justify-center space-y-3">
+							<h1 className="block text-4xl font-medium text-center">Looking for a match...</h1>
+							<h1 className="block text-l font-medium text-gray-500 text-center">Queue time: {queueTime}s</h1>
 						</div>
 						<motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
 							whileHover={ {scale: 1.03}}
 							whileTap={ {scale: 0.97}}
-							onClick={() =>{ endQueue(setIsPlaying) }}>Back To Home
+							onClick={() =>{ endQueue(loggedInAccounts[0].id, setIsPlaying) }}>Cancel
 						</motion.button>
 					</motion.div>
 				</motion.div>
