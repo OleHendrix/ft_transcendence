@@ -11,15 +11,14 @@ import { format } from 'date-fns';
 
 function Chat()
 {
-	const {loggedInAccounts} 												= useAccountContext();
-	const {receiverId, chatSessionId, isOpen, messageReceived} 				= useChatContext();
-	const {setTestChats, setChatSessionId, setMessageReceived, setIsOpen}	= useChatContext();
+	const {loggedInAccounts} 													= useAccountContext();
+	const {receiverId, chatSessionId, isOpen, messageReceived} 					= useChatContext();
+	const {setChatMessages, setChatSessionId, setMessageReceived, setIsOpen}	= useChatContext();
 
 	useEffect(() =>
 	{
 		async function getMessages()
 		{
-			console.log("getMessages called: messageReceived status:", messageReceived);
 			console.log(`getMessages: Messagereceived: ${messageReceived}`);
 			try
 			{
@@ -33,7 +32,7 @@ function Chat()
 				})
 				if (response.data.success)
 				{
-					setTestChats(response.data.messages);
+					setChatMessages(response.data.messages);
 					setChatSessionId(response.data.chatSessionId);
 				}
 			} catch (error: any) {
@@ -133,19 +132,19 @@ function ChatHeader()
 function MessageList()
 {
 	const {loggedInAccounts} 	= useAccountContext();
-	const {testChats} 			= useChatContext();
+	const {chatMessages} 			= useChatContext();
 	const messagesEndRef 		= useRef<HTMLDivElement>(null);
 
 	useEffect(() =>
 	{
 		if (messagesEndRef.current)
 			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-	}, [testChats]);
+	}, [chatMessages]);
 
 	return (
 		<div className="h-full w-full flex flex-col gap-4 items-end overflow-y-auto">
 			<div className="h-[35vw] w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
-				{testChats.map((message, index) =>
+				{chatMessages.map((message, index) =>
 				(
 					<div key={index} className={`chat ${loggedInAccounts[0]?.username !== message.senderUsername ? 'chat-start' : 'chat-end'}`}>
 						<div className="chat-header font-bold">

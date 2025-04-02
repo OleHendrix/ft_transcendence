@@ -44,7 +44,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, getAccounts_1.default)(fastify, exports.prisma);
     yield (0, login_1.default)(fastify, exports.prisma);
     yield (0, logout_1.default)(fastify, exports.prisma);
-    yield (0, updateAccount_1.default)(fastify, prisma);
+    yield (0, updateAccount_1.default)(fastify, exports.prisma);
     yield (0, setupTotp_1.default)(fastify, exports.prisma);
     yield (0, verifyTotp_1.default)(fastify, exports.prisma);
     yield (0, deleteTotp_1.default)(fastify, exports.prisma);

@@ -13,7 +13,7 @@ exports.default = logout;
 function logout(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post("/api/logout", (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const { username, password } = req.body;
+            const { username } = req.body;
             const user = yield prisma.account.findUnique({ where: { username } });
             if (!user)
                 return res.status(400).send({ error: 'User not found' });
