@@ -10,6 +10,7 @@ export interface PlayerType
 	wins: number;
 	draws: number;
 	loses: number;
+	admin: boolean;
 }
 
 export interface SignUpFormType

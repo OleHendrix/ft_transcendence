@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from 'framer-motion';
 import Player from "./assets/Player.svg";
 import { BiSolidChat, BiSearch } from "react-icons/bi";
+import { FiPlus } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
 import axios from 'axios';
@@ -102,13 +103,15 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 
 function ChatHeader()
 {
-	const {accounts, loggedInAccounts} 			= useAccountContext();
-	const {setReceiverId} 						= useChatContext();
+	const {accounts, loggedInAccounts} 	= useAccountContext();
+	const {setReceiverId} 				= useChatContext();
 
 	return (
 		<div className="flex justify-end space-x-2 w-full flex-wrap mb-2">
-			{accounts.filter((account) => account.username !== loggedInAccounts[0]?.username).map((account, index) =>
-				(
+			{accounts
+				.filter((account) => 
+					account.username !== loggedInAccounts[0]?.username && !account.admin )
+				.map((account, index) => (
 					<div key={index} className="flex items-center flex-col space-y-0.5 w-12">
 						<motion.img
 							src={Player}
@@ -132,7 +135,7 @@ function ChatHeader()
 function MessageList()
 {
 	const {loggedInAccounts} 	= useAccountContext();
-	const {chatMessages} 			= useChatContext();
+	const {chatMessages} 		= useChatContext();
 	const messagesEndRef 		= useRef<HTMLDivElement>(null);
 
 	useEffect(() =>
@@ -164,7 +167,8 @@ function MessageList()
 function MessageInput()
 {
 	const {loggedInAccounts} 				= useAccountContext();
-	const {receiverId, setMessageReceived} 			= useChatContext();
+	const {receiverId, setMessageReceived} = useChatContext();
+	const [isMessageMenuOpen, setMessageMenu] = useState(false);
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) =>
 	{
@@ -199,8 +203,77 @@ function MessageInput()
 	};
 
 	return (
-		<input className="w-full bg-white/10 p-3 rounded-2xl" placeholder="Type your message..." onKeyDown={handleKeyDown}/>
+		<div className="relative w-full">
+			<input
+				className="w-full bg-white/10 p-3 rounded-2xl pr-12"
+				placeholder="Type your message..."
+				onKeyDown={handleKeyDown}
+			/>
+			<motion.div
+				whileHover={{ scale: 1.17 }}
+				whileTap={{ scale: 0.89 }}
+				className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#ff914d] hover:text-[#ab5a28] transition-colors cursor-pointer"
+				onClick={() => setMessageMenu((prev) => !prev)}
+			>
+				<FiPlus size={25} />
+			</motion.div>
+
+			{/* Message Menu Component */}
+			{isMessageMenuOpen && <MessageMenu setMessageMenu={setMessageMenu} />}
+		</div>
 	);
 }
+
+function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => void }) 
+{
+	const { loggedInAccounts } = useAccountContext();
+	const { receiverId, setMessageReceived } = useChatContext();
+	const sendGameInvite = async () => 
+	{
+		try {
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-game-invite`, {
+					content: "gameinvite",
+					senderId: loggedInAccounts[0]?.id,
+					receiverId: receiverId,
+					isGameInvite: true
+			});
+
+			if (response.data.success)
+			{
+				console.log("SendGameInvite:succes");
+				setMessageReceived(true);
+			}
+		} catch (error) {
+			console.log("SendGameInvite:ERROR:", error);
+		}
+		setMessageMenu(false);
+	}
+
+	return (
+		<div className="absolute bottom-full right-5 mb-5 bg-black text-white p-3 rounded-xl shadow-lg w-64 z-50">
+			<ul className="mt-2 space-y-2">
+				<li
+					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					onClick={sendGameInvite}//(); setMessageMenu(false)}}
+				>
+					Send game invite
+				</li>
+				<li
+					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					onClick={() => console.log("Send Friendship Request")}
+				>
+					Send Friendship Request
+				</li>
+				<li
+					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					onClick={() => console.log("Invite to Tournament")}
+				>
+					Invite to Tournament
+				</li>
+			</ul>
+		</div>
+	);
+}
+
 
 export default Chat

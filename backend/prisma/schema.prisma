@@ -16,6 +16,7 @@ model Account {
   wins        Int        @default(0)
   draws       Int        @default(0)
   loses       Int        @default(0)
+  admin       Boolean    @default(false)
   online      Boolean    @default(false)
 
   Blocks                Block[]          @relation("Blocks")
@@ -33,6 +34,7 @@ model Message {
   senderId      Int
   receiverId    Int
   chatSessionId Int
+  isGameInvite  Boolean @default(false)
 
   chatSession   ChatSession   @relation(fields: [chatSessionId], references: [id])
   sender        Account       @relation("SentMessages", fields: [senderId], references: [id])
