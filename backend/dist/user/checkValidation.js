@@ -9,27 +9,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = getAccounts;
-function getAccounts(fastify, prisma) {
+exports.default = checkValidation;
+function checkValidation(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/get-accounts', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { getStats } = request.body;
-            try {
-                const accounts = yield prisma.account.findMany({
-                    select: {
-                        id: true,
-                        username: true,
-                        online: true,
-                        wins: getStats,
-                        draws: getStats,
-                        loses: getStats,
-                    }
-                });
-                return reply.send({ success: true, accounts });
+        fastify.post('/api/check-validation', (req, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { username, email } = req.body;
+            console.log('checking', username, email);
+            const usernameExist = yield prisma.account.findUnique({ where: { username } });
+            if (usernameExist !== null) {
+                console.log("jaaa");
+                return reply.status(204).send({ success: false, type: 'Username exists' });
             }
-            catch (error) {
-                return reply.status(500).send({ error: 'Error getting accounts from database' });
-            }
+            const emailExist = yield prisma.account.findUnique({ where: { email } });
+            if (emailExist !== null)
+                return reply.status(204).send({ success: false, type: 'Email exists' });
+            return reply.status(204).send({ success: true });
         }));
     });
 }

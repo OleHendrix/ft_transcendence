@@ -27,6 +27,7 @@ const getAccounts_1 = __importDefault(require("./user/getAccounts"));
 const login_1 = __importDefault(require("./user/login"));
 const logout_1 = __importDefault(require("./user/logout"));
 const updateAccount_1 = __importDefault(require("./user/updateAccount"));
+const checkValidation_1 = __importDefault(require("./user/checkValidation"));
 const pongServer_1 = __importDefault(require("./pong/pongServer"));
 const matchMaking_1 = __importDefault(require("./pong/matchMaking"));
 const chat_1 = require("./chat");
@@ -46,6 +47,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, login_1.default)(fastify, exports.prisma);
     yield (0, logout_1.default)(fastify, exports.prisma);
     yield (0, updateAccount_1.default)(fastify, exports.prisma);
+    yield (0, checkValidation_1.default)(fastify, exports.prisma);
     yield (0, setupTotp_1.default)(fastify, exports.prisma);
     yield (0, verifyTotp_1.default)(fastify, exports.prisma);
     yield (0, deleteTotp_1.default)(fastify, exports.prisma);

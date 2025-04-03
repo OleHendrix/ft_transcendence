@@ -213,8 +213,8 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		{
 			...prev,
 			'Already logged in': ((loggedInAccounts.some(player => player.username === formData.username) && loggedInAccounts[indexPlayerStats].username !== formData.username ) || (loggedInAccounts.some(player => player.email === formData.email) && loggedInAccounts[indexPlayerStats].email !== formData.email)),
-			'Username exists': (accounts.some(player => player.username === formData.username) && loggedInAccounts[indexPlayerStats].username !== formData.username),
-			'Email exists': (accounts.some(player => player.email === formData.email) && loggedInAccounts[indexPlayerStats].email !== formData.email),
+			// 'Username exists': (accounts.some(player => player.username === formData.username) && loggedInAccounts[indexPlayerStats].username !== formData.username),
+			// 'Email exists': (accounts.some(player => player.email === formData.email) && loggedInAccounts[indexPlayerStats].email !== formData.email),
 			'Password don\'t matches': passwordDontMatch,
 			'Password matches!': passwordMatches
 		}));
@@ -507,6 +507,28 @@ function PlayerInfo()
 		setTempImageUrl(null);
 	};
 
+
+	async function logout()
+	{
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/logout`,
+				{
+					username: loggedInAccounts[indexPlayerStats].username
+				}
+			)
+			const updatedaccounts = loggedInAccounts.filter((account, index) => index !== indexPlayerStats)
+			setLoggedInAccounts(updatedaccounts);
+			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
+			setShowPlayerStats(false)
+		}
+		catch (error: any)
+		{
+			console.error("Error in logout");
+		}
+
+	}
+
 	return (
 		<AnimatePresence>
 			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -518,13 +540,7 @@ function PlayerInfo()
 					{!editProfile &&
 					(
 						<button className="absolute items-center top-4 left-4 text-gray-400 hover:text-white hover:cursor-pointer"
-							onClick={() =>
-							{
-								const updatedaccounts = loggedInAccounts.filter((player, index) => index !== indexPlayerStats)
-								setLoggedInAccounts(updatedaccounts);
-								localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
-								setShowPlayerStats(false)
-							}}>
+							onClick={() => {logout()}}>
 							<BiLogOut size={24} />
 						</button>
 					)}

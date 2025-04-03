@@ -20,16 +20,23 @@ function login(fastify, prisma) {
             const { username, password } = req.body;
             const user = yield prisma.account.findUnique({ where: { username } });
             if (!user)
-                return res.status(400).send({ error: 'User not found' });
+                return res.status(404).send({ error: 'Username not found' });
             const validPassword = yield bcrypt_1.default.compare(password, user.password);
             if (!validPassword)
-                return res.status(401).send({ error: 'Incorrect password' });
+                return res.status(401).send({ error: 'Password incorrect' });
+            if (user.online)
+                res.status(402).send({ error: 'Already logged in' });
             yield prisma.account.update({
                 where: { username },
                 data: { online: true }
             });
+            const loggedInUser = {
+                id: user.id,
+                username: user.username,
+                twofa: user.twofa
+            };
             const token = fastify.jwt.sign({ username: user.username, email: user.email }, { expiresIn: '1h' });
-            res.send({ success: true, token, user });
+            res.send({ success: true, token, loggedInUser });
         }));
     });
 }

@@ -8,21 +8,22 @@ export interface PlayerData
 	username:	string;
 }
 
-export interface PlayerType
+export interface LoggedInPlayerType
 {
 	id: number,
 	username: string;
-	email: string;
-	password: string;
-	wins: number;
-	draws: number;
-	loses: number;
-	totpSecret: string;
-	twofa: boolean;
+	email: string | null;
+	password: string | null;
+	wins: number | null;
+	draws: number | null;
+	loses: number | null;
+	totpSecret: string | null;
+	twofa: boolean | null;
 }
 
-export interface BasicPlayerType
+export interface RemotePlayerType
 {
+	id:			number,
 	username: string,
 	online:   boolean,
 	wins:     number | null,

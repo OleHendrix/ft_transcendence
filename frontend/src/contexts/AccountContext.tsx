@@ -1,15 +1,15 @@
 import { createContext, useState, useEffect, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType, PlayerState, BasicPlayerType } from "../types";
+import { LoggedInPlayerType, PlayerState, RemotePlayerType } from "../types";
 import axios from 'axios';
 
 type AccountContextType = 
 {
-	accounts: BasicPlayerType[];
-	setAccounts: Dispatch<SetStateAction<BasicPlayerType[]>>;
+	accounts: RemotePlayerType[];
+	setAccounts: Dispatch<SetStateAction<RemotePlayerType[]>>;
 	numberOfLoggedInAccounts: number;
 	setNumberOfLoggedInAccounts: Dispatch<SetStateAction<number>>;
-	loggedInAccounts: PlayerType[];
-	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	loggedInAccounts: LoggedInPlayerType[];
+	setLoggedInAccounts: Dispatch<SetStateAction<LoggedInPlayerType[]>>;
 	triggerFetchAccounts: boolean;
 	setTriggerFetchAccounts: Dispatch<SetStateAction<boolean>>;
 	isPlaying: PlayerState;
@@ -20,14 +20,11 @@ const AccountContext = createContext<AccountContextType | null>(null);
 
 export function AccountProvider({ children }: {children: ReactNode})
 {
-	const [accounts, setAccounts] = useState<BasicPlayerType[]>([]);
-
-
-
+	const [accounts, setAccounts] = useState<RemotePlayerType[]>([]);
 
 	// const [accounts, setAccounts] = useState<PlayerType[]>([]);
 	const [numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
-	const [loggedInAccounts, setLoggedInAccounts] = useState<PlayerType[]>([]);
+	const [loggedInAccounts, setLoggedInAccounts] = useState<LoggedInPlayerType[]>([]);
 	const [triggerFetchAccounts, setTriggerFetchAccounts] = useState(false);
 	const [isPlaying, setIsPlaying] = useState(PlayerState.idle);
 
@@ -41,9 +38,11 @@ export function AccountProvider({ children }: {children: ReactNode})
 		{
 			try
 			{
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
+				const response = await axios.post(`http://${window.location.hostname}:5001/api/get-accounts`, {getStats: false});
 				if (response.data.success)
+				{
 					setAccounts(response.data.accounts);
+				}
 				else
 					console.log("what is happening");
 			}
@@ -53,7 +52,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		} fetchAccounts();
 		setTriggerFetchAccounts(false);
-	}, [numberOfLoggedInAccounts, triggerFetchAccounts])
+	}, [numberOfLoggedInAccounts, accounts, triggerFetchAccounts])
 
 	return (
 		<AccountContext.Provider value={{ accounts, setAccounts, numberOfLoggedInAccounts, setNumberOfLoggedInAccounts, loggedInAccounts, setLoggedInAccounts, triggerFetchAccounts, setTriggerFetchAccounts, isPlaying, setIsPlaying }}>

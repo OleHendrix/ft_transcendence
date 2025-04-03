@@ -1,18 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { PrismaClient } from '@prisma/client';
 
-export interface BasicPlayerType
-{
-	username: string,
-	online:   boolean,
-	wins:     number | null,
-	draws:    number | null,
-	loses:    number | null,
-}
-
 export default async function getAccounts(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.get('/api/get-accounts', async (request, reply) => 
+	fastify.post('/api/get-accounts', async (request, reply) => 
 	{
 		const { getStats } = request.body as { getStats: boolean };
 		try
@@ -21,6 +12,7 @@ export default async function getAccounts(fastify: FastifyInstance, prisma: Pris
 				{
 					select:
 					{
+						id: true,
 						username: true,
 						online: true,
 						wins: getStats,

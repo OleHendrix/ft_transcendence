@@ -9,17 +9,27 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 		const { username, password } = req.body as { username: string; password: string };
 	
 		const user = await prisma.account.findUnique({ where: { username } });
-		if (!user) return res.status(400).send({ error: 'User not found' })
+		if (!user) return res.status(404).send({ error: 'Username not found' })
 		
 		const validPassword = await bcrypt.compare(password, user.password);
-		if (!validPassword) return res.status(401).send({ error: 'Incorrect password'});
+		if (!validPassword) return res.status(401).send({ error: 'Password incorrect'});
+
+		if (user.online)
+			res.status(402).send({ error: 'Already logged in'})
 
 		await prisma.account.update ({
 				where: { username },
 				data:  { online: true }
 		});
 
+		const loggedInUser =
+		{
+			id: user.id,
+			username: user.username,
+			twofa: user.twofa
+		}
+
 		const token = fastify.jwt.sign({ username: user.username, email: user.email}, { expiresIn: '1h'});
-		res.send({ success: true, token, user});
+		res.send({ success: true, token, loggedInUser});
 	});
 }

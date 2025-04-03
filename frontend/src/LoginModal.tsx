@@ -1,7 +1,7 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
-import { PlayerType, LoginFormType, LoginValidationType } from "./types"
+import { LoggedInPlayerType, LoginFormType, LoginValidationType } from "./types"
 import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
 import axios from "axios";
@@ -16,7 +16,7 @@ async function check2FA({ formData, token, setLoggedInAccounts, setValidation } 
 			username: username,
 			token
 		});
-		const user = response.data.user;
+		const user = response.data.loggedInUser;
 		if (response.data.success)
 		{
 			setLoggedInAccounts((prev) =>
@@ -43,7 +43,7 @@ interface CheckLoginProps
 {
 	formData: LoginFormType;
 	token: String;
-	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	setLoggedInAccounts: Dispatch<SetStateAction<LoggedInPlayerType[]>>;
 	setValidation: Dispatch<SetStateAction<LoginValidationType>>;
 	setShow2FA: Dispatch<SetStateAction<boolean>>;
 }
@@ -75,10 +75,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 	}
 	catch (error: any)
 	{
-		if (error.response?.status === 400)
-			setValidation(prev => ({...prev, ['Username not found']: true}));
-		else if (error.response?.status === 401)
-			setValidation(prev => ({...prev, ['Password incorrect']: true}));
+		setValidation(prev => ({...prev, [error.response.data.error]: true}))
 		return false;
 	}
 }
