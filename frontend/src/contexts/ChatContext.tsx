@@ -8,6 +8,7 @@ interface message
 	receiverId: 		number,
 	chatSessionId: 		number,
 	senderId: 			number,
+	status:				number,
 }
 
 type ChatContextType = 

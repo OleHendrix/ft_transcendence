@@ -28,13 +28,13 @@ model Account {
 }
 
 model Message {
-  id            Int      @id @default(autoincrement())
+  id            Int        @id @default(autoincrement())
   content       String
-  timestamp     DateTime @default(now())
+  timestamp     DateTime   @default(now())
   senderId      Int
   receiverId    Int
   chatSessionId Int
-  isGameInvite  Boolean @default(false)
+  status        Int        @default(0) // 0:basic - 1:pending - 2:accepted - 3:rejected
 
   chatSession   ChatSession   @relation(fields: [chatSessionId], references: [id])
   sender        Account       @relation("SentMessages", fields: [senderId], references: [id])

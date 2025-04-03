@@ -59,11 +59,13 @@ export async function setupChat(server: FastifyInstance)
 			});
 	
 			// Transform messages before sending response
-			const transformedMessages = messages.map(({ content, timestamp, sender, chatSessionId }) => ({
+			const transformedMessages = messages.map(({ id, content, timestamp, sender, chatSessionId, status }) => ({
+				id,
 				content,
 				timestamp,
 				senderUsername: sender.username,
-				chatSessionId
+				chatSessionId, 
+				status
 			}));
 	
 			reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id });
@@ -73,39 +75,42 @@ export async function setupChat(server: FastifyInstance)
 		}
 	});
 
-	server.post('/api/send-message', async (request, reply) =>
-	{
-		const { senderId, receiverId, content } = request.body as { senderId: number; receiverId: number; content: string };
+	server.post('/api/change-msg-status', async (request, reply) => {
+		try {
+			const { senderId, receiverId, status, messageId } = request.body as {
+				senderId: number;
+				receiverId: number;
+				status: number;
+				messageId: number;
+			};
 
-		const chatSession = await getOrCreateChatSession(senderId, receiverId);
+			if (!messageId) {
+				console.error("❌ Error: messageId is missing!");
+				return reply.status(400).send({ error: "messageId is required" });
+			}
 
-		const message = await prisma.message.create(
-		{
-			data:
-			{
-				content,
-				senderId: senderId,
-				receiverId: (receiverId === -1 ? 1 : receiverId),
-				chatSessionId: chatSession.id
-			},
-			include: { sender: { select: { username: true } } }
-		});
+			const chatSession = await getOrCreateChatSession(senderId, receiverId);
 
-		const messageToClient =
-		{
-			content: message.content,
-			timestamp: message.timestamp,
-			senderUsername: message.sender.username,
-			chatSessionId: message.chatSessionId
-		};
-
-		notifyClients(messageToClient);
-		return reply.send({ success: true, messageToClient });
+			await prisma.message.update({
+				where: {
+					chatSessionId: chatSession.id,
+					id: messageId,
+				},
+				data: {
+					status: status,
+				},
+			});
+	
+			reply.send({ success: true, message: "Message status updated successfully." });
+		} catch (error) {
+			console.error("Error updating message status:", error);
+			reply.status(500).send({ success: false, error: "Failed to update message status." });
+		}
 	});
 
-	server.post('/api/send-game-invite', async (request, reply) =>
+	server.post('/api/send-message', async (request, reply) =>
 	{
-		const { senderId, receiverId, content } = request.body as { senderId: number; receiverId: number, content: string };
+		const { senderId, receiverId, content, status } = request.body as { senderId: number; receiverId: number; content: string, status: number };
 
 		const chatSession = await getOrCreateChatSession(senderId, receiverId);
 
@@ -117,18 +122,19 @@ export async function setupChat(server: FastifyInstance)
 				senderId: senderId,
 				receiverId: (receiverId === -1 ? 1 : receiverId),
 				chatSessionId: chatSession.id,
-				isGameInvite: true
+				status: status as number,
 			},
 			include: { sender: { select: { username: true } } }
 		});
 
 		const messageToClient =
 		{
+			id: message.id,
 			content: message.content,
 			timestamp: message.timestamp,
 			senderUsername: message.sender.username,
 			chatSessionId: message.chatSessionId,
-			isGameInvite: true
+			status: message.status
 		};
 
 		notifyClients(messageToClient);

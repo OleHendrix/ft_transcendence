@@ -60,11 +60,13 @@ function setupChat(server) {
                     }
                 });
                 // Transform messages before sending response
-                const transformedMessages = messages.map(({ content, timestamp, sender, chatSessionId }) => ({
+                const transformedMessages = messages.map(({ id, content, timestamp, sender, chatSessionId, status }) => ({
+                    id,
                     content,
                     timestamp,
                     senderUsername: sender.username,
-                    chatSessionId
+                    chatSessionId,
+                    status
                 }));
                 reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id });
             }
@@ -73,29 +75,32 @@ function setupChat(server) {
                 reply.status(500).send({ success: false, error: "Internal Server Error" });
             }
         }));
-        server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { senderId, receiverId, content } = request.body;
-            const chatSession = yield getOrCreateChatSession(senderId, receiverId);
-            const message = yield prisma.message.create({
-                data: {
-                    content,
-                    senderId: senderId,
-                    receiverId: (receiverId === -1 ? 1 : receiverId),
-                    chatSessionId: chatSession.id
-                },
-                include: { sender: { select: { username: true } } }
-            });
-            const messageToClient = {
-                content: message.content,
-                timestamp: message.timestamp,
-                senderUsername: message.sender.username,
-                chatSessionId: message.chatSessionId
-            };
-            notifyClients(messageToClient);
-            return reply.send({ success: true, messageToClient });
+        server.post('/api/change-msg-status', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { senderId, receiverId, status, messageId } = request.body;
+                if (!messageId) {
+                    console.error("❌ Error: messageId is missing!");
+                    return reply.status(400).send({ error: "messageId is required" });
+                }
+                const chatSession = yield getOrCreateChatSession(senderId, receiverId);
+                yield prisma.message.update({
+                    where: {
+                        chatSessionId: chatSession.id,
+                        id: messageId,
+                    },
+                    data: {
+                        status: status,
+                    },
+                });
+                reply.send({ success: true, message: "Message status updated successfully." });
+            }
+            catch (error) {
+                console.error("Error updating message status:", error);
+                reply.status(500).send({ success: false, error: "Failed to update message status." });
+            }
         }));
-        server.post('/api/send-game-invite', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { senderId, receiverId, content } = request.body;
+        server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { senderId, receiverId, content, status } = request.body;
             const chatSession = yield getOrCreateChatSession(senderId, receiverId);
             const message = yield prisma.message.create({
                 data: {
@@ -103,16 +108,17 @@ function setupChat(server) {
                     senderId: senderId,
                     receiverId: (receiverId === -1 ? 1 : receiverId),
                     chatSessionId: chatSession.id,
-                    isGameInvite: true
+                    status: status,
                 },
                 include: { sender: { select: { username: true } } }
             });
             const messageToClient = {
+                id: message.id,
                 content: message.content,
                 timestamp: message.timestamp,
                 senderUsername: message.sender.username,
                 chatSessionId: message.chatSessionId,
-                isGameInvite: true
+                status: message.status
             };
             notifyClients(messageToClient);
             return reply.send({ success: true, messageToClient });
