@@ -42,5 +42,5 @@ export default function initMatchMaking(fastify: FastifyInstance)
 				queue.delete(connection);
 			});
 		});
-	})	
+	})
 }

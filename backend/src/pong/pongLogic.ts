@@ -55,7 +55,7 @@ function paddleColision(paddle: Paddle, ball: Ball)
 		ball.pos.x = collX;
 		ball.dir.x *= s.BOUNCE.x;
 		ball.dir.y += paddle.dir.y * s.CARRYOVER;
-		paddle.bounce = true;
+		paddle.lastBounce = Date.now();
 	}
 }
 
@@ -158,8 +158,8 @@ export function updateGame(match: Match, userID: number, keysPressed: {[key: str
 
 	if (game.lastUpdate === -1)
 		game.lastUpdate = now;
-	game.p1.bounce = false;
-	game.p2.bounce = false;
+	// game.p1.bounce = false;
+	// game.p2.bounce = false;
 	for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++)
 	{
 		if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate)
@@ -176,18 +176,18 @@ export function initGame(p1Data: PlayerData, p2Data: PlayerData): PongState
 {
 	return {
 		p1: {
-			pos:	{ x: 3, y: 50},
-			size:	{ x: 2, y: 20 },
-			dir:	{ x: 0, y: 0 },
-			colour:	"#ff914d",
-			bounce:	false
+			pos:		{ x: 3, y: 50},
+			size:		{ x: 2, y: 20 },
+			dir:		{ x: 0, y: 0 },
+			colour:		"#ff914d",
+			lastBounce:	0
 		},
 		p2: {
-			pos:	{ x: 95, y: 50},
-			size:	{ x: 2, y: 20 },
-			dir:	{ x: 0, y: 0 },
-			colour:	"#134588",
-			bounce:	false
+			pos:		{ x: 95, y: 50},
+			size:		{ x: 2, y: 20 },
+			dir:		{ x: 0, y: 0 },
+			colour:		"#134588",
+			lastBounce:	0
 		},
 		p1Score: 0,
 		p2Score: 0,

@@ -51,7 +51,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, deleteTotp_1.default)(fastify, exports.prisma);
     yield (0, pongServer_1.default)(fastify);
     (0, matchMaking_1.default)(fastify);
-    fastify.listen({ port: 5001, host: 'localhost' }, (err, address) => {
+    fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {
         if (err) {
             console.error(err);
             process.exit(1);

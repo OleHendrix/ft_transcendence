@@ -51,7 +51,7 @@ const start = async () =>
 	await initPongServer(fastify);
 	initMatchMaking(fastify);
 
-	fastify.listen({ port: 5001, host: 'localhost' }, (err, address) =>
+	fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) =>
 	{
 		if (err)
 		{

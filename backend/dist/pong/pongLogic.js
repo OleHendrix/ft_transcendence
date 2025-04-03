@@ -53,7 +53,7 @@ function paddleColision(paddle, ball) {
         ball.pos.x = collX;
         ball.dir.x *= s.BOUNCE.x;
         ball.dir.y += paddle.dir.y * s.CARRYOVER;
-        paddle.bounce = true;
+        paddle.lastBounce = Date.now();
     }
 }
 function handleColision(game, match) {
@@ -131,8 +131,8 @@ function updateGame(match, userID, keysPressed) {
     const now = Math.floor(Date.now() / 10);
     if (game.lastUpdate === -1)
         game.lastUpdate = now;
-    game.p1.bounce = false;
-    game.p2.bounce = false;
+    // game.p1.bounce = false;
+    // game.p2.bounce = false;
     for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++) {
         if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate) {
             manageAI(game);
@@ -149,14 +149,14 @@ function initGame(p1Data, p2Data) {
             size: { x: 2, y: 20 },
             dir: { x: 0, y: 0 },
             colour: "#ff914d",
-            bounce: false
+            lastBounce: 0
         },
         p2: {
             pos: { x: 95, y: 50 },
             size: { x: 2, y: 20 },
             dir: { x: 0, y: 0 },
             colour: "#134588",
-            bounce: false
+            lastBounce: 0
         },
         p1Score: 0,
         p2Score: 0,

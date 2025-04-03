@@ -50,11 +50,11 @@ export interface Vec2
 
 export interface Paddle
 {
-	pos:	Vec2;
-	size:	Vec2;
-	dir:	Vec2;
-	colour:	string
-	bounce:	boolean;
+	pos:		Vec2;
+	size:		Vec2;
+	dir:		Vec2;
+	colour:		string
+	lastBounce:	number;
 }
 
 export interface Ball

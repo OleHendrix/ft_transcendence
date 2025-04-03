@@ -1,117 +1,110 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
 import { PlayerState, PongState } from './types';
 import { useAccountContext } from './contexts/AccountContext';
 import { useLoginContext } from './contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function PongGame()
-{
-	const { loggedInAccounts, setIsPlaying }  = useAccountContext();
+function PongGame() {
+	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 
-	// loggedInPlayers[indexPlayerStats].id 
-
-	const userID = 1;
-	const aiID = -1;
 	const [pong, setPong] = useState<PongState>
 	({
-		p1: { pos: { x: 3, y: 50},  size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#ff914d", bounce: false },
-		p2: { pos: { x: 95, y: 50}, size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#134588", bounce: false },
+		p1: { pos: { x: 3, y: 50 },  size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#ff914d", lastBounce: 0 },
+		p2: { pos: { x: 95, y: 50 }, size: { x: 2, y: 20 }, dir: { x: 0, y: 0 }, colour: "#134588", lastBounce: 0 },
 		p1Score: 0, p2Score: 0, p1Input: 0, p2Input: 0,
 		ball: { pos: { x: 200, y: 200 }, prevPos: { x: 200, y: 200 }, size: { x: 2, y: 2 }, dir: { x: 1, y: 1 } },
 		lastUpdate: -1,
 		ai: { lastActivation: 0, desiredY: 0 },
 		maxPoints: 3,
 		p1Won: null,
-		p1Data: { id: 0, username: ""},
-		p2Data: { id: 0, username: ""},
+		p1Data: { id: 0, username: "" },
+		p2Data: { id: 0, username: "" },
 	});
 
-	let animationId: number = 0;
+	const socketRef = useRef<WebSocket | null>(null);
+	const keysPressed = useRef<{ [key: string]: boolean }>({});
 
-	const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
-
-	const handleKeyDown = (e: KeyboardEvent) =>
-	{
-		setKeysPressed(prev => ({ ...prev, [e.key]: true }));
-	};
-
-	const handleKeyUp = (e: KeyboardEvent) =>
-	{
-		setKeysPressed(prev => ({ ...prev, [e.key]: false }));
-	};
-
+	// init websocket I/O
 	useEffect(() =>
 	{
-		function loop()
+		const socket = new WebSocket(`ws://${window.location.hostname}:5001/pong`);
+		socketRef.current = socket;
+
+		socket.addEventListener("message", (event) =>
 		{
-			async function fetchGame()
+			try
 			{
-				try
-				{
-					const response = await axios.post(`http://${window.location.hostname}:5001/pong`, { userID: loggedInAccounts[0].id, keysPressed: keysPressed }); //TODO: change loggedInAccounts[0].id to variable
-					if (response.data)
-					{
-						setPong(response.data);
-					}
-				}
-				catch (error)
-				{
-
-				}
+				const data = JSON.parse(event.data);
+				setPong(data);
 			}
-			fetchGame();
-		}
-		animationId = requestAnimationFrame(loop);
-	}, [pong]);
-
-	useEffect(() =>
-	{
-		window.addEventListener('keydown', handleKeyDown);
-		window.addEventListener('keyup', handleKeyUp);
+			catch (error)
+			{
+				console.error("Invalid event.data:", event.data);
+			}
+		});
 
 		return () =>
 		{
-			window.removeEventListener('keydown', handleKeyDown);
-			window.removeEventListener('keyup', handleKeyUp);
-			// cancelAnimationFrame(animationId);
+			socket.close();
+		};
+	}, []);
+
+	// game loop
+	useEffect(() =>
+	{
+		const sendData = () =>
+		{
+			if (socketRef.current?.readyState === WebSocket.OPEN)
+			{
+				socketRef.current.send(JSON.stringify
+				({
+					userID: loggedInAccounts[0].id, //TODO: change loggedInAccounts[0].id into variable
+					keysPressed: keysPressed.current,
+				}));
+			}
+		};
+		const interval = setInterval(sendData, 1000 / 60);
+
+		return () => clearInterval(interval);
+	}, []);
+
+	// init player I/O
+	useEffect(() =>
+	{
+		const handleKeyDown = (event: KeyboardEvent) => keysPressed.current[event.key] = true;
+		const handleKeyUp   = (event: KeyboardEvent) => delete keysPressed.current[event.key];
+
+		window.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("keyup", handleKeyUp);
+
+		return () =>
+		{
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
 		};
 	}, []);
 
 	async function leaveMatch(userID: number)
 	{
 		setIsPlaying(PlayerState.idle);
-		await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID});
+		await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
 	}
-
-	const textSize: number = 1250 - Math.max(pong.p1Score.toString().length, pong.p2Score.toString().length, 1) * 250;
 
 	function ParseResult()
 	{
 		if (pong.p1Won === null)
 			return "";
 
-		let winner = pong.p1Data;
-		let loser  = pong.p2Data;
-		if (pong.p1Won === false)
-			[winner, loser] = [loser, winner];
-
-		let message1: string = "";
-		let message2: string = "";
-
-		if (winner.id === loggedInAccounts[0].id)
-			message1 = `Congrats, ${winner.username}!`
-		else
-			message1 = `Better luck next time, ${loser.username}`
-
-		if (pong.p1Score < pong.maxPoints && pong.p2Score < pong.maxPoints)
-			message2 = `${loser.username} forfeited`;
-		else
-		{
-			const [s1, s2] = pong.p1Won ? [pong.p1Score, pong.p2Score] : [pong.p2Score, pong.p1Score];
-			message2 = `${winner.username} won with ${s1}-${s2}!`;
-		}
+		const [winner, loser] = pong.p1Won ? [pong.p1Data,  pong.p2Data ] : [pong.p2Data,  pong.p1Data ];
+		const [s1,     s2   ] = pong.p1Won ? [pong.p1Score, pong.p2Score] : [pong.p2Score, pong.p1Score];
+		let message1 = (winner.id === loggedInAccounts[0].id)
+			? `Congrats, ${winner.username}!`
+			: `Better luck next time, ${loser.username}`;
+		let message2 = (pong.p1Score < pong.maxPoints && pong.p2Score < pong.maxPoints)
+			? `${loser.username} forfeited`
+			: `${winner.username} won with ${s1}-${s2}!`;
 
 		return (
 			<div>
@@ -125,65 +118,61 @@ function PongGame()
 	const [isP2Bouncing, setP2IsBouncing] = useState(false);
 
 	useEffect(() =>
-		{
-		if (pong.p1.bounce === true)
+	{
+		if (pong.p1.lastBounce !== 0)
 		{
 			setP1IsBouncing(true);
-			setTimeout(() =>
-			{
-				setP1IsBouncing(false);
-			}, 80);
+			setTimeout(() => { setP1IsBouncing(false) }, 80);
 		}
-	}, [pong.p1.bounce]);
+	}, [pong.p1.lastBounce]);
 
 	useEffect(() =>
-		{
-		if (pong.p2.bounce === true)
+	{
+		if (pong.p2.lastBounce !== 0)
 		{
 			setP2IsBouncing(true);
-			setTimeout(() =>
-			{
-				setP2IsBouncing(false);
-			}, 80);
+			setTimeout(() => { setP2IsBouncing(false) }, 80);
 		}
-	}, [pong.p2.bounce]);
-	const bounceStrength = pong.ball.dir.x;
+	}, [pong.p2.lastBounce]);
 
-	return(
+	const bounceStrength = pong.ball.dir.x * 1.2;
+
+	return (
 		<>
 			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.p1Won === null ? "" : "blur-sm"}`}>
 				<div className="relative w-full h-full">
 					<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 						<div className="h-full w-1/2 flex justify-center items-center">
 							<h1 className={`text-center leading-none opacity-5`} style=
-							{{
-								fontSize: "clamp(20vh, 45vw, 90vh)",
-								transformOrigin: "center",
-								color: pong.p1.colour,
-							}}>{pong.p1Score}</h1>
+								{{
+									fontSize: "clamp(20vh, 45vw, 90vh)",
+									transformOrigin: "center",
+									color: pong.p1.colour,
+								}}>{pong.p1Score}</h1>
 						</div>
 						<div className="h-full w-1/2 flex justify-center items-center">
-						<h1 className={`text-center leading-none opacity-7`} style=
-							{{
-								fontSize: "clamp(20vh, 45vw, 90vh)",
-								transformOrigin: "center",
-								color: pong.p2.colour,
-							}}>{pong.p2Score}</h1>
+							<h1 className={`text-center leading-none opacity-7`} style=
+								{{
+									fontSize: "clamp(20vh, 45vw, 90vh)",
+									transformOrigin: "center",
+									color: pong.p2.colour,
+								}}>{pong.p2Score}</h1>
 						</div>
 					</div>
 
 					{pong.p1Won === null && <div className={`absolute rounded-full`} style=
-					{{
-						backgroundColor: pong.ball.dir.x > 0 ? pong.p1.colour : pong.p2.colour,
-						width: `${pong.ball.size.x}vw`,
-						height: `${pong.ball.size.y}vw`,
-						top: `${pong.ball.pos.y}%`,
-						left: `${pong.ball.pos.x}vw`,
-						transform: 'translateY(-50%) translateX(-50%)'
-					}}></div>}
+						{{
+							backgroundColor: pong.ball.dir.x > 0 ? pong.p1.colour : pong.p2.colour,
+							width: `${pong.ball.size.x}vw`,
+							height: `${pong.ball.size.y}vw`,
+							top: `${pong.ball.pos.y}%`,
+							left: `${pong.ball.pos.x}vw`,
+							transform: 'translateY(-50%) translateX(-50%)'
+						}}></div>}
 					<motion.div
 						className="absolute rounded-sm"
-						style={{
+						style=
+						{{
 							backgroundColor: pong.p1.colour,
 							width: `${pong.p1.size.x}vw`,
 							height: `${pong.p1.size.y}%`,
@@ -193,11 +182,12 @@ function PongGame()
 							boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)"
 						}}
 						animate={{ transform: isP1Bouncing ? `translateY(-50%) translateX(${-bounceStrength}vw)` : 'translateY(-50%) translateX(0vw)' }}
-						transition={{ type: "tween", duration: 0.08,  ease: "easeInOut" }}
+						transition={{ type: "tween", duration: 0.08, ease: "easeInOut" }}
 					/>
 					<motion.div
 						className="absolute rounded-sm"
-						style={{
+						style=
+						{{
 							backgroundColor: pong.p2.colour,
 							width: `${pong.p2.size.x}vw`,
 							height: `${pong.p2.size.y}%`,
@@ -207,7 +197,7 @@ function PongGame()
 							boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)"
 						}}
 						animate={{ transform: isP2Bouncing ? `translateY(-50%) translateX(${-bounceStrength}vw)` : 'translateY(-50%) translateX(0vw)' }}
-						transition={{ type: "tween", duration: 0.08,  ease: "easeInOut" }}
+						transition={{ type: "tween", duration: 0.08, ease: "easeInOut" }}
 					/>
 				</div>
 			</div>

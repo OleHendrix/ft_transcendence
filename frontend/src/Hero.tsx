@@ -59,7 +59,6 @@ function getQueueTime(userID: number): number
 {
 	if (queueStartTime.has(userID) === false)
 	{
-		console.log("entry not found");
 		return 0;
 	}
 	return Math.floor((Date.now() - (queueStartTime.get(userID) as number)) / 1000);
