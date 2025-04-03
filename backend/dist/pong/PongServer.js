@@ -180,7 +180,7 @@ function endGame(match, p1Wins) {
         });
         yield server_1.prisma.account.update({
             where: { id: loser },
-            data: { loses: { increment: 1 } }
+            data: { losses: { increment: 1 } }
         });
     });
 }

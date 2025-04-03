@@ -15,7 +15,7 @@ model Account {
   totpSecret  String?
   wins        Int        @default(0)
   draws       Int        @default(0)
-  loses       Int        @default(0)
+  losses       Int        @default(0)
   online      Boolean    @default(false)
 
   Blocks                Block[]          @relation("Blocks")

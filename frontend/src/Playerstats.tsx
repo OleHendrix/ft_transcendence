@@ -22,7 +22,7 @@ function PlayerStats()
 				</div>
 				<div className="stat flex flex-col items-center">
 					<div className="stat-title text-red-800 font-black">Losses</div>
-					<div className="stat-value">{loggedInAccounts[indexPlayerStats]?.loses}</div>
+					<div className="stat-value">{loggedInAccounts[indexPlayerStats]?.losses}</div>
 				</div>
 			</div>
 		</div>

@@ -16,7 +16,7 @@ export interface PlayerType
 	password:	string;
 	wins:		number;
 	draws:		number;
-	loses:		number;
+	losses:		number;
 	totpSecret:	boolean;
 }
 

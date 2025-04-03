@@ -224,6 +224,6 @@ export async function endGame(match: Match, p1Wins: boolean)
 	await prisma.account.update
 	({
 		where: { id: loser },
-		data:  { loses: { increment: 1 } }
+		data:  { losses: { increment: 1 } }
 	});
 }
