@@ -20,8 +20,8 @@ type ChatContextType =
 	setMessageReceived: Dispatch<SetStateAction<boolean>>;
 	chatSessionId: number;
 	setChatSessionId: Dispatch<SetStateAction<number>>;
-	testChats: message[];
-	setTestChats: Dispatch<SetStateAction<message[]>>;
+	chatMessages: message[];
+	setChatMessages: Dispatch<SetStateAction<message[]>>;
 };
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -32,7 +32,7 @@ export function ChatProvider({ children }: {children: ReactNode})
 	const [isOpen, setIsOpen] 					= useState(false);
 	const [messageReceived, setMessageReceived] = useState(false);
 	const [chatSessionId, setChatSessionId] 	= useState(1);
-	const [testChats, setTestChats] 			= useState<message[]>([]);
+	const [chatMessages, setChatMessages] 		= useState<message[]>([]);
 
 	const value = useMemo(() => (
 	{
@@ -40,8 +40,8 @@ export function ChatProvider({ children }: {children: ReactNode})
 		isOpen, setIsOpen,
 		messageReceived, setMessageReceived,
 		chatSessionId, setChatSessionId,
-		testChats, setTestChats,
-	}), [receiverId, isOpen, messageReceived, chatSessionId, testChats]);
+		chatMessages, setChatMessages,
+	}), [receiverId, isOpen, messageReceived, chatSessionId, chatMessages]);
 
 	return (
 		<ChatContext.Provider value={value}>

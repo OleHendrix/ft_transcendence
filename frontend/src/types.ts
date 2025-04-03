@@ -2,6 +2,12 @@
 // |               WARNING: is a duplicate of backend/types.ts                )
 // +--------------------------------------------------------------------------+
 
+export interface PlayerData
+{
+	id:			number;
+	username:	string;
+}
+
 export interface PlayerType
 {
 	id: number,
@@ -54,10 +60,11 @@ export interface Vec2
 
 export interface Paddle
 {
-	pos: Vec2;
-	size: Vec2;
-	dir: Vec2;
-	colour: string
+	pos:	Vec2;
+	size:	Vec2;
+	dir:	Vec2;
+	colour:	string
+	bounce:	boolean;
 }
 
 export interface Ball
@@ -85,7 +92,15 @@ export interface PongState
 	ball:		Ball;
 	lastUpdate:	number;
 	ai:			AI;
-	maxPoints:	number,
+	maxPoints:	number;
 	p1Won:		boolean | null;
+	p1Data:		PlayerData;
+	p2Data:		PlayerData;
 }
 
+export enum PlayerState
+{
+	idle,
+	playing,
+	queueing
+}

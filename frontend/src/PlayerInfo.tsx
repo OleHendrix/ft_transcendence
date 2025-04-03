@@ -240,7 +240,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		console.log("uhh");
 		try
 		{
-			const response = await axios.post('http://localhost:5001/api/auth/delete-totp',
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`,
 			{
 				username: loggedInAccounts[indexPlayerStats].username
 			});
@@ -343,7 +343,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 						{
 							try
 							{
-								const response = await axios.post("http://localhost:5001/api/update-account",
+								const response = await axios.post(`http://${window.location.hostname}:5001/api/update-account`,
 								{
 									prev_username: loggedInAccounts[indexPlayerStats].username,
 									username: formData.username, 

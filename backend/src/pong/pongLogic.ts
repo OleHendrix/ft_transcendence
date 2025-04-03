@@ -1,5 +1,5 @@
-import { PongState, Match, Statics, Paddle, Ball } from "./types";
-import { prisma } from './../server';
+import { PongState, Match, Statics, Paddle, Ball, PlayerData } from "./types";
+import { prisma } from '../server';
 
 const s: Statics =
 ({
@@ -55,6 +55,7 @@ function paddleColision(paddle: Paddle, ball: Ball)
 		ball.pos.x = collX;
 		ball.dir.x *= s.BOUNCE.x;
 		ball.dir.y += paddle.dir.y * s.CARRYOVER;
+		paddle.bounce = true;
 	}
 }
 
@@ -110,7 +111,7 @@ function manageAIInput(match: Match, game: PongState, ticks: number): void
 
 function tick(match: Match, game: PongState, ticks: number): void
 {
-	if (match.p2 === -1)
+	if (match.p2.id === -1)
 		manageAIInput(match, game, ticks);
 	managePaddle(game.p1, game.p1Input);
 	managePaddle(game.p2, game.p2Input);
@@ -144,9 +145,9 @@ function manageAI(game: PongState): void
 function updateInput(match: Match, userID: number, game: PongState, keysPressed: {[key: string]: boolean})
 {
 	// console.log ("1:", match.p1, "2:", match.p2, "isLocal:", match.isLocalGame);
-	if (match.p1 === userID || match.isLocalGame)
+	if (match.p1.id === userID || match.isLocalGame)
 		game.p1Input = Number(keysPressed['s']         ?? false) - Number(keysPressed['w']       ?? false);
-	if (match.p2 === userID || match.isLocalGame)
+	if (match.p2.id === userID || match.isLocalGame)
 		game.p2Input = Number(keysPressed['ArrowDown'] ?? false) - Number(keysPressed['ArrowUp'] ?? false);
 }
 
@@ -157,9 +158,11 @@ export function updateGame(match: Match, userID: number, keysPressed: {[key: str
 
 	if (game.lastUpdate === -1)
 		game.lastUpdate = now;
+	game.p1.bounce = false;
+	game.p2.bounce = false;
 	for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++)
 	{
-		if (match.p2 === -1 && game.ai.lastActivation + 100 <= game.lastUpdate)
+		if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate)
 		{
 			manageAI(game);
 			game.ai.lastActivation = game.lastUpdate;
@@ -169,20 +172,22 @@ export function updateGame(match: Match, userID: number, keysPressed: {[key: str
 	updateInput(match, userID, game, keysPressed);
 }
 
-export function initGame(): PongState
+export function initGame(p1Data: PlayerData, p2Data: PlayerData): PongState
 {
 	return {
 		p1: {
-			pos: { x: 3, y: 50},
-			size: { x: 2, y: 20 },
-			dir: { x: 0, y: 0 },
-			colour: "#ff914d"
+			pos:	{ x: 3, y: 50},
+			size:	{ x: 2, y: 20 },
+			dir:	{ x: 0, y: 0 },
+			colour:	"#ff914d",
+			bounce:	false
 		},
 		p2: {
-			pos: { x: 95, y: 50},
-			size: { x: 2, y: 20 },
-			dir: { x: 0, y: 0 },
-			colour: "#134588"
+			pos:	{ x: 95, y: 50},
+			size:	{ x: 2, y: 20 },
+			dir:	{ x: 0, y: 0 },
+			colour:	"#134588",
+			bounce:	false
 		},
 		p1Score: 0,
 		p2Score: 0,
@@ -193,30 +198,32 @@ export function initGame(): PongState
 		ai: { lastActivation: 0, desiredY: 0 },
 		maxPoints: 3,
 		p1Won: null,
+		p1Data: p1Data,
+		p2Data: p2Data,
 	};
 }
 
 export async function endGame(match: Match, p1Wins: boolean)
 {
 	match.state.p1Won = p1Wins;
-	let winner = match.p1;
-	let loser  = match.p2;
+	if (match.p2.id === -1)
+		return;
+	let winner = match.p1.id;
+	let loser  = match.p2.id;
 	if (p1Wins === false)
 	{
 		[winner, loser] = [loser, winner];
 	}
 
-	await prisma.account.update(
-		{
-			where: { id: winner },
-			data:  { wins: { increment: 1 } }
-		}
-	);
+	await prisma.account.update
+	({
+		where: { id: winner },
+		data:  { wins: { increment: 1 } }
+	});
 
-	await prisma.account.update(
-		{
-			where: { id: loser },
-			data:  { loses: { increment: 1 } }
-		}
-	);
+	await prisma.account.update
+	({
+		where: { id: loser },
+		data:  { loses: { increment: 1 } }
+	});
 }

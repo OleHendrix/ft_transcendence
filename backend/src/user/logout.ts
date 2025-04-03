@@ -5,7 +5,7 @@ export default async function logout(fastify: FastifyInstance, prisma: PrismaCli
 {
 	fastify.post("/api/logout", async (req, res) =>
 	{
-		const { username, password } = req.body as { username: string; password: string };
+		const { username } = req.body as { username: string };
 	
 		const user = await prisma.account.findUnique({ where: { username } });
 		if (!user) 
