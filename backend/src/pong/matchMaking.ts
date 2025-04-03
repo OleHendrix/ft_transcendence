@@ -1,44 +1,61 @@
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import { addGame } from "./pongServer";
-import { PlayerData } from "./types"
+import { Opponent, QueueData } from "./types"
+import { Socket } from "dgram";
 
-const queue = new Map<WebSocket, PlayerData>();
+const queue = new Map<WebSocket, QueueData>();
 
-function matchMake()
+function matchMake(socket1: WebSocket, user1: QueueData, socket2: WebSocket, user2: QueueData)
 {
-	const match = Array.from(queue).slice(0, 2);
-	const [socket1, user1] = match[0];
-	const [socket2, user2] = match[1];
-
-	addGame(user1, user2, false);
+	addGame(user1.player, user2.player, false);
 	socket1.send("Starting match");
 	socket2.send("Starting match");
-	queue.delete(socket1);
-	queue.delete(socket2);
+	console.log("Starting match");
+}
+
+function findMatch(socket: WebSocket, user: QueueData): boolean
+{
+	for (const [key, value] of queue)
+	{
+		if (value.opponentID === Opponent.ANY || value.opponentID === user.player.id &&
+			 user.opponentID === Opponent.ANY ||  user.opponentID === value.player.id)
+		{
+			queue.delete(key);
+			matchMake(key, value, socket, user);
+			return true;
+		}
+	};
+	return false;
+}
+
+function matchVsAI(socket: WebSocket, user: QueueData)
+{
+	addGame(user.player, { id: -1, username: "AI" }, true);
+	socket.send("Starting match");
 }
 
 export default function initMatchMaking(fastify: FastifyInstance)
 {
 	fastify.register( async function (fastify)
 	{
-		console.log("init MM server");
 		fastify.get("/matchmake", { websocket: true }, (connection, req) =>
 		{
-			console.log("Player connected");
-		
 			connection.on("message", (message) =>
 			{
-				console.log("Got input");
-				const user: PlayerData = JSON.parse(message.toString());
-				queue.set(connection, user);
-				if (queue.size >= 2)
-					matchMake()
+				const user: QueueData = JSON.parse(message.toString());
+				if (user.opponentID == Opponent.AI)
+				{
+					matchVsAI(connection, user);
+				}
+				else if (findMatch(connection, user) === false)
+				{
+					queue.set(connection, user);
+				}
 			});
-		
+
 			connection.on("close", () =>
 			{
-				console.log("Player disconnected");
 				queue.delete(connection);
 			});
 		});
