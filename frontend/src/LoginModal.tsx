@@ -6,18 +6,9 @@ import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
 import axios from "axios";
 
-interface CheckLoginProps
-{
-	formData: LoginFormType;
-	token: String;
-	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
-	setValidation: Dispatch<SetStateAction<LoginValidationType>>;
-	setShow2FA: Dispatch<SetStateAction<boolean>>;
-}
-
 async function check2FA({ formData, token, setLoggedInAccounts, setValidation }  : CheckLoginProps)
 {
-	const { username }= formData;
+	const { username } = formData;
 	try
 	{
 		const response = await axios.post("http://localhost:5001/api/auth/verify-totp",
@@ -48,6 +39,15 @@ async function check2FA({ formData, token, setLoggedInAccounts, setValidation } 
 	return false;
 }
 
+interface CheckLoginProps
+{
+	formData: LoginFormType;
+	token: String;
+	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	setValidation: Dispatch<SetStateAction<LoginValidationType>>;
+	setShow2FA: Dispatch<SetStateAction<boolean>>;
+}
+
 async function checkLogin( { formData, setLoggedInAccounts, setValidation, setShow2FA }  : CheckLoginProps)
 {
 	const {username, password } = formData;
@@ -57,7 +57,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 		if (response.data.success)
 		{
 			const user = response.data.user;
-			if (user.totpSecret)
+			if (user.twofa)
 			{
 				setShow2FA(true);
 				return false;
@@ -112,7 +112,7 @@ function LoginModal()
 			'2FA Code incorrect': false
 		}));
 		setEmptyForm(Object.values(formData).some(field => field === ""));
-	}, [formData, loggedInAccounts]);
+	}, [formData, loggedInAccounts, token]);
 
 	return(
 	<div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
@@ -131,7 +131,10 @@ function LoginModal()
 				if (show2FA)
 				{
 					const success = await check2FA({ formData, token, setLoggedInAccounts, setValidation, setShow2FA});
-					if (success) setShowLoginModal(false);
+					if (success)
+						setShowLoginModal(false);
+					else
+						setShow2FA(false);
 				}
 				else
 				{
@@ -199,7 +202,8 @@ function LoginModal()
 					${(!emptyForm && Object.values(validation).every((value) => !value)) ? 'hover:bg-[#ab5a28] hover:cursor-pointer' : 'opacity-30'}`} 
 					whileHover={(!emptyForm && Object.values(validation).every((value) => !value)) ? {scale: 1.03} : {}} 
 					whileTap={(!emptyForm && Object.values(validation).every((value) => !value)) ? {scale: 0.97} : {}}  
-					type="submit" disabled={emptyForm || Object.values(validation).some((value) => value)}>{show2FA ? "Authorize" : "Login"}</motion.button>
+					type="submit" disabled={emptyForm || Object.values(validation).some((value) => value)}>{show2FA ? "Authorize" : "Login"}
+				</motion.button>
 			</div>
 		</form>
 		</div>

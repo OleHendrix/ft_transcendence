@@ -14,6 +14,7 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 			return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
 
 		console.log("found user with totp:", username);
+		// console.log(account.totpSecret);
 		const isValid = speakeasy.totp.verify(
 		{
 			secret: account.totpSecret,
@@ -23,15 +24,21 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 		});
 
 		if (!isValid)
+		{
+			// console.log('uuhi')
 			return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
+		}
 
-		await prisma.account.update(
+		const updatedAccount = await prisma.account.update(
 		{
 				where: { username },
-				data: { twofa: true}
+				data:
+				{
+					twofa: true
+				}
 		});
 
 		console.log("authorized:", username);
-		return { success: true, user: account };
+		return { success: true, user: updatedAccount };
 	});
 }

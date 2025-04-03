@@ -7,16 +7,21 @@ export default async function deleteTotp(fastify: FastifyInstance, prisma: Prism
 	{
 		const { username } = req.body as { username: string };
 		const account = await prisma.account.findUnique({ where: { username } });
-
+		console.log(account);
+		
 		if (!account)
 			return reply.status(404).send({ error: 'User not found' });
 
-		await prisma.account.update(
+		const updatedAccount = await prisma.account.update(
 		{
 			where: { username },
-			data:  { totpSecret: null }
+			data:
+			{
+				totpSecret: null,
+				twofa: false
+			}
 		});
 
-		return reply.send({ message: '2FA Disabled'});
+		return reply.send({ success: true, user: updatedAccount});
 	});
 }

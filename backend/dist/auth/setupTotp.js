@@ -19,7 +19,7 @@ function setupTotp(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/auth/setup-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
             const { username } = req.body;
-            console.log('username:', username);
+            // console.log('username:', username);
             const account = yield prisma.account.findUnique({ where: { username } });
             if (!account)
                 return reply.code(404).send({ message: 'User not found' });
@@ -28,7 +28,12 @@ function setupTotp(fastify, prisma) {
                 where: { username },
                 data: { totpSecret: secret.base32 }
             });
-            const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '');
+            const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '', {
+                color: {
+                    dark: '#FFFFFF',
+                    light: '#ff914d'
+                }
+            });
             return reply.send({ qrCodeUrl });
         }));
     });
