@@ -20,6 +20,10 @@ const AccountContext = createContext<AccountContextType | null>(null);
 
 export function AccountProvider({ children }: {children: ReactNode})
 {
+	
+
+
+
 	const [accounts, setAccounts] = useState<PlayerType[]>([]);
 	const [numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
 	const [loggedInAccounts, setLoggedInAccounts] = useState<PlayerType[]>([]);

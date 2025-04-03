@@ -444,7 +444,6 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 					onClick={() => {disable2FA(); setConfirmDisable2Fa(false)}}>Confirm disable 2FA
 				</motion.button>
 			)}
-
 			{validation['Already logged in'] && 
 			(
 				<motion.div className="text-center text-sm text-[#ff914d] font-bold" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>

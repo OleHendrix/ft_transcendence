@@ -15,6 +15,12 @@ export interface PlayerType
 	twofa: boolean;
 }
 
+export interface BasicPlayerType
+{
+	username: string,
+	online: boolean
+}
+
 export interface SignUpFormType
 {
 	username: string;
