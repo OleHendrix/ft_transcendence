@@ -1,11 +1,11 @@
 import { createContext, useState, useEffect, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType } from "../types";
+import { PlayerType, BasicPlayerType } from "../types";
 import axios from 'axios';
 
 type AccountContextType = 
 {
-	accounts: PlayerType[];
-	setAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	accounts: BasicPlayerType[];
+	setAccounts: Dispatch<SetStateAction<BasicPlayerType[]>>;
 	numberOfLoggedInAccounts: number;
 	setNumberOfLoggedInAccounts: Dispatch<SetStateAction<number>>;
 	loggedInAccounts: PlayerType[];
@@ -20,11 +20,12 @@ const AccountContext = createContext<AccountContextType | null>(null);
 
 export function AccountProvider({ children }: {children: ReactNode})
 {
-	
+	const [accounts, setAccounts] = useState<BasicPlayerType[]>([]);
 
 
 
-	const [accounts, setAccounts] = useState<PlayerType[]>([]);
+
+	// const [accounts, setAccounts] = useState<PlayerType[]>([]);
 	const [numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
 	const [loggedInAccounts, setLoggedInAccounts] = useState<PlayerType[]>([]);
 	const [triggerFetchAccounts, setTriggerFetchAccounts] = useState(false);

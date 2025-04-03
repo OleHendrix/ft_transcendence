@@ -18,7 +18,10 @@ export interface PlayerType
 export interface BasicPlayerType
 {
 	username: string,
-	online: boolean
+	online:   boolean,
+	wins:     number | null,
+	draws:    number | null,
+	loses:    number | null,
 }
 
 export interface SignUpFormType
