@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
-import { PlayerState, PongState } from './types';
+import { PlayerState, PongState, Opponent } from './types';
+import { startQueue } from './Hero';
 import { useAccountContext } from './contexts/AccountContext';
 import { useLoginContext } from './contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -114,6 +115,16 @@ function PongGame() {
 		);
 	}
 
+	function getOpponentID(): number | Opponent
+	{
+		if (pong.p1Data.id !== loggedInAccounts[0].id)
+			return pong.p1Data.id;
+		else if (pong.p2Data.id === -1)
+			return Opponent.AI;
+		else
+			return pong.p2Data.id;
+	}
+
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
 	const [isP2Bouncing, setP2IsBouncing] = useState(false);
 
@@ -204,13 +215,20 @@ function PongGame() {
 			{pong.p1Won !== null &&
 			<AnimatePresence>
 				<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-					<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-auto relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+					<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-full max-w-sm relative shadow-xl flex-grow" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 						<ParseResult />
-						<motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
-							whileHover={{ scale: 1.03 }}
-							whileTap={{ scale: 0.97 }}
-							onClick={() => { leaveMatch(loggedInAccounts[0].id) }}>Back To Home
-						</motion.button>
+						<div className="flex flex-grow space-x-4">
+							<motion.button className="pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
+								whileHover={{ scale: 1.03 }}
+								whileTap={{ scale: 0.97 }}
+								onClick={() => { leaveMatch(loggedInAccounts[0].id) }}>Back To Home
+							</motion.button>
+							<motion.button className="pt-2 bg-[#134588] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#246bcb] hover:cursor-pointer"
+								whileHover={{ scale: 1.03 }}
+								whileTap={{ scale: 0.97 }}
+								onClick={() => { startQueue({ player: loggedInAccounts[0], opponentID: getOpponentID() }, setIsPlaying) }}>Rematch
+							</motion.button>
+						</div>
 					</motion.div>
 				</motion.div>
 			</AnimatePresence>}

@@ -8,6 +8,18 @@ export interface PlayerData
 	username:	string;
 }
 
+export enum Opponent
+{
+	AI = -1,
+	ANY = -2,
+}
+
+export interface QueueData
+{
+	player:		PlayerData;
+	opponentID:	number | Opponent;
+}
+
 export interface PlayerType
 {
 	id:			number;

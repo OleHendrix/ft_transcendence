@@ -9,7 +9,7 @@ import { BiRocket } from "react-icons/bi";
 import { useAccountContext } from "./contexts/AccountContext";
 import Players from "./Players";
 import "./css/ponganimation.css";
-import { PlayerState, PlayerData } from './types';
+import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
 
 function SimplePong()
@@ -28,7 +28,7 @@ function SimplePong()
 let socket: WebSocket | null = null;
 let queueStartTime = new Map<number, number>();
 
-function startQueue(user: PlayerData, setIsPlaying: (state: PlayerState) => void)
+export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) => void)
 {
 	socket = new WebSocket(`ws://${window.location.hostname}:5001/matchmake`);
 
@@ -51,7 +51,7 @@ function startQueue(user: PlayerData, setIsPlaying: (state: PlayerState) => void
 			setIsPlaying(PlayerState.playing);
 		}
 	});
-	queueStartTime.set(user.id, Date.now());
+	queueStartTime.set(user.player.id, Date.now());
 	setIsPlaying(PlayerState.queueing);
 }
 
@@ -102,7 +102,7 @@ function Buttons()
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 					whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
 					whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
-					onClick={() => startQueue(loggedInAccounts[0], setIsPlaying)}>
+					onClick={() => startQueue({ player: loggedInAccounts[0], opponentID: Opponent.ANY}, setIsPlaying)}>
 					<p>Online Game</p>
 					<BiRocket />
 				</motion.button>
