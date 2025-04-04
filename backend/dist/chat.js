@@ -45,69 +45,112 @@ function setupChat(server) {
             });
         });
         server.get("/api/get-messages", (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { senderId, receiverId } = request.query;
-            const senderIdNum = parseInt(senderId);
-            const receiverIdNum = parseInt(receiverId);
-            let chatSession;
-            if (receiverIdNum === -1) {
-                chatSession = yield prisma.chatSession.findFirst({
-                    where: {
-                        account1Id: 1,
-                        account2Id: 1
+            try {
+                const { senderId, receiverId } = request.query;
+                const senderIdNum = parseInt(senderId);
+                const receiverIdNum = parseInt(receiverId);
+                const chatSession = yield getOrCreateChatSession(senderIdNum, receiverIdNum);
+                const messages = yield prisma.message.findMany({
+                    where: { chatSessionId: chatSession.id },
+                    orderBy: { timestamp: 'asc' },
+                    include: {
+                        sender: {
+                            select: { username: true }
+                        }
                     }
                 });
-                if (!chatSession) {
-                    chatSession = yield prisma.chatSession.create({
-                        data: {
-                            account1Id: 1,
-                            account2Id: 1
-                        }
-                    });
-                }
+                // Transform messages before sending response
+                const transformedMessages = messages.map(({ id, content, timestamp, sender, chatSessionId, status }) => ({
+                    id,
+                    content,
+                    timestamp,
+                    senderUsername: sender.username,
+                    chatSessionId,
+                    status
+                }));
+                reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id });
             }
-            else {
-                chatSession = yield prisma.chatSession.findFirst({
+            catch (error) {
+                console.error("Error in /api/get-messages:", error);
+                reply.status(500).send({ success: false, error: "Internal Server Error" });
+            }
+        }));
+        server.post('/api/change-msg-status', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { senderId, receiverId, status, messageId } = request.body;
+                if (!messageId) {
+                    console.error("❌ Error: messageId is missing!");
+                    return reply.status(400).send({ error: "messageId is required" });
+                }
+                const chatSession = yield getOrCreateChatSession(senderId, receiverId);
+                yield prisma.message.update({
+                    where: {
+                        chatSessionId: chatSession.id,
+                        id: messageId,
+                    },
+                    data: {
+                        status: status,
+                    },
+                });
+                reply.send({ success: true, message: "Message status updated successfully." });
+            }
+            catch (error) {
+                console.error("Error updating message status:", error);
+                reply.status(500).send({ success: false, error: "Failed to update message status." });
+            }
+        }));
+        server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { senderId, receiverId, content, status } = request.body;
+            const chatSession = yield getOrCreateChatSession(senderId, receiverId);
+            const message = yield prisma.message.create({
+                data: {
+                    content,
+                    senderId: senderId,
+                    receiverId: (receiverId === -1 ? 1 : receiverId),
+                    chatSessionId: chatSession.id,
+                    status: status,
+                },
+                include: { sender: { select: { username: true } } }
+            });
+            const messageToClient = {
+                id: message.id,
+                content: message.content,
+                timestamp: message.timestamp,
+                senderUsername: message.sender.username,
+                chatSessionId: message.chatSessionId,
+                status: message.status
+            };
+            notifyClients(messageToClient);
+            return reply.send({ success: true, messageToClient });
+        }));
+        function getOrCreateChatSession(senderId, receiverId) {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (receiverId === -1) //globalchat
+                 {
+                    let chatSession = yield prisma.chatSession.findFirst({ where: { account1Id: 1, account2Id: 1 } });
+                    if (!chatSession)
+                        chatSession = yield prisma.chatSession.create({ data: { account1Id: 1, account2Id: 1 } });
+                    return chatSession;
+                }
+                let chatSession = yield prisma.chatSession.findFirst({
                     where: {
                         OR: [
-                            { account1Id: senderIdNum, account2Id: receiverIdNum },
-                            { account1Id: receiverIdNum, account2Id: senderIdNum }
+                            { account1Id: senderId, account2Id: receiverId },
+                            { account1Id: receiverId, account2Id: senderId },
                         ]
                     }
                 });
                 if (!chatSession) {
-                    chatSession = yield prisma.chatSession.create({
-                        data: {
-                            account1Id: senderIdNum,
-                            account2Id: receiverIdNum
-                        }
-                    });
+                    chatSession = yield prisma.chatSession.create({ data: { account1Id: senderId, account2Id: receiverId } });
                 }
-            }
-            const messages = yield prisma.message.findMany({
-                where: { chatSessionId: chatSession.id },
-                orderBy: { timestamp: 'asc' },
-                include: {
-                    sender: {
-                        select: {
-                            username: true,
-                        }
-                    }
-                }
+                return chatSession;
             });
-            // transform the messages for sending response
-            const transformedMessages = messages.map(message => ({
-                content: message.content,
-                timestamp: message.timestamp,
-                senderUsername: message.sender.username,
-                chatSessionId: message.chatSessionId
-            }));
-            return (reply.send({ success: true, messages: transformedMessages, chatSessionId: chatSession.id }));
-        }));
+        }
         function notifyClients(newMessage) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { chatSessionId } = newMessage;
-                console.log(`Notifying all clients connected to ChatSessionId ${chatSessionId}`);
                 const activeChatSockets = activeChats.get(chatSessionId);
+                // console.log(`Notifying all clients connected to ChatSessionId ${chatSessionId}`);
                 if (activeChatSockets) {
                     activeChatSockets.forEach(socket => {
                         if (socket.readyState === ws_1.default.OPEN) {
@@ -118,67 +161,5 @@ function setupChat(server) {
                 }
             });
         }
-        server.post('/api/send-message', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { senderId, receiverId, content } = request.body;
-            const sender = yield prisma.account.findUnique({ where: { id: senderId } });
-            const receiver = yield prisma.account.findUnique({ where: { id: receiverId } });
-            if (!sender || (!receiver && receiverId !== -1))
-                return reply.status(400).send({ error: 'Api/sendMessage:Invalid_sender/receiver' });
-            let chatSession;
-            if (receiverId === -1) {
-                chatSession = yield prisma.chatSession.findFirst({
-                    where: {
-                        account1Id: 1,
-                        account2Id: 1
-                    }
-                });
-                if (!chatSession) {
-                    chatSession = yield prisma.chatSession.create({
-                        data: {
-                            account1Id: 1,
-                            account2Id: 1
-                        }
-                    });
-                }
-            }
-            else {
-                chatSession = yield prisma.chatSession.findFirst({
-                    where: {
-                        OR: [{ account1Id: senderId, account2Id: receiverId }, { account1Id: receiverId, account2Id: senderId }]
-                    }
-                });
-                if (!chatSession) {
-                    chatSession = yield prisma.chatSession.create({
-                        data: {
-                            account1Id: senderId,
-                            account2Id: receiverId
-                        }
-                    });
-                }
-            }
-            const message = yield prisma.message.create({
-                data: {
-                    content,
-                    senderId: senderId,
-                    receiverId: (receiverId === -1 ? 1 : receiverId),
-                    chatSessionId: chatSession.id
-                },
-                include: {
-                    sender: {
-                        select: {
-                            username: true
-                        }
-                    }
-                }
-            });
-            const messageToClient = {
-                content: message.content,
-                timestamp: message.timestamp,
-                senderUsername: message.sender.username,
-                chatSessionId: message.chatSessionId
-            };
-            notifyClients(messageToClient);
-            return reply.send({ success: true, messageToClient });
-        }));
     });
 }

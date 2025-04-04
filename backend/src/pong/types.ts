@@ -30,6 +30,7 @@ export interface PlayerType
 	draws:		number;
 	losses:		number;
 	totpSecret:	boolean;
+	admin: boolean;
 }
 
 export interface SignUpFormType
