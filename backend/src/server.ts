@@ -16,10 +16,10 @@ import login			from './user/login';
 import logout			from './user/logout'
 import updateAccount 	from './user/updateAccount';
 
-import initPongServer from './pong/pongServer';
-import initMatchMaking from "./pong/matchMaking"
+import initPongServer 	from './pong/pongServer';
+import initMatchMaking 	from "./pong/matchMaking"
 
-import { setupChat } from './chat';
+import { setupChat } 	from './chat';
 
 const fastify = Fastify();
 export const prisma = new PrismaClient();
