@@ -199,6 +199,16 @@ function MessageList() {
 									}`}
 								>
 									<p className="mb-2">🎮 {isSender ? "You sent a game invite!" : `${message.senderUsername} invited you to play a game!`}</p>
+									{isSender && msgStatus === 1 && (
+										<div className="flex gap-2">
+										<button
+											onClick={() => handleGameInviteResponse(message.id, 4)}
+											className="bg-red-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-green-600"
+										>
+											cancel
+										</button>
+									</div>
+									)}
 	
 									{!isSender && msgStatus === 1 && ( // Show buttons only for receiver if status is pending
 										<div className="flex gap-2">
@@ -222,6 +232,9 @@ function MessageList() {
 									)}
 									{msgStatus === 3 && (
 										<p className="text-red-400 mt-2">❌ {isSender ? "Your invite was declined" : "You declined the game invite"}</p>
+									)}
+									{msgStatus === 4 && (
+										<p className="text-red-400 mt-2"> {"The invite was cancelled"}</p>
 									)}
 								</div>
 							) : (
