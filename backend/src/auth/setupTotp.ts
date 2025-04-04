@@ -22,7 +22,14 @@ export default async function setupTotp(fastify: FastifyInstance, prisma: Prisma
 				data: { totpSecret: secret.base32 }
 			});
 		
-		const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url || '');
+		const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url || '',
+		{
+			color:
+			{
+				dark: '#FFFFFF', 
+				light: '#ff914d'
+			}
+		});
 
 		return reply.send({ qrCodeUrl });
 	});

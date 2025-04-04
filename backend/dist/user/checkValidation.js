@@ -9,22 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = deleteTotp;
-function deleteTotp(fastify, prisma) {
+exports.default = checkValidation;
+function checkValidation(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/auth/delete-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username } = req.body;
-            const account = yield prisma.account.findUnique({ where: { username } });
-            if (!account)
-                return reply.status(404).send({ error: 'User not found' });
-            const updatedAccount = yield prisma.account.update({
-                where: { username },
-                data: {
-                    totpSecret: null,
-                    twofa: false
-                }
-            });
-            return reply.send({ success: true, user: updatedAccount });
+        fastify.post('/api/check-validation', (req, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { username, email } = req.body;
+            const usernameExist = yield prisma.account.findUnique({ where: { username } });
+            if (usernameExist !== null)
+                return reply.status(200).send({ success: false, type: 'Username exists' });
+            const emailExist = yield prisma.account.findUnique({ where: { email } });
+            if (emailExist !== null)
+                return reply.status(200).send({ success: false, type: 'Email exists' });
+            return reply.status(200).send({ success: true });
         }));
     });
 }

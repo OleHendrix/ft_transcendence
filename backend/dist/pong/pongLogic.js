@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateGame = updateGame;
 exports.initGame = initGame;
 exports.mirrorGame = mirrorGame;
+exports.calculateNewElo = calculateNewElo;
 exports.endGame = endGame;
 const server_1 = require("../server");
 const s = ({
@@ -187,6 +188,10 @@ function mirrorGame(game) {
     mirror.ball.dir.x = -mirror.ball.dir.x;
     return mirror;
 }
+function calculateNewElo(p1Elo, p2Elo, win) {
+    const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
+    return (Math.round(p1Elo + 24 * (win - expectedOutcome)));
+}
 function endGame(match, p1Wins) {
     return __awaiter(this, void 0, void 0, function* () {
         match.state.p1Won = p1Wins;
@@ -197,13 +202,17 @@ function endGame(match, p1Wins) {
         if (p1Wins === false) {
             [winner, loser] = [loser, winner];
         }
+        const winnerUser = yield server_1.prisma.account.findUnique({ where: { id: winner } });
+        const loserUser = yield server_1.prisma.account.findUnique({ where: { id: loser } });
+        const newWinnerElo = calculateNewElo(winnerUser.elo, loserUser.elo, 1);
+        const newLoserElo = calculateNewElo(loserUser.elo, winnerUser.elo, 0);
         yield server_1.prisma.account.update({
             where: { id: winner },
-            data: { wins: { increment: 1 } }
+            data: { wins: { increment: 1 }, elo: newWinnerElo }
         });
         yield server_1.prisma.account.update({
             where: { id: loser },
-            data: { losses: { increment: 1 } }
+            data: { losses: { increment: 1 }, elo: newLoserElo }
         });
     });
 }

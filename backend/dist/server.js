@@ -24,6 +24,7 @@ const deleteTotp_1 = __importDefault(require("./auth/deleteTotp"));
 const addAccount_1 = __importDefault(require("./user/addAccount"));
 const deleteAccount_1 = __importDefault(require("./user/deleteAccount"));
 const getAccounts_1 = __importDefault(require("./user/getAccounts"));
+const checkValidation_1 = __importDefault(require("./user/checkValidation"));
 const login_1 = __importDefault(require("./user/login"));
 const logout_1 = __importDefault(require("./user/logout"));
 const updateAccount_1 = __importDefault(require("./user/updateAccount"));
@@ -43,6 +44,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, addAccount_1.default)(fastify, exports.prisma);
     yield (0, deleteAccount_1.default)(fastify, exports.prisma);
     yield (0, getAccounts_1.default)(fastify, exports.prisma);
+    yield (0, checkValidation_1.default)(fastify, exports.prisma);
     yield (0, login_1.default)(fastify, exports.prisma);
     yield (0, logout_1.default)(fastify, exports.prisma);
     yield (0, updateAccount_1.default)(fastify, exports.prisma);

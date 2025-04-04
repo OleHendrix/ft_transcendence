@@ -2,19 +2,172 @@ import React, { useState, useEffect } from "react";
 import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
 import Player from "./assets/Player.svg";
-import Player1 from "./assets/Player1.svg";
-import Player2 from "./assets/Player2.svg";
-import { IoMdClose } from "react-icons/io";
 import { motion, AnimatePresence } from 'framer-motion';
 import Playerstats from "./Playerstats";
-import EditProfile from "./EditProfile";
+import { IoMdClose } from "react-icons/io";
 import { LiaUserEditSolid } from "react-icons/lia";
-import { TiArrowBackOutline } from "react-icons/ti";
-import { FiEdit3 } from "react-icons/fi";
-import { TfiSave } from "react-icons/tfi";
-import { Enable2FA } from "./EditProfile";
+import { BiLogOut } from "react-icons/bi";
+import { FiEdit3, FiCamera } from "react-icons/fi";
+import { MdOutlineDeleteForever } from "react-icons/md";
+import ImageCropper from "./ImageCrop";
 
 import axios from "axios";
+
+interface EditIconProps
+{
+  onClick: () => void;
+  keyName: string;
+}
+
+function EditIcon({ onClick, keyName }: EditIconProps)
+{
+	return(
+		<motion.button className="items-start mb-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer opacity-30 hover:opacity-100"
+			key="edit-username" 
+			whileHover={ {scale: 1.17}}
+			whileTap={ {scale: 0.87}}
+			onClick={onClick}><FiEdit3 size={18} />
+		</motion.button>
+	)
+}
+
+interface InputFieldProps
+{
+	name: string;
+	value?: string;
+	placeholder?: string;
+	validation: Record<string, boolean>;
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	isPasswordField?: boolean; 
+}
+
+function InputField({ name, value, placeholder, validation, onChange, isPasswordField } : InputFieldProps)
+{
+	function getBorderColor()
+	{
+		if (validation['Already logged in'] || validation['Username exists'] || validation['Email exists'])
+      		return 'border-[#ff914d] focus:border-[#ff914d]';
+		else if (isPasswordField && validation['Password don\'t matches'])
+      		return 'border-red-800';
+		else if (isPasswordField && validation['Password matches!'])
+      		return 'border-green-500';
+		else
+      		return 'border-gray-600 focus:border-white';
+	}
+	return (
+		<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border ${getBorderColor()} focus:outline-none`}
+      		name={name} type={name === "email" ? 'email' : (name === "password" || name === "confirmPassword") ? 'password' : 'text'} value={value} placeholder={placeholder} onChange={onChange}/>
+		);
+}
+
+export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<React.SetStateAction<boolean>>})
+{
+	const { loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts }  = useAccountContext();
+	const { indexPlayerStats } = useLoginContext();
+
+	const [token, setToken]     = useState('');
+	const [falseCode, setFalseCode] = useState(false);
+	const [qrCode, setQrCode]   = useState<string | null>(null);
+	const [scannedQrCode, setScannedQrCode ] = useState(false);
+
+	useEffect(() =>
+	{
+		const handleEnable2FA = async () =>
+		{
+			try
+			{
+				const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
+				{
+					username: loggedInAccounts[indexPlayerStats].username
+				});
+				setQrCode(res.data.qrCodeUrl);
+				console.log('QR Code:', qrCode);
+			}
+			catch (err)
+			{
+				console.error('Error enabling 2FA:', err);
+			}
+		};
+		handleEnable2FA();
+	}, [loggedInAccounts]);
+	
+	const verify2FA = async () =>
+	{
+		try
+		{
+			const response = await axios.post('http://localhost:5001/api/auth/verify-totp',
+			{
+				username: loggedInAccounts[indexPlayerStats].username,
+				token
+			});
+			if (response.data.success)
+			{
+				const updatedloggedInAccounts = [...loggedInAccounts];
+				updatedloggedInAccounts[indexPlayerStats] =
+				{
+					...updatedloggedInAccounts[indexPlayerStats],
+					twofa: response.data.user.twofa
+				};
+				setLoggedInAccounts(updatedloggedInAccounts);
+				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
+				setTriggerFetchAccounts(true);
+				setSettingUp2FA(false);
+			}
+			else
+				alert('Invalid code');
+		}
+		catch (err)
+		{
+			console.error('Verification failed', err);
+			setFalseCode(true);
+		}
+	};
+
+	return (
+		<div className="flex flex-col justify-center items-center w-full h-full">
+  			<div className="rounded-xl bg-[#2a2a2a] text-center w-full">
+    		{!scannedQrCode &&
+			(
+				<>
+      				<p className="text-sm font-medium mb-2">Scan this QR code with Google Authenticator:</p>
+      				{qrCode && 
+						<div className="flex justify-center mb-4 ">
+							<img src={qrCode} alt="2FA QR Code" className="rounded-lg shadow-3xl" />
+						</div>
+					}
+      				<div className="flex justify-center">
+					<motion.button className={`w-[50%] bg-[#ff914d] hover:bg-[#ab5a28] hover:cursor-pointer text-white text-xs py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
+						whileHover={{ scale: 1.03 }}
+						whileTap={{scale: 0.97 }}
+						onClick={() => {setScannedQrCode(true)}}>Continue
+					</motion.button>
+      				</div>
+    			</>
+			)}
+    		{scannedQrCode && 
+			(
+				<div className="w-full">
+      				<input
+        				type="text"
+        				maxLength={6}
+        				value={token}
+        				onChange={(e) => {setToken(e.target.value); if (falseCode) setFalseCode(false)}}
+        				placeholder="Enter 6-digit code"
+        				className={`w-full p-2 rounded-3xl bg-[#3a3a3a] text-white mb-4 border ${falseCode ? 'border-red-800' :  'border-gray-600 focus:border-white'} focus:outline-none`}
+      			/>
+      			<div className="flex justify-center">
+				<motion.button className={`w-full bg-[#ff914d] hover:bg-[#ab5a28] hover:cursor-pointer text-white text-xs py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
+					whileHover={{ scale: 1.03 }}
+					whileTap={{scale: 0.97 }}
+					onClick={() => {verify2FA()}}>Verify
+				</motion.button>
+      			</div>
+    		</div>
+		)}
+  			</div>
+		</div>
+	);
+}
 
 interface ShowInfoProps
 {
@@ -27,10 +180,12 @@ interface ShowInfoProps
 function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}: ShowInfoProps )
 {
 	const { accounts, loggedInAccounts, setTriggerFetchAccounts, setLoggedInAccounts }  = useAccountContext();
-	const { indexPlayerStats } = useLoginContext();
+	const { indexPlayerStats, setShowPlayerStats } = useLoginContext();
 
 	const [formData, setFormData] = useState({username: loggedInAccounts[indexPlayerStats].username, email: loggedInAccounts[indexPlayerStats].email, password: '', confirmPassword: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
+	const [confirmDisable2Fa, setConfirmDisable2Fa] = useState(false);
+	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [editPassword, setEditPassword] = useState(false);
 	const [validation, setValidation] = useState(
@@ -45,7 +200,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 	useEffect(() =>
 	{
 		let passwordDontMatch = false;
-		if (editPassword && (formData.password || formData.confirmPassword))
+		if (editPassword && (formData.password && formData.confirmPassword))
   			passwordDontMatch = formData.password !== formData.confirmPassword;
 
 		let passwordMatches = false;
@@ -58,8 +213,8 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		{
 			...prev,
 			'Already logged in': ((loggedInAccounts.some(player => player.username === formData.username) && loggedInAccounts[indexPlayerStats].username !== formData.username ) || (loggedInAccounts.some(player => player.email === formData.email) && loggedInAccounts[indexPlayerStats].email !== formData.email)),
-			'Username exists': (accounts.some(player => player.username === formData.username) && loggedInAccounts[indexPlayerStats].username !== formData.username),
-			'Email exists': (accounts.some(player => player.email === formData.email) && loggedInAccounts[indexPlayerStats].email !== formData.email),
+			// 'Username exists': (accounts.some(player => player.username === formData.username) && loggedInAccounts[indexPlayerStats].username !== formData.username),
+			// 'Email exists': (accounts.some(player => player.email === formData.email) && loggedInAccounts[indexPlayerStats].email !== formData.email),
 			'Password don\'t matches': passwordDontMatch,
 			'Password matches!': passwordMatches
 		}));
@@ -82,12 +237,25 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 
 	const disable2FA = async () =>
 	{
+		console.log("uhh");
 		try
 		{
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`,
 			{
 				username: loggedInAccounts[indexPlayerStats].username
 			});
+			if (response.data.success)
+			{
+				const updatedloggedInAccounts = [...loggedInAccounts];
+				updatedloggedInAccounts[indexPlayerStats] =
+				{
+					...updatedloggedInAccounts[indexPlayerStats],
+					twofa: response.data.user.twofa
+				};
+				setLoggedInAccounts(updatedloggedInAccounts);
+				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
+				setTriggerFetchAccounts(true);
+			}
 		}
 		catch (error)
 		{
@@ -100,6 +268,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		setEditProfile(false);
 		setEditPassword(false);
 		setSettingUp2FA(false);
+		setConfirmDisable2Fa(false);
 		setFormData( prev => (
 		{
 			...prev,
@@ -110,11 +279,57 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		}))
 	};
 
+	const deleteAccount = async () =>
+	{
+		try
+		{
+			const response = await axios.post('http://localhost:5001/api/delete-account',
+			{
+				username: loggedInAccounts[indexPlayerStats].username
+			});
+			if (response.data.success)
+			{
+				const updatedaccounts = loggedInAccounts.filter((player, index) => index !== indexPlayerStats)
+				setLoggedInAccounts(updatedaccounts);
+				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
+				setTriggerFetchAccounts(true);
+				setShowPlayerStats(false);
+			}
+		}
+		catch (error)
+		{
+			console.error('Error deleting account:', error);
+		}
+	}
+
 	return (
 		<div className="flex flex-col w-full text-left space-y-4 items-center">
 			{ editProfile &&
 			(
 			<div className="w-full flex text-xs justify-between whitespace-nowrap gap-2">
+				{!confirmDelete &&
+				(
+					<button className="absolute items-center top-4 left-4 text-gray-400 hover:text-white hover:cursor-pointer"
+						onClick={() => setConfirmDelete(true)}><MdOutlineDeleteForever size={24} />
+					</button>	
+				)}
+				{confirmDelete ?
+				(
+					<>
+					<motion.button className={`w-full bg-[#ff914d] hover:bg-[#ab5a28] hover:cursor-pointer text-white py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
+						whileHover={{ scale: 1.03 }}
+						whileTap={{scale: 0.97 }}
+						onClick={() => {setConfirmDelete(false)}}>Cancel 
+					</motion.button>
+					<motion.button className={`w-full bg-red-900 hover:bg-red-700 hover:cursor-pointer text-white py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
+						whileHover={{ scale: 1.03 }}
+						whileTap={{scale: 0.97 }}
+						onClick={() => {deleteAccount()}}>Delete account
+					</motion.button>
+					</>
+				) : 
+				(
+					<>
 					<motion.button className={`w-full shadow-2xl bg-[#ff914d]
 					${(emptyForm || validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches']) ? 'opacity-30'
 					: 'hover:bg-[#ab5a28] hover:cursor-pointer'} text-white py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
@@ -142,7 +357,6 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 										...updatedloggedInAccounts[indexPlayerStats],
 										username: response.data.user.username,
 										email: response.data.user.email,
-										password: response.data.user.password
 									};
 									setLoggedInAccounts(updatedloggedInAccounts);
 									localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
@@ -159,119 +373,75 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 						updatePlayer();
 					}
 					}>Save changes
-				</motion.button>
-				<motion.button className={`w-full bg-red-900 hover:bg-red-700 hover:cursor-pointer text-white py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
-					whileHover={!(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches']) ? { scale: 1.03 } : {}}
-					whileTap={!(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password don\'t matches']) ? { scale: 0.97 } : {}}
-					onClick={() => {cancelEdit()}}>Cancel
-				</motion.button>
+					</motion.button>
+					<motion.button className={`w-full bg-red-900 hover:bg-red-700 hover:cursor-pointer text-white py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
+						whileHover={{ scale: 1.03 }}
+						whileTap={{scale: 0.97 }}
+						onClick={() => {cancelEdit()}}>Cancel
+					</motion.button>
+					</>
+				)}
 			</div>
 			)}
+			{!confirmDelete &&
+			(
+			<>
 			<div className="w-full">
 				<div className="flex items-end justify-between gap-2">
 					<p className="block text-sm font-medium mb-1">Username</p>
 				</div>
-				{editProfile ?
-				(
-					<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-					${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
-					: 'border-gray-600 focus:border-white'} focus:outline-none`}
-					name="username" type="text" value={formData.username}
-					onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
-				) :
-				(
+				{editProfile ? <InputField name={"username"} value={formData.username} validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/> :
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
 						<p>{loggedInAccounts[indexPlayerStats]?.username}</p>
-					</div>
-				)}
+					</div>}
 			</div>
 			<div className="w-full">
 				<div className="flex items-end justify-between gap-2">
 					<p className="block text-sm font-medium mb-1">Email</p>
 				</div>
-				{editProfile ?
-				(
-					<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-					${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
-					: 'border-gray-600 focus:border-white'} focus:outline-none`}
-					name="email" type="email" value={formData.email}
-					onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
-				) :
-				(
+				{editProfile ? <InputField name={"email"} value={formData.email} validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/> :
 					<div className=" w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
 						<p className="">{loggedInAccounts[indexPlayerStats]?.email}</p>
-					</div>
-				)}
+					</div>}
 			</div>
 			<div className="w-full">
 				<div className="flex items-end justify-between gap-2">
 					<p className="block text-sm font-medium mb-1">Password</p>
 				</div>
-				{editPassword ?
-				(
-					<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-					${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
-					: validation['Password don\'t matches'] ? 'border-red-800'
-					: validation['Password matches!'] ? 'border-green-500'
-					: 'border-gray-600 focus:border-white'}  focus:outline-none`}
-					name="password" type="password" placeholder="Choose a new password"
-					onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
-				) :
-				(
+				{editPassword ? <InputField name={"password"} placeholder="Choose a new password" validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})} isPasswordField={true}/> :
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
 						<p>{('').padStart(10, '*')}</p>
-						{editProfile &&
-						(
-							<motion.button className="items-start mb-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer opacity-30 hover:opacity-100"
-							key="edit-username" 
-							whileHover={ {scale: 1.17}}
-							whileTap={ {scale: 0.87}}
-							onClick={() => setEditPassword(true)}><FiEdit3 size={18} />
-							</motion.button>
-						)}
-					</div>
-				)}
+						{editProfile && <EditIcon onClick={() => setEditPassword(true)} keyName="edit-password"/>}
+					</div>}
 			</div>
 			{editPassword &&
 			(
 				<div className="w-full">
 					<p className="block text-sm font-medium mb-1">Confirm Password</p>
-					<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
-					${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
-					: validation['Password don\'t matches'] ? 'border-red-800'
-					: validation['Password matches!'] ? 'border-green-500'
-					: 'border-gray-600 focus:border-white'} focus:outline-none`}
-					name="confirmPassword" type="password" placeholder="Confirm your new password"
-					onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
+					<InputField name={"confirmPassword"} placeholder="Confirm your new password" validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})} isPasswordField={true}/>
 				</div>
 			)}
+			<div className="w-full">
+				<div className="flex items-end justify-between gap-2">
+					<p className="block text-sm font-medium mb-1">2FA</p>
+				</div>
 			{!settingUp2FA && 
 			(
-				<div className="w-full">
-					<div className="flex items-end justify-between gap-2">
-						<p className="block text-sm font-medium mb-1">2FA</p>
-					</div>
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
-						<p>{loggedInAccounts[indexPlayerStats]?.totpSecret ? 'Yes' : 'No'}</p>
-				{ editProfile &&
-				(
-					<motion.button className="items-start mb-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer opacity-30 hover:opacity-100"
-							key="edit-username" 
-							whileHover={ {scale: 1.17}}
-							whileTap={ {scale: 0.87}}
-							onClick={() =>
-							{
-								if (!loggedInAccounts[indexPlayerStats].totpSecretset)
-									setSettingUp2FA(true)
-								else
-									disable2FA
-							}}><FiEdit3 size={18} />
-					</motion.button>
-				)}
+						<p>{loggedInAccounts[indexPlayerStats]?.twofa ? 'Yes' : 'No'}</p>
+						{ editProfile && <EditIcon onClick={() => {!loggedInAccounts[indexPlayerStats].twofa ? setSettingUp2FA(true) : setConfirmDisable2Fa(true)}} keyName="edit-2fa"/>}
 					</div>
-				</div>
 			)}
-			{settingUp2FA && editProfile && <Enable2FA />}
+			{settingUp2FA && editProfile && <Enable2FA setSettingUp2FA={setSettingUp2FA}/>}
+				</div>
+			{confirmDisable2Fa &&
+			(
+				<motion.button className={`w-full bg-red-900 hover:bg-red-700 hover:cursor-pointer text-white text-xs py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
+					whileHover={{ scale: 1.03 }}
+					whileTap={{scale: 0.97 }}
+					onClick={() => {disable2FA(); setConfirmDisable2Fa(false)}}>Confirm disable 2FA
+				</motion.button>
+			)}
 			{validation['Already logged in'] && 
 			(
 				<motion.div className="text-center text-sm text-[#ff914d] font-bold" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
@@ -284,6 +454,8 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 					<p>Account already exists</p>
 				</motion.div>
 			)}
+			</>
+			)}
 		</div>
 	);
 }
@@ -294,21 +466,65 @@ function PlayerInfo()
 	const { setShowPlayerStats, indexPlayerStats } = useLoginContext();
 
 	const [editProfile, setEditProfile] = useState(false);
+	const [profileImage, setProfileImage] = useState(Player);
 	const [ settingUp2FA, setSettingUp2FA ] = useState(false);
+	const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
+	const [showCropper, setShowCropper] = useState(false);
 
-	const deleteAccount = async () =>
+	function handleProfileImageUpload(e: React.ChangeEvent<HTMLInputElement>)
+	{
+		const file = e.target.files?.[0];
+		if (file)
+		{
+			// Lees de afbeelding als DataURL
+			const reader = new FileReader();
+			reader.onload = (event) =>
+			{
+				if (event.target && typeof event.target.result === 'string')
+				{
+					// Sla de afbeelding tijdelijk op en toon de cropper
+					setTempImageUrl(event.target.result);
+					setShowCropper(true);
+				}
+			};
+			reader.readAsDataURL(file);
+		}
+	};
+
+	function handleCropComplete(croppedImage: string)
+	{
+		setProfileImage(croppedImage);
+		//update database etc...
+		setShowCropper(false);
+		setTempImageUrl(null);
+	};
+
+	function handleCropCancel()
+	{ 
+		setShowCropper(false); 
+		setTempImageUrl(null);
+	};
+
+
+	async function logout()
 	{
 		try
 		{
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/delete-account`,
-			{
-				username: loggedInAccounts[indexPlayerStats].username
-			});
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/logout`,
+				{
+					username: loggedInAccounts[indexPlayerStats].username
+				}
+			)
+			const updatedaccounts = loggedInAccounts.filter((account, index) => index !== indexPlayerStats)
+			setLoggedInAccounts(updatedaccounts);
+			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
+			setShowPlayerStats(false)
 		}
-		catch (error)
+		catch (error: any)
 		{
-			console.error('Error deleting account:', error);
+			console.error("Error in logout");
 		}
+
 	}
 
 	return (
@@ -319,71 +535,51 @@ function PlayerInfo()
 						onClick={() => setShowPlayerStats(false)}>
 						<IoMdClose size={24} />
 					</button>
+					{!editProfile &&
+					(
+						<button className="absolute items-center top-4 left-4 text-gray-400 hover:text-white hover:cursor-pointer"
+							onClick={() => {logout()}}>
+							<BiLogOut size={24} />
+						</button>
+					)}
 					<div className="flex flex-col items-center gap-2">
 						<h2 className="text-2xl font-bold text-center">{loggedInAccounts[indexPlayerStats]?.username}</h2>
-						<img src={loggedInAccounts.length > 2 ? Player : indexPlayerStats === 0 ? Player1 : indexPlayerStats === 1 ? Player2 : Player} className="h-16 w-auto"/>
+						  <div className="relative">
+							<img src={profileImage} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+							{profileImage !== Player && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
+							{editProfile &&
+							(
+								<label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors">
+									<input className="hidden" id="profile-upload" type="file" accept="image/*" onChange={handleProfileImageUpload}/>
+									<FiCamera size={16} className="text-[#ff914d]" />
+								</label>
+							)}
+						</div>
+						{showCropper && tempImageUrl &&
+						(
+							<ImageCropper imageUrl={tempImageUrl}
+								handleCropComplete={handleCropComplete}
+								handleCropCancel={handleCropCancel}/>
+						)}
 						{!editProfile &&
 						(
 							<div className="flex flex-col items-center">
-							<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
-								key="edit-button" 
-								whileHover={ {scale: 1.17}}
-								whileTap={ {scale: 0.87}}
-								onClick={() => setEditProfile(true)}><LiaUserEditSolid size={24} />
-							</motion.button>
-							<p className="font-thin text-xs opacity-40">Edit profile</p>
+								<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
+									key="edit-button" 
+									whileHover={ {scale: 1.17}}
+									whileTap={ {scale: 0.87}}
+									onClick={() => setEditProfile(true)}><LiaUserEditSolid size={24} />
+								</motion.button>
+								<p className="font-thin text-xs opacity-40">Edit profile</p>
 							</div>
 						)}
 					</div>
 					<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA}/>
 					{!editProfile && <Playerstats/>}
-					{!editProfile && <motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
-						whileHover={ {scale: 1.03}}
-						whileTap={ {scale: 0.97}}
-						onClick={() =>
-						{
-							const updatedaccounts = loggedInAccounts.filter((player, index) => index !== indexPlayerStats)
-							setLoggedInAccounts(updatedaccounts);
-							localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
-							setShowPlayerStats(false)
-						}}>Logout
-					</motion.button>
-					}
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>
 	);
 }
-
-	// {editProfile && <motion.button className="items-center"
-	// 					whileHover={ {scale: 1.03}}
-	// 					whileTap={ {scale: 0.97}}
-	// 					onClick={() => { setEditProfile(false) } }><TfiSave />
-	// 				// {editProfile  && <EditProfile />}
-	// 				// {!editProfile && <ShowInfo />}
-	// 				// {!editProfile && <accountstats />}
-	// 				// {!editProfile && <motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
-					// 	whileHover={ {scale: 1.03}}
-					// 	whileTap={ {scale: 0.97}}
-					// 	onClick={() =>
-					// 	{
-					// 		const updatedaccounts = loggedInAccounts.filter((player, index) => index !== indexPlayerStats)
-					// 		setloggedInAccounts(updatedaccounts);
-					// 		localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
-					// 		setShowPlayerStats(false)
-					// 	}}>Logout
-					// </motion.button>}
-					// {editProfile && <motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
-					// 	whileHover={ {scale: 1.03}}
-					// 	whileTap={ {scale: 0.97}}
-					// 	onClick={() =>
-					// 	{
-					// 		deleteAccount();
-					// 		const updatedaccounts = loggedInAccounts.filter((player, index) => index !== indexPlayerStats)
-					// 		setloggedInAccounts(updatedaccounts);
-					// 		localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
-					// 		setShowPlayerStats(false);
-					// 	}}>Delete Account
-					// </motion.button>}
 
 export default PlayerInfo

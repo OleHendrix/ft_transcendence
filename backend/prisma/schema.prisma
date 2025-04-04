@@ -12,10 +12,12 @@ model Account {
   email       String     @unique
   username    String     @unique
   password    String
-  totpSecret  String?
   wins        Int        @default(0)
   draws       Int        @default(0)
   losses      Int        @default(0)
+  elo		  Int		 @default(400)
+  totpSecret  String?
+  twofa		  Boolean	 @default(false)
   admin       Boolean    @default(false)
   online      Boolean    @default(false)
 

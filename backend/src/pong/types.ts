@@ -29,6 +29,7 @@ export interface PlayerType
 	wins:		number;
 	draws:		number;
 	losses:		number;
+	elo:		number;
 	totpSecret:	boolean;
 	admin: boolean;
 }

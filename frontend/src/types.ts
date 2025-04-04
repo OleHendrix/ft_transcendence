@@ -25,11 +25,11 @@ export interface PlayerType
 	id:			number;
 	username:	string;
 	email:		string;
-	password:	string;
 	wins:		number;
 	draws:		number;
 	losses:		number;
-	totpSecret:	boolean;
+	elo:		number;
+	twofa:		boolean;
 }
 
 export interface SignUpFormType

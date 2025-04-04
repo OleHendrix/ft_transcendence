@@ -28,7 +28,12 @@ function setupTotp(fastify, prisma) {
                 where: { username },
                 data: { totpSecret: secret.base32 }
             });
-            const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '');
+            const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '', {
+                color: {
+                    dark: '#FFFFFF',
+                    light: '#ff914d'
+                }
+            });
             return reply.send({ qrCodeUrl });
         }));
     });

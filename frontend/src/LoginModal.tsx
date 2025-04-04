@@ -48,7 +48,7 @@ async function check2FA({ formData, token, setLoggedInAccounts, setValidation } 
 	return false;
 }
 
-async function checkLogin( { formData, setLoggedInAccounts, setValidation, setShow2FA }  : CheckLoginProps)
+async function checkLogin( { formData, token, setLoggedInAccounts, setValidation, setShow2FA }  : CheckLoginProps)
 {
 	const {username, password } = formData;
 	try
@@ -57,7 +57,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 		if (response.data.success)
 		{
 			const user = response.data.user;
-			if (user.totpSecret)
+			if (user.twofa)
 			{
 				setShow2FA(true);
 				return false;
@@ -75,10 +75,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 	}
 	catch (error: any)
 	{
-		if (error.response?.status === 400)
-			setValidation(prev => ({...prev, ['Username not found']: true}));
-		else if (error.response?.status === 401)
-			setValidation(prev => ({...prev, ['Password incorrect']: true}));
+		setValidation(prev => ({...prev, [error.response.data.error]: true}))
 		return false;
 	}
 }
@@ -135,7 +132,7 @@ function LoginModal()
 				}
 				else
 				{
-					const success = await checkLogin({ formData, setLoggedInAccounts, setValidation, setShow2FA });
+					const success = await checkLogin({ formData, token, setLoggedInAccounts, setValidation, setShow2FA });
 					if (success) setShowLoginModal(false); 
 				}
 			}} 

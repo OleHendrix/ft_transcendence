@@ -225,6 +225,12 @@ export function mirrorGame(game: PongState): PongState
 	return mirror;
 }
 
+export function calculateNewElo(p1Elo: number, p2Elo: number, win: number)
+{
+	const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
+  	return(Math.round(p1Elo + 24 * (win - expectedOutcome)));
+}
+
 export async function endGame(match: Match, p1Wins: boolean)
 {
 	match.state.p1Won = p1Wins;
@@ -237,15 +243,21 @@ export async function endGame(match: Match, p1Wins: boolean)
 		[winner, loser] = [loser, winner];
 	}
 
+	const winnerUser = await prisma.account.findUnique({where: {id: winner}}) as any;
+	const loserUser = await prisma.account.findUnique({where: {id: loser}}) as any;
+
+	const newWinnerElo = calculateNewElo(winnerUser.elo, loserUser.elo, 1);
+	const newLoserElo = calculateNewElo(loserUser.elo, winnerUser.elo, 0);
+
 	await prisma.account.update
 	({
 		where: { id: winner },
-		data:  { wins: { increment: 1 } }
+		data:  { wins: { increment: 1 }, elo: newWinnerElo }
 	});
 
 	await prisma.account.update
 	({
 		where: { id: loser },
-		data:  { losses: { increment: 1 } }
+		data:  { losses: { increment: 1 }, elo: newLoserElo }
 	});
 }

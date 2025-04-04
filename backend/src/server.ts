@@ -12,6 +12,7 @@ import deleteTotp		from './auth/deleteTotp';
 import addAccount		from './user/addAccount';
 import deleteAccount	from './user/deleteAccount';
 import getAccounts		from './user/getAccounts';
+import checkValidation  from './user/checkValidation';
 import login			from './user/login';
 import logout			from './user/logout'
 import updateAccount 	from './user/updateAccount';
@@ -40,6 +41,7 @@ const start = async () =>
 	await addAccount(fastify, prisma);
 	await deleteAccount(fastify, prisma);
 	await getAccounts(fastify, prisma);
+	await checkValidation(fastify, prisma);
 	await login(fastify, prisma);
 	await logout(fastify, prisma);
 	await updateAccount(fastify, prisma);

@@ -11,6 +11,7 @@ function PlayerStats()
 	return (
 		<div className="flex flex-col items-center mt-4">
 			<h2 className="text-2xl font-bold text-center">Stats</h2>
+			<p className='stat-title mt-2 font-black text-xl'>{loggedInAccounts[indexPlayerStats]?.elo}</p>
 			<div className="w-full grid grid-cols-3 gap-2 p-2 mt-2">
 				<div className="stat flex flex-col items-center">
 					<div className="stat-title text-green-800 font-black">Wins</div>

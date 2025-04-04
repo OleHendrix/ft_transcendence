@@ -3,16 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
 import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
-import { useCheckSubmit } from "./useCheckSubmit";
-
+import { SignUpFormType } from "./types";
+import axios from "axios";
 
 function SignUpModal()
 {
-	const { accounts, loggedInAccounts } = useAccountContext();
+	const { loggedInAccounts, setNumberOfLoggedInAccounts } = useAccountContext();
 	const { setShowSignUpModal, setShowLoginModal } = useLoginContext();
 	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
-	const { checkSubmit } = useCheckSubmit();
 	const [validation, setValidation] = useState(
 		{
 			'Already logged in': false,
@@ -21,20 +20,81 @@ function SignUpModal()
 			'Password does not match': false,
 			'Password matches!': false
 		});
+
+	async function checkSubmit(formData: SignUpFormType)
+	{
+		// setIsLoading(true);
+		const { username, email, password } = formData;
+
+		console.log("Submitting form...");
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/add-account`, { username, email, password });
+
+			if (response.data.success)
+			{
+				setNumberOfLoggedInAccounts((count) => count + 1);
+				setShowSignUpModal(false);
+				setShowLoginModal(true);
+			}
+			else
+				console.log("Failed to add account:", response.data.message);
+		}
+		catch (error: any)
+		{
+			console.error("Signup error:", error.response?.data || error.message);
+		}
+
+		// setIsLoading(false);
+	}
 		
 	useEffect(() =>
 	{
+		async function checkValidation()
+		{
+			try
+			{
+				const response = await axios.post(`http://${window.location.hostname}:5001/api/check-validation`,
+					{
+						username: formData.username,
+						email: formData.email
+					});
+				if (!response.data.success)
+				{
+					setValidation(prev => (
+						{
+							...prev,
+							[response.data.type]: true,
+						}
+					))
+				}
+				else
+				{
+					setValidation(prev => (
+						{
+							...prev,
+							'Username exists': false,
+							'Email exists': false
+						}
+					))
+				}
+			}
+			catch (error: any)
+			{
+				console.error("Error in vaidation")
+			}
+		}; checkValidation();
+
 		setValidation(prev => (
 		{
 			...prev,
 			'Already logged in': (loggedInAccounts.some(account => account.username === formData.username || account.email === formData.email)),
-			'Username exists': accounts.some(account => account.username === formData.username),
-			'Email exists': accounts.some(account => account.email === formData.email),
 			'Password does not match': (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) ? true : false,
 			'Password matches!': (formData.password && formData.confirmPassword && formData.password === formData.confirmPassword) ? true : false
 		}));
-		setEmptyForm(Object.values(formData).some(field => field === ""))
-	}, [formData, accounts, loggedInAccounts]);
+		setEmptyForm(Object.values(formData).some(field => field === ""));
+		console.log(validation);
+	}, [formData]);
 
 	return(
 	<AnimatePresence>
@@ -126,9 +186,9 @@ function SignUpModal()
 							Already have an account?{" "} 
 							<a href="#" className="text-[#ff914d] hover:underline font-bold" 
 							onClick={() =>
-							{
+								{
+								setShowLoginModal(true);
 								setShowSignUpModal(false);
-								setShowLoginModal(true)
 							}}>Log in</a>
 						</motion.div>)}
 				</form>
