@@ -7,6 +7,7 @@ interface message
 	timestamp: 			string,
 	receiverId: 		number,
 	chatSessionId: 		number,
+	senderUsername:		string,
 	senderId: 			number,
 	status:				number,
 }

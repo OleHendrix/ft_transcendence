@@ -60,11 +60,12 @@ function setupChat(server) {
                     }
                 });
                 // Transform messages before sending response
-                const transformedMessages = messages.map(({ id, content, timestamp, sender, chatSessionId, status }) => ({
+                const transformedMessages = messages.map(({ id, content, timestamp, sender, senderId, chatSessionId, status }) => ({
                     id,
                     content,
                     timestamp,
                     senderUsername: sender.username,
+                    senderId,
                     chatSessionId,
                     status
                 }));
@@ -83,7 +84,7 @@ function setupChat(server) {
                     return reply.status(400).send({ error: "messageId is required" });
                 }
                 const chatSession = yield getOrCreateChatSession(senderId, receiverId);
-                yield prisma.message.update({
+                const update = yield prisma.message.update({
                     where: {
                         chatSessionId: chatSession.id,
                         id: messageId,
@@ -92,6 +93,7 @@ function setupChat(server) {
                         status: status,
                     },
                 });
+                notifyClients(update);
                 reply.send({ success: true, message: "Message status updated successfully." });
             }
             catch (error) {

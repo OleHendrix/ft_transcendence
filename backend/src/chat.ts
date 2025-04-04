@@ -59,11 +59,12 @@ export async function setupChat(server: FastifyInstance)
 			});
 	
 			// Transform messages before sending response
-			const transformedMessages = messages.map(({ id, content, timestamp, sender, chatSessionId, status }) => ({
+			const transformedMessages = messages.map(({ id, content, timestamp, sender, senderId, chatSessionId, status }) => ({
 				id,
 				content,
 				timestamp,
 				senderUsername: sender.username,
+				senderId,
 				chatSessionId, 
 				status
 			}));
@@ -91,7 +92,7 @@ export async function setupChat(server: FastifyInstance)
 
 			const chatSession = await getOrCreateChatSession(senderId, receiverId);
 
-			await prisma.message.update({
+			const update = await prisma.message.update({
 				where: {
 					chatSessionId: chatSession.id,
 					id: messageId,
@@ -100,7 +101,7 @@ export async function setupChat(server: FastifyInstance)
 					status: status,
 				},
 			});
-	
+			notifyClients(update);
 			reply.send({ success: true, message: "Message status updated successfully." });
 		} catch (error) {
 			console.error("Error updating message status:", error);

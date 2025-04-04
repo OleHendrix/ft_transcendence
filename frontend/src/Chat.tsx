@@ -148,75 +148,85 @@ function MessageList() {
 		}
 	}, [chatMessages]);
 
-	const handleGameInviteClick = async (messageId: number) => {
-		try { 
-			console.log("sending messageid : ", messageId);
+	const handleGameInviteResponse = async (messageId: number, newStatus: number) => {
+		try {
+			console.log(`Updating message ${messageId} status to ${newStatus}`);
+	
 			await axios.post(`http://${window.location.hostname}:5001/api/change-msg-status`, {
 				senderId: loggedInAccounts[0]?.id,
 				receiverId,
-				status: 2,
+				status: newStatus,
 				messageId,
 			});
-
-			// Update the local message status to 2 (accepted)
+	
+			// Update the local message status
 			setChatMessages((prevMessages) =>
 				prevMessages.map((msg) =>
-					msg.id === messageId ? { ...msg, status: 2 } : msg
+					msg.id === messageId ? { ...msg, status: newStatus } : msg
 				)
 			);
-
-			//HIER MOET JOU SHIT 
+	
+			console.log(`Game invite ${newStatus === 2 ? "accepted" : "declined"} for message ${messageId}`);
 		} catch (error) {
 			console.log("Error occurred when changing msg status:", error);
 		}
-		console.log(`Game invite accepted for message ${messageId}`);
 	};
-
+	
 	return (
 		<div className="h-full w-full flex flex-col gap-4 items-end overflow-y-auto">
 			<div className="h-[35vw] w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
 				{chatMessages.map((message) => {
 					const isGameInvite = message.content === "::gameInvite::";
-					const msgStatus = message.status; // Get message status
-					console.log("msgstatus:", msgStatus, "msgid:", message.id);
+					const msgStatus = message.status;
+					const isSender = loggedInAccounts[0]?.id === message.senderId;
+	
 					return (
 						<div
 							key={message.id}
-							className={`chat ${
-								loggedInAccounts[0]?.username !== message.senderUsername ? "chat-start" : "chat-end"
-							}`}
+							className={`chat ${isSender ? "chat-end" : "chat-start"}`}
 						>
 							<div className="chat-header font-bold">
 								{message.senderUsername}
-								<time className="text-xs opacity-50">{format(new Date(message.timestamp), "HH:mm")}</time>
+								<time className="text-xs opacity-50">
+									{format(new Date(message.timestamp), "HH:mm")}
+								</time>
 							</div>
-							{ /** TODO: zorg dat alleen de receiver de knoppen kan durkken 
-							 * zorg dat er 2 opties zijn: accept decline
-							 * implement friend requests
-							 */}
-							{isGameInvite && msgStatus !== 0 ? (
-								<button
-									onClick={() => handleGameInviteClick(message.id)}
-									disabled={msgStatus !== 1} // Clickable only if status is 1 (pending)
-									className={`chat-bubble px-4 py-2 rounded-lg font-bold cursor-pointer transition-colors ${
-										msgStatus === 2
-											? "bg-green-500 text-white cursor-not-allowed" // Accepted
-											: msgStatus === 3
-											? "bg-red-500 text-white cursor-not-allowed" // Declined
-											: "bg-[#ff914d] text-white hover:bg-[#ab5a28]" // Clickable
+	
+							{isGameInvite ? (
+								<div
+									className={`chat-bubble px-4 py-2 rounded-lg font-bold flex flex-col items-center ${
+										isSender ? "bg-[#ff914d] text-white" : "bg-[#134588] text-white"
 									}`}
 								>
-									{msgStatus === 2
-										? "✔️ Game Invite Accepted"
-										: msgStatus === 3
-										? "❌ Game Invite Declined"
-										: "🎮 Click to Join Game"}
-								</button>
+									<p className="mb-2">🎮 {isSender ? "You sent a game invite!" : `${message.senderUsername} invited you to play a game!`}</p>
+	
+									{!isSender && msgStatus === 1 && ( // Show buttons only for receiver if status is pending
+										<div className="flex gap-2">
+											<button
+												onClick={() => handleGameInviteResponse(message.id, 2)}
+												className="bg-green-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-green-600"
+											>
+												Accept
+											</button>
+											<button
+												onClick={() => handleGameInviteResponse(message.id, 3)}
+												className="bg-red-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-red-600"
+											>
+												Decline
+											</button>
+										</div>
+									)}
+	
+									{msgStatus === 2 && (
+										<p className="text-green-400 mt-2">✔️ {isSender ? "Your invite was accepted!" : "You accepted the game invite"}</p>
+									)}
+									{msgStatus === 3 && (
+										<p className="text-red-400 mt-2">❌ {isSender ? "Your invite was declined" : "You declined the game invite"}</p>
+									)}
+								</div>
 							) : (
 								<div
-									className={`chat-bubble ${
-										loggedInAccounts[0]?.username !== message.senderUsername ? "bg-[#134588]" : "bg-[#ff914d]"
-									}`}
+									className={`chat-bubble ${isSender ? "bg-[#ff914d]" : "bg-[#134588]"}`}
 								>
 									{message.content}
 								</div>
@@ -229,8 +239,7 @@ function MessageList() {
 			<MessageInput />
 		</div>
 	);
-}
-
+}	
 
 function MessageInput()
 {
