@@ -8,10 +8,11 @@ import './css/index.css'
 import { AccountProvider, useAccountContext } from './contexts/AccountContext';
 import { LoginProvider } from "./contexts/LoginContext";
 import { PlayerState } from "./types"
+import Leaderboard from "./Leaderboard";
 
 function MainContent()
 {
-	const { isPlaying } = useAccountContext();
+	const { isPlaying, showLeaderboard } = useAccountContext();
 
 	return (
 		<>
@@ -20,6 +21,7 @@ function MainContent()
 				{isPlaying === PlayerState.idle && <Chat/>}
 			</ChatProvider>
 			{isPlaying === PlayerState.playing  && <PongGame />}
+			{isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
 		</>
 	)
 }

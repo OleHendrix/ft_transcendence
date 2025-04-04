@@ -4,10 +4,11 @@ import Players from "./Players";
 import Logo42 from "./assets/Logo42.svg"
 import { useAccountContext } from "./contexts/AccountContext";
 import { PlayerState } from "./types";
+import { useState } from "react";
 
 function Navbar()
 {
-	const { setIsPlaying, loggedInAccounts } = useAccountContext();
+	const { setIsPlaying, loggedInAccounts, setShowLeaderboard } = useAccountContext();
 
 	async function toMenu()
 	{
@@ -32,8 +33,13 @@ function Navbar()
 					</button>
 				</div>
 				<div className="flex items-center">
-					<img src={Logo42} className="h-18 w-auto" />
+					<button onClick={() => setShowLeaderboard(true)}>
+						<p className="text-2xl">Leaderboard</p>
+					</button>
 				</div>
+				{/* <div className="flex items-center">
+					<img src={Logo42} className="h-18 w-auto" />
+				</div> */}
 				<Players />
 			</nav>
 		</>

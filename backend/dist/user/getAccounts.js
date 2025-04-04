@@ -25,12 +25,13 @@ function getAccounts(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.get('/api/get-accounts', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             try {
-                let accounts = yield prisma.account.findMany();
+                let accounts = yield prisma.account.findMany({ where: { NOT: { id: 1 } } });
                 const accountsWithoutPassword = accounts.map((_a) => {
-                    var { password } = _a, rest = __rest(_a, ["password"]);
+                    var { password, totpSecret } = _a, rest = __rest(_a, ["password", "totpSecret"]);
                     return rest;
                 });
-                return reply.send({ success: true, accounts: accountsWithoutPassword });
+                // console.log('hallo??', accountsWithoutPassword);
+                return reply.send({ accounts: accountsWithoutPassword });
             }
             catch (error) {
                 return reply.status(500).send({ error: 'Error getting accounts from database' });
