@@ -5,6 +5,7 @@ import { startQueue } from './Hero';
 import { useAccountContext } from './contexts/AccountContext';
 import { useLoginContext } from './contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RiRobot2Line } from "react-icons/ri";
 
 function PongGame() {
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();

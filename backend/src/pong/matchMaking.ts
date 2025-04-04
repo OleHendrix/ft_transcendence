@@ -31,7 +31,7 @@ function findMatch(socket: WebSocket, user: QueueData): boolean
 
 function matchVsAI(socket: WebSocket, user: QueueData)
 {
-	addGame(user.player, { id: -1, username: "AI" }, true);
+	addGame(user.player, { id: -1, username: "AI👾" }, true);
 	socket.send("Starting match");
 }
 

@@ -32,7 +32,7 @@ function findMatch(socket, user) {
     return false;
 }
 function matchVsAI(socket, user) {
-    (0, pongServer_1.addGame)(user.player, { id: -1, username: "AI" }, true);
+    (0, pongServer_1.addGame)(user.player, { id: -1, username: "AI👾" }, true);
     socket.send("Starting match");
 }
 function initMatchMaking(fastify) {
