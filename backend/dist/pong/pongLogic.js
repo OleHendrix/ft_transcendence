@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateGame = updateGame;
 exports.initGame = initGame;
+exports.mirrorGame = mirrorGame;
 exports.endGame = endGame;
 const server_1 = require("../server");
 const s = ({
@@ -119,20 +120,25 @@ function manageAI(game) {
     game.ai.desiredY = Math.max(game.p2.size.y / 2, Math.min(100 - game.p2.size.y / 2, ballCopy.pos.y));
 }
 function updateInput(match, userID, game, keysPressed) {
-    var _a, _b, _c, _d;
-    // console.log ("1:", match.p1, "2:", match.p2, "isLocal:", match.isLocalGame);
-    if (match.p1.id === userID || match.isLocalGame)
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    if (match.isLocalGame === true) {
         game.p1Input = Number((_a = keysPressed['s']) !== null && _a !== void 0 ? _a : false) - Number((_b = keysPressed['w']) !== null && _b !== void 0 ? _b : false);
-    if (match.p2.id === userID || match.isLocalGame)
-        game.p2Input = Number((_c = keysPressed['ArrowDown']) !== null && _c !== void 0 ? _c : false) - Number((_d = keysPressed['ArrowUp']) !== null && _d !== void 0 ? _d : false);
+        if (match.p2.id !== -1) {
+            game.p2Input = Number((_c = keysPressed['ArrowDown']) !== null && _c !== void 0 ? _c : false) - Number((_d = keysPressed['ArrowUp']) !== null && _d !== void 0 ? _d : false);
+        }
+    }
+    else if (match.p1.id === userID) {
+        game.p1Input = Number(((_e = keysPressed['s']) !== null && _e !== void 0 ? _e : false) || ((_f = keysPressed['ArrowDown']) !== null && _f !== void 0 ? _f : false)) - Number(((_g = keysPressed['w']) !== null && _g !== void 0 ? _g : false) || ((_h = keysPressed['ArrowUp']) !== null && _h !== void 0 ? _h : false));
+    }
+    else if (match.p2.id === userID) {
+        game.p2Input = Number(((_j = keysPressed['s']) !== null && _j !== void 0 ? _j : false) || ((_k = keysPressed['ArrowDown']) !== null && _k !== void 0 ? _k : false)) - Number(((_l = keysPressed['w']) !== null && _l !== void 0 ? _l : false) || ((_m = keysPressed['ArrowUp']) !== null && _m !== void 0 ? _m : false));
+    }
 }
 function updateGame(match, userID, keysPressed) {
     let game = match.state;
     const now = Math.floor(Date.now() / 10);
     if (game.lastUpdate === -1)
         game.lastUpdate = now;
-    // game.p1.bounce = false;
-    // game.p2.bounce = false;
     for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++) {
         if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate) {
             manageAI(game);
@@ -170,6 +176,16 @@ function initGame(p1Data, p2Data) {
         p1Data: p1Data,
         p2Data: p2Data,
     };
+}
+function mirrorGame(game) {
+    let mirror = structuredClone(game);
+    [mirror.p1.pos.y, mirror.p2.pos.y] = [mirror.p2.pos.y, mirror.p1.pos.y];
+    [mirror.p1.lastBounce, mirror.p2.lastBounce] = [mirror.p2.lastBounce, mirror.p1.lastBounce];
+    [mirror.p1Score, mirror.p2Score] = [mirror.p2Score, mirror.p1Score];
+    mirror.ball.pos.x = 100 - mirror.ball.pos.x;
+    mirror.ball.prevPos.x = 100 - mirror.ball.prevPos.x;
+    mirror.ball.dir.x = -mirror.ball.dir.x;
+    return mirror;
 }
 function endGame(match, p1Wins) {
     return __awaiter(this, void 0, void 0, function* () {

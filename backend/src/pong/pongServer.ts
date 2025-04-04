@@ -1,4 +1,4 @@
-import { initGame, updateGame, endGame } from './pongLogic';
+import { initGame, updateGame, mirrorGame, endGame } from './pongLogic';
 import { PlayerData, Match } from './types';
 import { FastifyInstance } from "fastify";
 
@@ -54,34 +54,13 @@ export default async function initPongServer(fastify: FastifyInstance)
 				}
 				let match = matchTable.get(key) as Match;
 				updateGame(match, userID, keysPressed);
-				connection.send(JSON.stringify(match.state));
+				if (match.isLocalGame === false && userID === match.p2.id)
+					connection.send(JSON.stringify(mirrorGame(match.state)));
+				else
+					connection.send(JSON.stringify(match.state));
 			});
 		});
 	})
-	// fastify.post('/pong', async (request, reply) =>
-	// {
-	// 	const { userID, keysPressed } = request.body as { userID?: number, keysPressed?: {[key: string]: boolean} };
-	// 	if (userID === undefined || keysPressed === undefined)
-	// 	{
-	// 		console.log("Undefined input:", userID, keysPressed);
-	// 		reply.status(400);
-	// 		return;
-	// 	}
-	// 	if (matchIDTable.has(userID) === false)
-	// 	{
-	// 		reply.status(400);
-	// 		return;
-	// 	}
-	// 	const key = matchIDTable.get(userID) as number;
-	// 	if (matchTable.has(key) === false)
-	// 	{
-	// 		reply.status(400);
-	// 		return;
-	// 	}
-	// 	let match = matchTable.get(key) as Match;
-	// 	updateGame(match, userID, keysPressed);
-	// 	reply.status(200).send(match.state);
-	// });
 	
 	// adds a new match between userID1 and userID2
 	fastify.post('/pong/add', async (request, reply) =>

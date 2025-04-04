@@ -146,7 +146,7 @@ function PongGame() {
 		}
 	}, [pong.p2.lastBounce]);
 
-	const bounceStrength = pong.ball.dir.x * 1.2;
+	const bounceStrength = 1.2 * -pong.ball.dir.x;
 
 	return (
 		<>
@@ -192,7 +192,7 @@ function PongGame() {
 							transform: 'translateY(-50%)',
 							boxShadow: "0 0 15px rgba(255, 145, 77, 0.6)"
 						}}
-						animate={{ transform: isP1Bouncing ? `translateY(-50%) translateX(${-bounceStrength}vw)` : 'translateY(-50%) translateX(0vw)' }}
+						animate={{ transform: isP1Bouncing ? `translateY(-50%) translateX(${bounceStrength}vw)` : 'translateY(-50%) translateX(0vw)' }}
 						transition={{ type: "tween", duration: 0.08, ease: "easeInOut" }}
 					/>
 					<motion.div
@@ -207,7 +207,7 @@ function PongGame() {
 							transform: 'translateY(-50%)',
 							boxShadow: "0 0 15px rgba(19, 69, 136, 0.6)"
 						}}
-						animate={{ transform: isP2Bouncing ? `translateY(-50%) translateX(${-bounceStrength}vw)` : 'translateY(-50%) translateX(0vw)' }}
+						animate={{ transform: isP2Bouncing ? `translateY(-50%) translateX(${bounceStrength}vw)` : 'translateY(-50%) translateX(0vw)' }}
 						transition={{ type: "tween", duration: 0.08, ease: "easeInOut" }}
 					/>
 				</div>

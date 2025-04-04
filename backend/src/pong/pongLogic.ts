@@ -144,11 +144,22 @@ function manageAI(game: PongState): void
 
 function updateInput(match: Match, userID: number, game: PongState, keysPressed: {[key: string]: boolean})
 {
-	// console.log ("1:", match.p1, "2:", match.p2, "isLocal:", match.isLocalGame);
-	if (match.p1.id === userID || match.isLocalGame)
-		game.p1Input = Number(keysPressed['s']         ?? false) - Number(keysPressed['w']       ?? false);
-	if (match.p2.id === userID || match.isLocalGame)
-		game.p2Input = Number(keysPressed['ArrowDown'] ?? false) - Number(keysPressed['ArrowUp'] ?? false);
+	if (match.isLocalGame === true)
+	{
+		game.p1Input = Number(keysPressed['s'] ?? false) - Number(keysPressed['w'] ?? false);
+		if (match.p2.id !== -1)
+		{
+			game.p2Input = Number(keysPressed['ArrowDown'] ?? false) - Number(keysPressed['ArrowUp'] ?? false);
+		}
+	}
+	else if (match.p1.id === userID)
+	{
+		game.p1Input = Number((keysPressed['s'] ?? false) || (keysPressed['ArrowDown'] ?? false)) - Number((keysPressed['w'] ?? false) || (keysPressed['ArrowUp'] ?? false));
+	}
+	else if (match.p2.id === userID)
+	{
+		game.p2Input = Number((keysPressed['s'] ?? false) || (keysPressed['ArrowDown'] ?? false)) - Number((keysPressed['w'] ?? false) || (keysPressed['ArrowUp'] ?? false));
+	}	
 }
 
 export function updateGame(match: Match, userID: number, keysPressed: {[key: string]: boolean}): void
@@ -158,8 +169,6 @@ export function updateGame(match: Match, userID: number, keysPressed: {[key: str
 
 	if (game.lastUpdate === -1)
 		game.lastUpdate = now;
-	// game.p1.bounce = false;
-	// game.p2.bounce = false;
 	for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++)
 	{
 		if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate)
@@ -201,6 +210,19 @@ export function initGame(p1Data: PlayerData, p2Data: PlayerData): PongState
 		p1Data: p1Data,
 		p2Data: p2Data,
 	};
+}
+
+export function mirrorGame(game: PongState): PongState
+{
+	let mirror = structuredClone(game);
+
+	[mirror.p1.pos.y, mirror.p2.pos.y] = [mirror.p2.pos.y, mirror.p1.pos.y];
+	[mirror.p1.lastBounce, mirror.p2.lastBounce] = [mirror.p2.lastBounce, mirror.p1.lastBounce];
+	[mirror.p1Score, mirror.p2Score] = [mirror.p2Score, mirror.p1Score];
+	mirror.ball.pos.x     = 100 - mirror.ball.pos.x;
+	mirror.ball.prevPos.x = 100 - mirror.ball.prevPos.x;
+	mirror.ball.dir.x     = -mirror.ball.dir.x;
+	return mirror;
 }
 
 export async function endGame(match: Match, p1Wins: boolean)
