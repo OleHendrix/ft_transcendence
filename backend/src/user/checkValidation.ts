@@ -7,21 +7,17 @@ export default async function checkValidation(fastify: FastifyInstance, prisma: 
 	{
 		const { username, email } = req.body as { username: string, email: string };
 
-		console.log('checking', username, email);
 		const usernameExist = await prisma.account.findUnique({ where: { username } });
 
 		if (usernameExist !== null)
-		{
-			console.log("jaaa");
-			return reply.status(204).send({ success: false, type: 'Username exists' });
-		}
+			return reply.status(200).send({ success: false, type: 'Username exists' });
 
 		const emailExist = await prisma.account.findUnique({ where: { email } });
 
 		if (emailExist !== null)
-			return reply.status(204).send({ success: false, type: 'Email exists' });
+			return reply.status(200).send({ success: false, type: 'Email exists' });
 
 		
-		return reply.status(204).send({ success: true });
+		return reply.status(200).send({ success: true });
 	});
 }

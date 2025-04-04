@@ -56,7 +56,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 		const response = await axios.post(`http://${window.location.hostname}:5001/api/login`, { username, password });
 		if (response.data.success)
 		{
-			const user = response.data.user;
+			const user = response.data.loggedInUser;
 			if (user.twofa)
 			{
 				setShow2FA(true);

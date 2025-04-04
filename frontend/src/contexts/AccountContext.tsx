@@ -52,7 +52,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		} fetchAccounts();
 		setTriggerFetchAccounts(false);
-	}, [numberOfLoggedInAccounts, accounts, triggerFetchAccounts])
+	}, [numberOfLoggedInAccounts, triggerFetchAccounts])
 
 	return (
 		<AccountContext.Provider value={{ accounts, setAccounts, numberOfLoggedInAccounts, setNumberOfLoggedInAccounts, loggedInAccounts, setLoggedInAccounts, triggerFetchAccounts, setTriggerFetchAccounts, isPlaying, setIsPlaying }}>

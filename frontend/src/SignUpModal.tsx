@@ -61,7 +61,6 @@ function SignUpModal()
 					});
 				if (!response.data.success)
 				{
-					console.log(response.data.type);
 					setValidation(prev => (
 						{
 							...prev,
