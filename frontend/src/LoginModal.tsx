@@ -143,7 +143,7 @@ function LoginModal()
 					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
 					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
 					: 'border-red-800'} focus:outline-none`} 
-					name="username" type="text" placeholder="Type your username"
+					name="username" type="text" placeholder="Type your username" maxLength={10}
 					onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
 
@@ -153,8 +153,7 @@ function LoginModal()
 					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
 					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
 					: 'border-red-800'} focus:outline-none`} 
-					name="password" type="password" placeholder="Type your password"
-					maxLength={10}
+					name="password" type="password" placeholder="Type your password" maxLength={10}
 					onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
 
@@ -164,7 +163,7 @@ function LoginModal()
 					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
 					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
 					: 'border-red-800'} focus:outline-none`} 
-					name="username" type="text" placeholder="Enter 6 digit code"
+					name="username" type="text" placeholder="Enter 6 digit code" maxLength={6}
 					onChange={(e) => {setToken(e.target.value)}}/>
 			</div>}
 			{validation['Already logged in'] && 

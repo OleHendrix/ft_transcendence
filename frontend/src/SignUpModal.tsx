@@ -122,7 +122,7 @@ function SignUpModal()
 						<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
 							${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
 							: 'border-gray-600 focus:border-white'} focus:outline-none`}
-							name="username" type="text" placeholder="Choose a username" 
+							name="username" type="text" placeholder="Choose a username" maxLength={10}
 							onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
 					</div>
 					<div>
@@ -130,7 +130,7 @@ function SignUpModal()
 						<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border
 							${(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) ? 'border-[#ff914d] focus:border-[#ff914d]'
 							: 'border-gray-600 focus:border-white'} focus:outline-none`}
-							name="email" type="email" placeholder="Enter your email"
+							name="email" type="email" placeholder="Enter your email" maxLength={30}
 							onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
 					</div>
 					<div>
@@ -140,7 +140,7 @@ function SignUpModal()
 							: validation['Password does not match'] ? 'border-red-800'
 							: validation['Password matches!'] ? 'border-green-500'
 							: 'border-gray-600 focus:border-white'}  focus:outline-none`}
-							name="password" type="password" placeholder="Create a password"
+							name="password" type="password" placeholder="Create a password" maxLength={10}
 							onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
 					</div>
 					<div>
@@ -150,7 +150,7 @@ function SignUpModal()
 							: validation['Password does not match'] ? 'border-red-800'
 							: validation['Password matches!'] ? 'border-green-500'
 							: 'border-gray-600 focus:border-white'} focus:outline-none`}
-							name="confirmPassword" type="password" placeholder="Confirm your password"
+							name="confirmPassword" type="password" placeholder="Confirm your password" maxLength={10}
 							onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/>
 					</div>
 					{validation['Already logged in'] && 

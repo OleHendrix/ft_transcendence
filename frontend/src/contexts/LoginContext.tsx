@@ -16,9 +16,9 @@ const LoginContext = createContext<LoginContextType | null>(null);
 
 export function LoginProvider({ children }: {children: ReactNode})
 {
-	const [showSignUpModal, setShowSignUpModal] = useState(false);
-	const [showLoginModal, setShowLoginModal] = useState(false);
-	const [showPlayerStats, setShowPlayerStats] = useState(false);
+	const [showSignUpModal,  setShowSignUpModal]  = useState(false);
+	const [showLoginModal,   setShowLoginModal]   = useState(false);
+	const [showPlayerStats,  setShowPlayerStats]  = useState(false);
 	const [indexPlayerStats, setIndexPlayerStats] = useState(-1);
 
 	const value = useMemo(() => (

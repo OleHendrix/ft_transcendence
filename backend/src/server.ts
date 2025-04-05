@@ -16,6 +16,7 @@ import checkValidation  from './user/checkValidation';
 import login			from './user/login';
 import logout			from './user/logout'
 import updateAccount 	from './user/updateAccount';
+import getStats			from './user/getStats';
 
 import initPongServer from './pong/pongServer';
 import initMatchMaking from "./pong/matchMaking"
@@ -45,6 +46,7 @@ const start = async () =>
 	await login(fastify, prisma);
 	await logout(fastify, prisma);
 	await updateAccount(fastify, prisma);
+	await getStats(fastify, prisma)
 
 	await setupTotp(fastify, prisma);
 	await verifyTotp(fastify, prisma);

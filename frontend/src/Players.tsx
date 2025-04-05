@@ -9,7 +9,7 @@ import PlayerAdd from "./assets/PlayerAdd.svg"
 
 const Players = React.memo(function Players()
 {
-	const { loggedInAccounts } = useAccountContext();
+	const { loggedInAccounts, setTriggerFetchAccounts } = useAccountContext();
 	const { setShowSignUpModal, setShowPlayerStats, setIndexPlayerStats } = useLoginContext();
 
 	return(
@@ -17,7 +17,7 @@ const Players = React.memo(function Players()
 			<div className="flex items-center">
 				{loggedInAccounts?.map((player, index) => 
 				<div className="flex items-center flex-col space-y-0.5 w-18">
-					<motion.img src={loggedInAccounts.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStats(index); setShowPlayerStats(true)}}/>
+					<motion.img src={loggedInAccounts.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => {setIndexPlayerStats(index); setTriggerFetchAccounts(true); setShowPlayerStats(true)}}/>
 					<p className="text-[12px] opacity-35 w-full text-center truncate">{player.username}</p>
 				</div>
 				)}

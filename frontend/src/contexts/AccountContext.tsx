@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, Dispatch, SetStateAction, ReactNode, useContext } from "react";
+import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
 import { PlayerType, PlayerState } from "../types";
 import axios from 'axios';
 
@@ -22,12 +22,12 @@ const AccountContext = createContext<AccountContextType | null>(null);
 
 export function AccountProvider({ children }: {children: ReactNode})
 {
-	const [accounts, setAccounts] = useState<PlayerType[]>([]);
-	const [numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
-	const [loggedInAccounts, setLoggedInAccounts] = useState<PlayerType[]>([]);
-	const [triggerFetchAccounts, setTriggerFetchAccounts] = useState(false);
-	const [isPlaying, setIsPlaying] = useState(PlayerState.idle);
-	const [ showLeaderboard, setShowLeaderboard ] = useState(false);
+	const [ accounts,                 setAccounts]                 = useState<PlayerType[]>([]);
+	const [ numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
+	const [ loggedInAccounts,         setLoggedInAccounts]         = useState<PlayerType[]>([]);
+	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     = useState(false);
+	const [ isPlaying,                setIsPlaying]                = useState(PlayerState.idle);
+	const [ showLeaderboard,          setShowLeaderboard ]         = useState(false);
 
 	useEffect(() =>
 	{
@@ -40,10 +40,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 			try
 			{
 				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
-				if (response.data.success)
-					setAccounts(response.data.accounts);
-				else
-					console.log("what is happening");
+				setAccounts(response.data.accounts);
 			}
 			catch (error: any)
 			{
@@ -51,10 +48,20 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		} fetchAccounts();
 		setTriggerFetchAccounts(false);
-	}, [numberOfLoggedInAccounts, triggerFetchAccounts])
+	}, [ numberOfLoggedInAccounts, triggerFetchAccounts, showLeaderboard ])
 
+	const value = useMemo(() => (
+		{
+			accounts, setAccounts,
+			numberOfLoggedInAccounts, setNumberOfLoggedInAccounts,
+			loggedInAccounts, setLoggedInAccounts,
+			triggerFetchAccounts, setTriggerFetchAccounts,
+			isPlaying, setIsPlaying,
+			showLeaderboard, setShowLeaderboard,
+
+		}), [ accounts, numberOfLoggedInAccounts, loggedInAccounts, triggerFetchAccounts, isPlaying, showLeaderboard ]);
 	return (
-		<AccountContext.Provider value={{ accounts, setAccounts, numberOfLoggedInAccounts, setNumberOfLoggedInAccounts, loggedInAccounts, setLoggedInAccounts, triggerFetchAccounts, setTriggerFetchAccounts, isPlaying, setIsPlaying, showLeaderboard, setShowLeaderboard }}>
+		<AccountContext.Provider value={value}>
 			{ children }
 		</AccountContext.Provider>
 	);

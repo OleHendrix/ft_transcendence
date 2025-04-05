@@ -7,27 +7,12 @@ import { IoMdClose } from 'react-icons/io';
 
 export default function Leaderboard ()
 {
-	const { setShowLeaderboard } = useAccountContext();
-	const [ allAccounts, setAllAccounts ] = useState<PlayerType[]>([]);
+	const { accounts, setShowLeaderboard } = useAccountContext();
+	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
 
 	useEffect(() =>
 	{
-		async function fetchAccounts()
-		{
-			try
-			{
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
-				console.log('accounts', response.data);
-				const accounts = response.data.accounts as PlayerType[];
-				const sortedAccounts = accounts.sort((a, b) => b.elo - a.elo);
-				setAllAccounts(sortedAccounts);
-			}
-			catch (error)
-			{
-				console.error('fetching all accounts failed', error);
-			}
-		}
-		fetchAccounts();
+		setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));
 	}, []);
 
 	return (
@@ -63,7 +48,7 @@ export default function Leaderboard ()
 								</tr>
 							</thead>
 							<tbody>
-								{allAccounts.map((account, index) => (
+								{sortedAccounts.map((account, index) => (
 									<tr 
 										key={account.id} 
 										className={index % 2 === 0 ? "bg-[#3a3a3a]/80" : "bg-[#454545]/80"}
