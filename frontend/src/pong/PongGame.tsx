@@ -6,6 +6,14 @@ import { useAccountContext } from '../contexts/AccountContext';
 import { useLoginContext } from '../contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
+function formatTime(ms: number): string
+{
+	const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+	const minutes = Math.floor(totalSeconds / 60);
+	const seconds = totalSeconds % 60;
+	return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
 function PongGame() {
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
@@ -22,6 +30,7 @@ function PongGame() {
 		p1Won: null,
 		p1Data: { id: 0, username: "" },
 		p2Data: { id: 0, username: "" },
+		timer: 180 * 1000,
 	});
 
 	const socketRef = useRef<WebSocket | null>(null);
@@ -151,6 +160,11 @@ function PongGame() {
 	return (
 		<>
 			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.p1Won === null ? "" : "blur-sm"}`}>
+				{pong.p1Won === null && (
+					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10">
+						{formatTime(pong.timer)}
+					</div>
+				)}
 				<div className="relative w-full h-full">
 					<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 						<div className="h-full w-1/2 flex justify-center items-center">

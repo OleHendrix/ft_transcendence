@@ -135,6 +135,15 @@ function updateInput(match, userID, game, keysPressed) {
         game.p2Input = Number(((_j = keysPressed['s']) !== null && _j !== void 0 ? _j : false) || ((_k = keysPressed['ArrowDown']) !== null && _k !== void 0 ? _k : false)) - Number(((_l = keysPressed['w']) !== null && _l !== void 0 ? _l : false) || ((_m = keysPressed['ArrowUp']) !== null && _m !== void 0 ? _m : false));
     }
 }
+function handleTimeOut(match) {
+    if (match.state.p1Score > match.state.p2Score)
+        endGame(match, true);
+    else if (match.state.p1Score < match.state.p2Score)
+        endGame(match, false);
+    else
+        endGame(match, null);
+}
+;
 function updateGame(match, userID, keysPressed) {
     let game = match.state;
     const now = Math.floor(Date.now() / 10);
@@ -146,6 +155,9 @@ function updateGame(match, userID, keysPressed) {
             game.ai.lastActivation = game.lastUpdate;
         }
         tick(match, game, game.lastUpdate);
+        game.timer -= 10;
+        if (game.timer <= 0)
+            handleTimeOut(match);
     }
     updateInput(match, userID, game, keysPressed);
 }
@@ -176,6 +188,8 @@ function initGame(p1Data, p2Data) {
         p1Won: null,
         p1Data: p1Data,
         p2Data: p2Data,
+        timer: 180 * 1000,
+        startTime: Date.now(),
     };
 }
 function mirrorGame(game) {

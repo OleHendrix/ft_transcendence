@@ -162,6 +162,16 @@ function updateInput(match: Match, userID: number, game: PongState, keysPressed:
 	}	
 }
 
+function handleTimeOut(match: Match)
+{
+	if (match.state.p1Score > match.state.p2Score)
+		endGame(match, true);
+	else if (match.state.p1Score < match.state.p2Score)
+		endGame(match, false);
+	else
+		endGame(match, null);
+};
+
 export function updateGame(match: Match, userID: number, keysPressed: {[key: string]: boolean}): void
 {
 	let game = match.state;
@@ -177,8 +187,13 @@ export function updateGame(match: Match, userID: number, keysPressed: {[key: str
 			game.ai.lastActivation = game.lastUpdate;
 		}
 		tick(match, game, game.lastUpdate);
+
+		game.timer -= 10;
+		if (game.timer <= 0)
+			handleTimeOut(match);
 	}
 	updateInput(match, userID, game, keysPressed);
+
 }
 
 export function initGame(p1Data: PlayerData, p2Data: PlayerData): PongState
@@ -209,6 +224,8 @@ export function initGame(p1Data: PlayerData, p2Data: PlayerData): PongState
 		p1Won: null,
 		p1Data: p1Data,
 		p2Data: p2Data,
+		timer: 180 * 1000,
+		startTime: Date.now(),
 	};
 }
 
@@ -231,7 +248,7 @@ export function calculateNewElo(p1Elo: number, p2Elo: number, win: number)
   	return(Math.round(p1Elo + 24 * (win - expectedOutcome)));
 }
 
-export async function endGame(match: Match, p1Wins: boolean)
+export async function endGame(match: Match, p1Wins: boolean | null)
 {
 	match.state.p1Won = p1Wins;
 	if (match.p2.id === -1)

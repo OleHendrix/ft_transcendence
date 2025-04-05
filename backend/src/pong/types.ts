@@ -108,6 +108,8 @@ export interface PongState
 	p1Won:		boolean | null;
 	p1Data:		PlayerData;
 	p2Data:		PlayerData;
+	timer:		number;
+	startTime:	number;
 }
 
 export interface Match

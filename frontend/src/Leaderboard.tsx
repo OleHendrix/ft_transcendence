@@ -7,13 +7,13 @@ import { IoMdClose } from 'react-icons/io';
 
 export default function Leaderboard ()
 {
-	const { accounts, setShowLeaderboard } = useAccountContext();
+	const { accounts, showLeaderboard, setShowLeaderboard } = useAccountContext();
 	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
 
 	useEffect(() =>
 	{
 		setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));
-	}, []);
+	}, [ showLeaderboard ]);
 
 	return (
 		<AnimatePresence>
