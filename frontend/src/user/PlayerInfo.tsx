@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useAccountContext } from "./contexts/AccountContext";
-import { useLoginContext } from "./contexts/LoginContext";
-import Player from "./assets/Player.svg";
+import { useAccountContext } from "../contexts/AccountContext";
+import { useLoginContext } from "../contexts/LoginContext";
+import Player from "../../assets/Player.svg";
 import { motion, AnimatePresence } from 'framer-motion';
 import Playerstats from "./Playerstats";
 import { IoMdClose } from "react-icons/io";
@@ -9,7 +9,7 @@ import { LiaUserEditSolid } from "react-icons/lia";
 import { BiLogOut } from "react-icons/bi";
 import { FiEdit3, FiCamera } from "react-icons/fi";
 import { MdOutlineDeleteForever } from "react-icons/md";
-import ImageCropper from "./ImageCrop";
+import ImageCropper from "../ImageCrop";
 
 import axios from "axios";
 
@@ -510,9 +510,9 @@ function PlayerInfo()
 	{
 		try
 		{
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/logout`,
+			await axios.post(`http://${window.location.hostname}:5001/api/logout`,
 				{
-					username: loggedInAccounts[indexPlayerStats].username
+					userId: loggedInAccounts[indexPlayerStats].id
 				}
 			)
 			const updatedaccounts = loggedInAccounts.filter((account, index) => index !== indexPlayerStats)

@@ -1,5 +1,5 @@
-import { useAccountContext } from "./contexts/AccountContext";
-import { useLoginContext } from "./contexts/LoginContext";
+import { useAccountContext } from "../contexts/AccountContext";
+import { useLoginContext } from "../contexts/LoginContext";
 import { useState, useEffect } from "react";
 
 function PlayerStats()

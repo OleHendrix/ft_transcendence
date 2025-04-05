@@ -23,6 +23,7 @@ export interface QueueData
 export interface PlayerType
 {
 	id:			number;
+	admin:		boolean;
 	username:	string;
 	email:		string;
 	wins:		number;

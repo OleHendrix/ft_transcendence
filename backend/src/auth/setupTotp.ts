@@ -14,7 +14,7 @@ export default async function setupTotp(fastify: FastifyInstance, prisma: Prisma
 		if (!account)
 			return reply.code(404).send({ message: 'User not found'});
 
-		const secret = speakeasy.generateSecret({ name: `NextBall (${username})` });
+		const secret = speakeasy.generateSecret({ name: `NextBall: ${username}` });
 
 		await prisma.account.update(
 			{

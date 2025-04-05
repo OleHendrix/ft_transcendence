@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
-import { PlayerState, PongState, Opponent } from './types';
-import { startQueue } from './Hero';
-import { useAccountContext } from './contexts/AccountContext';
-import { useLoginContext } from './contexts/LoginContext';
+import { PlayerState, PongState, Opponent } from '../types';
+import { startQueue } from '../Hero';
+import { useAccountContext } from '../contexts/AccountContext';
+import { useLoginContext } from '../contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function PongGame() {

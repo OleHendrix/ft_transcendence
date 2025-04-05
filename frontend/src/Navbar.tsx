@@ -1,7 +1,7 @@
-import logo from "./assets/Logo.png";
+import logo from "../assets/Logo.png";
 import axios from "axios";
 import Players from "./Players";
-import Logo42 from "./assets/Logo42.svg"
+import Logo42 from "../assets/Logo42.svg"
 import { useAccountContext } from "./contexts/AccountContext";
 import { PlayerState } from "./types";
 import { useState } from "react";

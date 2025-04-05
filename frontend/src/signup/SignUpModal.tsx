@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
-import { useAccountContext } from "./contexts/AccountContext";
-import { useLoginContext } from "./contexts/LoginContext";
-import { SignUpFormType } from "./types";
+import { useAccountContext } from "../contexts/AccountContext";
+import { useLoginContext } from "../contexts/LoginContext";
+import { SignUpFormType } from "../types";
 import axios from "axios";
 
 function SignUpModal()

@@ -1,9 +1,9 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
-import { PlayerType, LoginFormType, LoginValidationType } from "./types"
-import { useAccountContext } from "./contexts/AccountContext";
-import { useLoginContext } from "./contexts/LoginContext";
+import { PlayerType, LoginFormType, LoginValidationType } from "../types"
+import { useAccountContext } from "../contexts/AccountContext";
+import { useLoginContext } from "../contexts/LoginContext";
 import axios from "axios";
 
 interface CheckLoginProps
@@ -198,6 +198,9 @@ function LoginModal()
 					type="submit" disabled={emptyForm || Object.values(validation).some((value) => value)}>{show2FA ? "Authorize" : "Login"}</motion.button>
 			</div>
 		</form>
+			<div className="pt-2">
+				<script src="https://accounts.google.com/gsi/client" async defer></script>
+			</div>
 		</div>
 	</div>
 	)

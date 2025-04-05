@@ -1,13 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from 'framer-motion';
-import Player from "./assets/Player.svg";
+import Player from "../../assets/Player.svg";
 import { BiSolidChat, BiSearch } from "react-icons/bi";
 import { FiPlus } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
 import axios from 'axios';
-import { useAccountContext } from "./contexts/AccountContext";
-import { useChatContext } from "./contexts/ChatContext";
+import { useAccountContext } from ".././contexts/AccountContext";
+import { useChatContext } from ".././contexts/ChatContext";
 import { format } from 'date-fns';
 
 function Chat()
