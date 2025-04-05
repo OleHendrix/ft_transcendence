@@ -13,45 +13,31 @@ interface	Stats
 
 function PlayerStats()
 {
-	const { loggedInAccounts } = useAccountContext();
+	const { accounts, loggedInAccounts } = useAccountContext();
 	const { indexPlayerStats, showPlayerStats } = useLoginContext();
-	const [ stats, setStats ]  = useState<Stats>();
+	const [ index, setIndex ]  = useState(-1);
 
 	useEffect(() =>
 	{
-		async function getStats()
-		{
-			try
-			{
-				const response = await axios.post(`http://${window.location.hostname}:5001/api/get-stats`,
-					{ userId: loggedInAccounts[indexPlayerStats].id });
-				const playerStats = response.data as Stats;
-				setStats(playerStats);
-				console.log('stats', stats, 'data', response.data);
-			}
-			catch (error)
-			{
-				console.error('failed to fetch Stats', error);
-			}
-		} getStats();
+		setIndex(loggedInAccounts[indexPlayerStats].id - 2);
 	}, [ showPlayerStats ]);
 
 	return (
 		<div className="flex flex-col items-center mt-4">
 			<h2 className="text-2xl font-bold text-center">Stats</h2>
-			<p className='stat-title mt-2 font-black text-xl'>{stats?.elo}</p>
+			<p className='stat-title mt-2 font-black text-xl'>{accounts[index]?.elo}</p>
 			<div className="w-full grid grid-cols-3 gap-2 p-2 mt-2">
 				<div className="stat flex flex-col items-center">
 					<div className="stat-title text-green-800 font-black">Wins</div>
-					<div className="stat-value">{stats?.wins}</div>
+					<div className="stat-value">{accounts[index]?.wins}</div>
 				</div>
 				<div className="stat flex flex-col items-center">
 					<div className="stat-title font-black">Draws</div>
-					<div className="stat-value">{stats?.draws}</div>
+					<div className="stat-value">{accounts[index]?.draws}</div>
 				</div>
 				<div className="stat flex flex-col items-center">
 					<div className="stat-title text-red-800 font-black">Losses</div>
-					<div className="stat-value">{stats?.losses}</div>
+					<div className="stat-value">{accounts[index]?.losses}</div>
 				</div>
 			</div>
 		</div>
