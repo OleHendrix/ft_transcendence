@@ -2,6 +2,8 @@
 // |               WARNING: is a duplicate of backend/types.ts                )
 // +--------------------------------------------------------------------------+
 
+import { ResolvedValueTarget } from "framer-motion";
+
 export interface PlayerData
 {
 	id:			number;
@@ -84,6 +86,14 @@ export interface AI
 	desiredY:		number;
 }
 
+export enum Result
+{
+	PLAYING,
+	P1WON,
+	P2WON,
+	DRAW
+}
+
 export interface PongState
 {
 	p1:			Paddle;
@@ -100,6 +110,7 @@ export interface PongState
 	p1Data:		PlayerData;
 	p2Data:		PlayerData;
 	timer:		number;
+	result:		Result;
 }
 
 export enum PlayerState

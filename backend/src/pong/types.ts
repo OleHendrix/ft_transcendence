@@ -93,6 +93,14 @@ export interface Statics
 	FRICTION:	number,
 }
 
+export enum Result
+{
+	PLAYING,
+	P1WON,
+	P2WON,
+	DRAW
+}
+
 export interface PongState
 {
 	p1:			Paddle;
@@ -109,7 +117,7 @@ export interface PongState
 	p1Data:		PlayerData;
 	p2Data:		PlayerData;
 	timer:		number;
-	startTime:	number;
+	result:		Result;
 }
 
 export interface Match

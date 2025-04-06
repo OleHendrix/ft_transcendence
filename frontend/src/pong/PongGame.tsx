@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
-import { PlayerState, PongState, Opponent } from '../types';
+import { PlayerState, PongState, Result, Opponent } from '../types';
 import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
 import { useLoginContext } from '../contexts/LoginContext';
@@ -31,10 +31,12 @@ function PongGame() {
 		p1Data: { id: 0, username: "" },
 		p2Data: { id: 0, username: "" },
 		timer: 180 * 1000,
+		result: Result.PLAYING,
 	});
 
 	const socketRef = useRef<WebSocket | null>(null);
 	const keysPressed = useRef<{ [key: string]: boolean }>({});
+
 
 	// init websocket I/O
 	useEffect(() =>
@@ -104,17 +106,17 @@ function PongGame() {
 
 	function ParseResult()
 	{
-		if (pong.p1Won === null)
+		if (pong.result === Result.PLAYING)
 			return "";
-
-		const [winner, loser] = pong.p1Won ? [pong.p1Data,  pong.p2Data ] : [pong.p2Data,  pong.p1Data ];
-		const [s1,     s2   ] = pong.p1Won ? [pong.p1Score, pong.p2Score] : [pong.p2Score, pong.p1Score];
+		const [winner, loser] = pong.result === Result.P1WON ? [pong.p1Data,  pong.p2Data ] : [pong.p2Data,  pong.p1Data ];
+		const [s1,     s2   ] = pong.result === Result.P1WON ? [pong.p1Score, pong.p2Score] : [pong.p2Score, pong.p1Score];
 		let message1 = (winner.id === loggedInAccounts[0].id)
 			? `Congrats, ${winner.username}!`
 			: `Better luck next time, ${loser.username}`;
 		let message2 = (pong.p1Score < pong.maxPoints && pong.p2Score < pong.maxPoints)
 			? `${loser.username} forfeited`
 			: `${winner.username} won with ${s1}-${s2}!`;
+			
 
 		return (
 			<div>
@@ -156,11 +158,10 @@ function PongGame() {
 	}, [pong.p2.lastBounce]);
 
 	const bounceStrength = 1.2 * -pong.ball.dir.x;
-
 	return (
 		<>
-			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.p1Won === null ? "" : "blur-sm"}`}>
-				{pong.p1Won === null && (
+			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
+				{pong.result === Result.PLAYING && (
 					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10">
 						{formatTime(pong.timer)}
 					</div>
@@ -185,7 +186,7 @@ function PongGame() {
 						</div>
 					</div>
 
-					{pong.p1Won === null && <div className={`absolute rounded-full`} style=
+					{pong.result === Result.PLAYING && <div className={`absolute rounded-full`} style=
 						{{
 							backgroundColor: pong.ball.dir.x > 0 ? pong.p1.colour : pong.p2.colour,
 							width: `${pong.ball.size.x}vw`,
@@ -226,7 +227,7 @@ function PongGame() {
 					/>
 				</div>
 			</div>
-			{pong.p1Won !== null &&
+			{pong.result !== Result.PLAYING &&
 			<AnimatePresence>
 				<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 					<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-full max-w-sm relative shadow-xl flex-grow" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>

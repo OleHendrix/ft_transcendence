@@ -14,6 +14,7 @@ exports.initGame = initGame;
 exports.mirrorGame = mirrorGame;
 exports.calculateNewElo = calculateNewElo;
 exports.endGame = endGame;
+const types_1 = require("./types");
 const server_1 = require("../server");
 const s = ({
     BOUNCE: { x: -1.03, y: -0.85 },
@@ -69,14 +70,14 @@ function handleColision(game, match) {
     if (ball.pos.x <= -2) {
         game.p2Score++;
         if (game.p2Score >= game.maxPoints) {
-            endGame(match, false);
+            endGame(match, types_1.Result.P2WON);
         }
         game.ball = resetBall(game.p1Score, game.p2Score);
     }
     if (ball.pos.x >= 102) {
         game.p1Score++;
         if (game.p1Score >= game.maxPoints) {
-            endGame(match, true);
+            endGame(match, types_1.Result.P1WON);
         }
         game.ball = resetBall(game.p1Score, game.p2Score);
     }
@@ -137,11 +138,11 @@ function updateInput(match, userID, game, keysPressed) {
 }
 function handleTimeOut(match) {
     if (match.state.p1Score > match.state.p2Score)
-        endGame(match, true);
+        endGame(match, types_1.Result.P1WON);
     else if (match.state.p1Score < match.state.p2Score)
-        endGame(match, false);
+        endGame(match, types_1.Result.P2WON);
     else
-        endGame(match, null);
+        endGame(match, types_1.Result.DRAW);
 }
 ;
 function updateGame(match, userID, keysPressed) {
@@ -149,7 +150,7 @@ function updateGame(match, userID, keysPressed) {
     const now = Math.floor(Date.now() / 10);
     if (game.lastUpdate === -1)
         game.lastUpdate = now;
-    for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++) {
+    for (; game.lastUpdate < now && game.result === types_1.Result.PLAYING; game.lastUpdate++) {
         if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate) {
             manageAI(game);
             game.ai.lastActivation = game.lastUpdate;
@@ -189,7 +190,7 @@ function initGame(p1Data, p2Data) {
         p1Data: p1Data,
         p2Data: p2Data,
         timer: 180 * 1000,
-        startTime: Date.now(),
+        result: types_1.Result.PLAYING,
     };
 }
 function mirrorGame(game) {
@@ -206,20 +207,31 @@ function calculateNewElo(p1Elo, p2Elo, win) {
     const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
     return (Math.round(p1Elo + 24 * (win - expectedOutcome)));
 }
-function endGame(match, p1Wins) {
+function endGame(match, result) {
     return __awaiter(this, void 0, void 0, function* () {
-        match.state.p1Won = p1Wins;
+        match.state.result = result;
         if (match.p2.id === -1)
             return;
         let winner = match.p1.id;
         let loser = match.p2.id;
-        if (p1Wins === false) {
+        if (result === types_1.Result.P2WON) {
             [winner, loser] = [loser, winner];
         }
         const winnerUser = yield server_1.prisma.account.findUnique({ where: { id: winner } });
         const loserUser = yield server_1.prisma.account.findUnique({ where: { id: loser } });
-        const newWinnerElo = calculateNewElo(winnerUser.elo, loserUser.elo, 1);
-        const newLoserElo = calculateNewElo(loserUser.elo, winnerUser.elo, 0);
+        const newWinnerElo = calculateNewElo(winnerUser.elo, loserUser.elo, result === types_1.Result.DRAW ? 0.5 : 1);
+        const newLoserElo = calculateNewElo(loserUser.elo, winnerUser.elo, result === types_1.Result.DRAW ? 0.5 : 0);
+        if (result === types_1.Result.DRAW) {
+            yield server_1.prisma.account.update({
+                where: { id: winner },
+                data: { draws: { increment: 1 }, elo: newWinnerElo }
+            });
+            yield server_1.prisma.account.update({
+                where: { id: loser },
+                data: { draws: { increment: 1 }, elo: newLoserElo }
+            });
+            return;
+        }
         yield server_1.prisma.account.update({
             where: { id: winner },
             data: { wins: { increment: 1 }, elo: newWinnerElo }
