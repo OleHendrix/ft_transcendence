@@ -14,7 +14,8 @@ function formatTime(ms: number): string
 	return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-function PongGame() {
+function PongGame()
+{
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 

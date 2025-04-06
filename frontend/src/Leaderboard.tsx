@@ -6,6 +6,12 @@ import { useAccountContext } from './contexts/AccountContext';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
 
+export function toPercentage(n: number, decimals: number): number
+{
+	const factor = Math.pow(10, decimals);
+	return (Math.floor(n * factor) / factor);
+}
+
 export default function Leaderboard() {
 	const { accounts, setShowLeaderboard } = useAccountContext();
 	const [sortedAccounts, setSortedAccounts] = useState<PlayerType[]>([]);
@@ -45,7 +51,7 @@ export default function Leaderboard() {
 					exit={{ scale: 0.9, y: 20 }}
 					transition={{ type: "spring", stiffness: 300, damping: 25 }}
 				>
-					<h1 className="flex justify-center text-4xl gap-2 font-medium font-black items-center">
+					<h1 className="flex justify-center text-4xl gap-2 font-normal font-black items-center">
 						Leaderboard <GoTrophy />
 					</h1>
 					<button
@@ -89,7 +95,7 @@ export default function Leaderboard() {
 										<td className="w-25">{account.elo}</td>
 										<td className="w-25">{account.wins}</td>
 										<td className="w-25">{account.losses}</td>
-										<td className="w-25">{(account.wins + account.losses === 0) ? "-" : account.wins / (account.wins + account.losses) * 100 + '%'}</td>
+										<td className="w-25">{(account.wins + account.draws + account.losses === 0) ? "-" : toPercentage(account.wins / (account.wins + account.losses) * 100, 1) + '%'}</td>
 									</tr>
 								))}
 							</tbody>
@@ -99,5 +105,4 @@ export default function Leaderboard() {
 			</motion.div>
 		</AnimatePresence>
 	);
-
-};
+}
