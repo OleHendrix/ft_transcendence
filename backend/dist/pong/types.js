@@ -18,3 +18,4 @@ var Result;
     Result[Result["DRAW"] = 3] = "DRAW";
 })(Result || (exports.Result = Result = {}));
 ;
+;

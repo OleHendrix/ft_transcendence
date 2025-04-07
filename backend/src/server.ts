@@ -1,9 +1,8 @@
 import Fastify 			from 'fastify';
-import fastifyJwt		from 'fastify-jwt';
+import fastifyJwt		from '@fastify/jwt';
 import fastifyCors		from '@fastify/cors';
 import { PrismaClient }	from '@prisma/client';
 import fastifyWebsocket 	from '@fastify/websocket';
-import WebSocket 			from 'ws';
 
 import setupTotp		from './auth/setupTotp';
 import verifyTotp		from './auth/verifyTotp';

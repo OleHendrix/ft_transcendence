@@ -2,8 +2,6 @@
 // |               WARNING: is a duplicate of backend/types.ts                )
 // +--------------------------------------------------------------------------+
 
-import { ResolvedValueTarget } from "framer-motion";
-
 export interface PlayerData
 {
 	id:			number;
@@ -22,6 +20,20 @@ export interface QueueData
 	opponentID:	number | Opponent;
 }
 
+export interface MatchHistory
+{
+	id:			number;
+	winner:		string;
+	p1:			string;
+	p2:			string;
+	p1score:	number;
+	p2score:	number;
+	p1Elo:		number;
+	p2Elo:		number;
+	p1Diff:		number;
+	p2Diff:		number;
+};
+
 export interface PlayerType
 {
 	id:				number;
@@ -35,6 +47,7 @@ export interface PlayerType
 	winRate:		number;
 	elo:			number;
 	twofa:			boolean;
+	matches:		MatchHistory[];
 }
 
 export interface SignUpFormType

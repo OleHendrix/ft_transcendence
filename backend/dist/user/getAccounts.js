@@ -25,7 +25,7 @@ function getAccounts(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.get('/api/get-accounts', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             try {
-                let accounts = yield prisma.account.findMany({ where: { NOT: { id: 1 } } });
+                let accounts = yield prisma.account.findMany({ where: { NOT: { id: 1 } }, include: { matches: true } });
                 const accountsWithoutPassword = accounts.map((_a) => {
                     var { password, totpSecret } = _a, rest = __rest(_a, ["password", "totpSecret"]);
                     return rest;

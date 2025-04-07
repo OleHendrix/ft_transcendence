@@ -7,7 +7,7 @@ export default async function getAccounts(fastify: FastifyInstance, prisma: Pris
 	{
 		try
 		{
-			let accounts = await prisma.account.findMany({ where: {NOT: { id: 1 } } });
+			let accounts = await prisma.account.findMany({ where: { NOT: { id: 1 } }, include: { matches: true }});
 			const accountsWithoutPassword = accounts.map(({ password, totpSecret, ...rest }) => rest);
 			// console.log('hallo??', accountsWithoutPassword);
 			return reply.send({ accounts: accountsWithoutPassword });
