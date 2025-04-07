@@ -1,5 +1,6 @@
-import { PongState, Match, Statics, Paddle, Ball, PlayerData, Result } from "./types";
+import { PongState, Match, Statics, Paddle, Ball, PlayerData, Result, MatchHistory } from "./types";
 import { prisma } from '../server';
+import { Prisma } from "@prisma/client/default";
 
 const s: Statics =
 ({
@@ -255,61 +256,78 @@ function calcWinRate(wins: number, total: number): number | null
 	return 100 * (wins / total);
 }
 
+function setMatchHistory(match: Match, p1Elo: number, p2Elo: number, p1NewElo: number, p2NewElo: number): any
+{
+	return {
+		winner:		match.state.result === Result.DRAW ? "Draw" : (match.state.result === Result.P1WON ? match.p1.username : match.p2.username),
+		p1:			match.p1.username,
+		p2:			match.p2.username,
+		p1score:	match.state.p1Score,
+		p2score:	match.state.p2Score,
+		p1Elo:		p1Elo,
+		p2Elo:		p2Elo,
+		p1Diff:		p1NewElo - p1Elo,
+		p2Diff:		p2NewElo - p2Elo,
+	}
+}
+
 export async function endGame(match: Match, result: Result)
 {
 	match.state.result = result;
 	if (match.p2.id === -1)
 		return;
-	let winner = match.p1.id;
-	let loser  = match.p2.id;
-	if (result === Result.P2WON)
-	{
-		[winner, loser] = [loser, winner];
-	}
 
-	let winnerUser = await prisma.account.findUnique({where: {id: winner}}) as any;
-	let loserUser  = await prisma.account.findUnique({where: {id: loser}})  as any;
+	const p1 = match.p1.id;
+	const p2 = match.p2.id;
 
-	const newWinnerElo = calculateNewElo(winnerUser.elo, loserUser.elo, result === Result.DRAW ? 0.5 : 1);
-	const newLoserElo  = calculateNewElo(loserUser.elo, winnerUser.elo, result === Result.DRAW ? 0.5 : 0);
+	let player1 = await prisma.account.findUnique({ where: { id: p1 } }) as any;
+	let player2 = await prisma.account.findUnique({ where: { id: p2 } }) as any;
 
-	if (result === Result.DRAW)
-	{
-		await prisma.account.update
-		({
-			where: { id: winner },
-			data:  { draws: { increment: 1 }, elo: newWinnerElo }
-		});
+	const newPlayer1Elo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P1WON ? 1 : 0));
+	const newPlayer2Elo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P2WON ? 1 : 0));
 
-		await prisma.account.update
-		({
-			where: { id: loser },
-			data:  { draws: { increment: 1 }, elo: newLoserElo }
-		});
-		return;
-	}
+	const p1MatchHistory = setMatchHistory(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo);
+	const p2MatchHistory = setMatchHistory(match, player2.elo, player1.elo, newPlayer2Elo, newPlayer1Elo);
+	console.log(p1MatchHistory);
+	console.log(p2MatchHistory);
+
+	let p1ResultField = result ===  Result.DRAW ? { draws: { increment: 1 } } : (result === Result.P1WON ? { wins: { increment: 1} } : { losses: { increment: 1 } } );
+	let p2ResultField = result ===  Result.DRAW ? { draws: { increment: 1 } } : (result === Result.P2WON ? { wins: { increment: 1} } : { losses: { increment: 1 } } );
 
 	await prisma.account.update
 	({
-		where: { id: winner },
-		data:  { matchesPlayed: { increment: 1 }, wins: { increment: 1 }, elo: newWinnerElo }
-	});
-	winnerUser = await prisma.account.findUnique({where: {id: winner}}) as any;
-	await prisma.account.update
-	({
-		where: { id: winner },
-		data:  { winRate: calcWinRate(winnerUser.wins, winnerUser.matchesPlayed) }
+		where: { id: p1 },
+		data:
+		{
+			matchesPlayed: { increment: 1 },
+			elo: newPlayer1Elo,
+			...p1ResultField,
+			matches: { create: p1MatchHistory },
+		}
 	});
 
 	await prisma.account.update
 	({
-		where: { id: loser },
-		data:  { matchesPlayed: { increment: 1 }, losses: { increment: 1 }, elo: newLoserElo }
+		where: { id: p2 },
+		data:
+		{
+			matchesPlayed: { increment: 1 },
+			elo: newPlayer2Elo,
+			...p2ResultField,
+			matches: { create: p2MatchHistory },
+		}
 	});
-	loserUser  = await prisma.account.findUnique({where: {id: loser}}) as any;
+
+	player1 = await prisma.account.findUnique({where: { id: p1 }}) as any;
 	await prisma.account.update
 	({
-		where: { id: loser },
-		data:  { winRate: calcWinRate(loserUser.wins, loserUser.matchesPlayed) }
+		where: { id: p1 },
+		data:  { winRate: calcWinRate(player1.wins, player1.matchesPlayed) }
+	});
+	player2  = await prisma.account.findUnique({where: {id: p2}}) as any;
+	await prisma.account.update
+	({
+		where: { id: p2 },
+		data:  { winRate: calcWinRate(player2.wins, player2.matchesPlayed) }
 	});
 }

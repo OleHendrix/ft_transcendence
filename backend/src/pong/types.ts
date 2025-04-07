@@ -127,3 +127,17 @@ export interface Match
 	p2:				PlayerData;
 	isLocalGame:	boolean;
 };
+
+export interface MatchHistory
+{
+	id:			number;
+	winner:		string;
+	p1:			string;
+	p2:			string;
+	p1score:	number;
+	p2score:	number;
+	p1Elo:		number;
+	p2Elo:		number;
+	p1Diff:		number;
+	p2Diff:		number;
+};

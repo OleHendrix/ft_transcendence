@@ -4,8 +4,54 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
 import Player from "../../assets/Player.svg";
-import { PlayerType } from "../types";
+import { MatchHistory, PlayerType } from "../types";
 import { toPercentage } from "../Leaderboard";
+
+function ShowMatchHistory()
+{
+	const { accounts, loggedInAccounts } = useAccountContext();
+	const { indexPlayerStats } = useLoginContext();
+
+	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
+	const account = accounts.find(acc => acc.id === selectedAccount?.id);
+	const matchHistory = account?.matches ?? [];
+	const sortedMatchHistory = [...matchHistory].sort((a, b) => b.id - a.id);
+
+	console.log(matchHistory);
+	console.log("Accounts:", accounts);
+	console.log("LoggedIn:", loggedInAccounts);
+	return (
+		<div className="w-full h-80 overflow-y-auto rounded-lg border border-base-content/5 bg-transparent">
+			<table className="table w-full text-center">
+				<thead>
+					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
+						<th className="w-100 text-center" colSpan={6}>Match History</th>
+					</tr>
+				</thead>
+				<tbody>
+					{sortedMatchHistory.map((match, index) => (
+						<tr
+							key={match.id}
+							className={
+								match.winner === match.p1 ? "bg-gradient-to-r from-[#2c8a39] to-[#1f4b28]" : "bg-gradient-to-r from-[#e02e2e] to-[#8b1313]"}
+						>
+							<td className="text-left">{sortedMatchHistory[index].p1}</td>
+							<td className="text-left text-xs">
+								{`${sortedMatchHistory[index].p1Elo} (${sortedMatchHistory[index].p1Diff >= 0 ? `+${sortedMatchHistory[index].p1Diff}` : sortedMatchHistory[index].p1Diff})`}
+							</td>
+							<td className="text-right text-[#ff914d]">{sortedMatchHistory[index].p1score}</td>
+							<td className="text-left  text-[#134588]">{sortedMatchHistory[index].p2score}</td>
+							<td className="text-right  text-xs">
+								{`${sortedMatchHistory[index].p2Elo} (${sortedMatchHistory[index].p2Diff >= 0 ? `+${sortedMatchHistory[index].p2Diff}` : sortedMatchHistory[index].p1Diff})`}
+							</td>
+							<td className="text-right">{sortedMatchHistory[index].p2}</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+	)
+}
 
 function PlayerStats()
 {
@@ -193,9 +239,9 @@ function PlayerStats()
 								</div>
 							</div>
 
-							<div className="border-l border-neutral-700 mx-2" />
-
-							<div className="flex-1">Match history</div>
+							<div className="w-1/2">
+								<ShowMatchHistory />
+							</div>
 						</main>
 					</motion.div>
 				</motion.div>
