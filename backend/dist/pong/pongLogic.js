@@ -207,6 +207,11 @@ function calculateNewElo(p1Elo, p2Elo, win) {
     const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
     return (Math.round(p1Elo + 24 * (win - expectedOutcome)));
 }
+function calcWinRate(wins, total) {
+    if (total === 0)
+        return null;
+    return 100 * (wins / total);
+}
 function endGame(match, result) {
     return __awaiter(this, void 0, void 0, function* () {
         match.state.result = result;
@@ -217,8 +222,8 @@ function endGame(match, result) {
         if (result === types_1.Result.P2WON) {
             [winner, loser] = [loser, winner];
         }
-        const winnerUser = yield server_1.prisma.account.findUnique({ where: { id: winner } });
-        const loserUser = yield server_1.prisma.account.findUnique({ where: { id: loser } });
+        let winnerUser = yield server_1.prisma.account.findUnique({ where: { id: winner } });
+        let loserUser = yield server_1.prisma.account.findUnique({ where: { id: loser } });
         const newWinnerElo = calculateNewElo(winnerUser.elo, loserUser.elo, result === types_1.Result.DRAW ? 0.5 : 1);
         const newLoserElo = calculateNewElo(loserUser.elo, winnerUser.elo, result === types_1.Result.DRAW ? 0.5 : 0);
         if (result === types_1.Result.DRAW) {
@@ -234,11 +239,21 @@ function endGame(match, result) {
         }
         yield server_1.prisma.account.update({
             where: { id: winner },
-            data: { wins: { increment: 1 }, elo: newWinnerElo }
+            data: { matchesPlayed: { increment: 1 }, wins: { increment: 1 }, elo: newWinnerElo }
+        });
+        winnerUser = (yield server_1.prisma.account.findUnique({ where: { id: winner } }));
+        yield server_1.prisma.account.update({
+            where: { id: winner },
+            data: { winRate: calcWinRate(winnerUser.wins, winnerUser.matchesPlayed) }
         });
         yield server_1.prisma.account.update({
             where: { id: loser },
-            data: { losses: { increment: 1 }, elo: newLoserElo }
+            data: { matchesPlayed: { increment: 1 }, losses: { increment: 1 }, elo: newLoserElo }
+        });
+        loserUser = (yield server_1.prisma.account.findUnique({ where: { id: loser } }));
+        yield server_1.prisma.account.update({
+            where: { id: loser },
+            data: { winRate: calcWinRate(loserUser.wins, winnerUser.matchesPlayed) }
         });
     });
 }

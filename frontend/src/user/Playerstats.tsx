@@ -30,24 +30,7 @@ function PlayerStats()
 		</>
 	)
 
-	function findAccount(ID: number): PlayerType | null
-	{
-		for (const account of accounts)
-		{
-			if (account.id === ID)
-				return account;
-		}
-		return null;
-	}
-
-	function calcPercentile(worseThan: number, total: number): string
-	{
-		if (worseThan === 0)
-			return "Number #1!";
-		return `Top ${toPercentage(100 / ((total) / worseThan), 1)}%  -  #${worseThan + 1}`
-	}
-
-	function getPercentile(player: PlayerType, stat: keyof PlayerType): string
+	function calcWorseThan(player: PlayerType, stat: keyof PlayerType): number
 	{
 		let worseThan = 0;
 		
@@ -56,39 +39,50 @@ function PlayerStats()
 			if (account[stat] > player[stat])
 				worseThan++;
 		}
-		return calcPercentile(worseThan, accounts.length - 1);
+		return worseThan;
 	}
 
-	function calcWinPercent(player: PlayerType): number
+	function getPercentile(player: PlayerType, stat: keyof PlayerType): string
 	{
-		if (player.wins === 0 && player.draws === 0 && player.losses === 0)
-			return NaN;
-		if (player.losses === 0)
-			return 100;
-		return 100 * (player.wins / (player.wins + player.draws + player.losses));
+		const worseThan = calcWorseThan(player, stat);
+
+		if (worseThan === 0)
+			return "Number #1!";
+		return `Top ${toPercentage(100 / ((accounts.length - 1) / worseThan), 1)}% - #${worseThan + 1}`
 	}
 
-	function getWinPercent(player: PlayerType): string
+	function GetGradientStyle(player: PlayerType, stat: keyof PlayerType): React.CSSProperties
 	{
-		let winPercent = calcWinPercent(player);
-		let worseThan = 0;
-		let total = 0;
+		const worseThan = calcWorseThan(player, stat);
+		const percentage = worseThan === 0 ? 100 : ((accounts.length - 1) / worseThan) * 100;
+		const colour = percentage >= 50 ? "#00FF00" : "#FF0000";
 
-		if (Number.isNaN(winPercent))
-			return "Play a match to see ranking"
-		for (const account of accounts)
-		{
-			if (account.id === player.id)
-				continue;
-			let enemyWinPercent = calcWinPercent(account);
-			if (Number.isNaN(enemyWinPercent))
-				enemyWinPercent = 50;
-			if (enemyWinPercent > winPercent)
-				worseThan++;
-			total++;
-		}
-		return calcPercentile(worseThan, total);
+		return {
+			background: `linear-gradient(to right, ${colour}40 0%, ${colour}35 ${Math.max(percentage - 10, 0)}%, ${colour}15 ${Math.min(percentage + 10, 100)}%, ${colour}10 100%)`
+		};
 	}
+
+	// function getWinPercent(player: PlayerType): string
+	// {
+	// 	let winPercent = calcWinPercent(player);
+	// 	let worseThan = 0;
+	// 	let total = 0;
+
+	// 	if (Number.isNaN(winPercent))
+	// 		return "Play a match to see ranking"
+	// 	for (const account of accounts)
+	// 	{
+	// 		if (account.id === player.id)
+	// 			continue;
+	// 		let enemyWinPercent = calcWinPercent(account);
+	// 		if (Number.isNaN(enemyWinPercent))
+	// 			enemyWinPercent = 50;
+	// 		if (enemyWinPercent > winPercent)
+	// 			worseThan++;
+	// 		total++;
+	// 	}
+	// 	return calcPercentile(worseThan, total);
+	// }
 
 	function StatWindow()
 	{
@@ -97,7 +91,7 @@ function PlayerStats()
 		const [ index, setIndex ]  = useState(-1);
 		const [profileImage, setProfileImage] = useState(Player);
 
-		const currentAccount = accounts[indexPlayerStats]; //findAccount(indexPlayerStats);
+		const currentAccount = accounts[loggedInAccounts[indexPlayerStats].id - 2]; //findAccount(indexPlayerStats);
 		if (currentAccount === null)
 			return;
 
@@ -131,20 +125,22 @@ function PlayerStats()
 						<main className="flex h-full gap-x-4 text-2xl text-center">
 							<div className="w-2/4">
 								<div className="flex flex-col gap-y-4">
-									<div className="gap-y-2">
-										<div className="text-4xl font-bold">
-											ELO: {currentAccount?.elo}
+									<div className="flex flex-col border-t-[2px] border border-gray-500 p-2 rounded"
+										style={GetGradientStyle(currentAccount, 'elo')}>
+										<div className="text-3xl font-bold">
+											Rating: {currentAccount?.elo}
 										</div>
 										<div className="italic text-xs font-medium text-gray-400">
 											{getPercentile(currentAccount, 'elo')}
 										</div>
 									</div>
-									<div className="gap-y-2">
-										<div className="text-2xl font-bold">
-											Win/Loss: {Number.isNaN(calcWinPercent(currentAccount)) ? "-" : toPercentage(calcWinPercent(currentAccount), 1) + "%"}
+									<div className="flex flex-col border-t-[2px] border border-gray-500 p-2 rounded"
+										style={GetGradientStyle(currentAccount, 'elo')}>
+										<div className="text-3xl font-bold">
+											Win rate: {currentAccount?.winRate === null ? 'NaN' : currentAccount?.winRate + "%"}
 										</div>
 										<div className="italic text-xs font-medium text-gray-400">
-											{getWinPercent(currentAccount)}
+											{getPercentile(currentAccount, 'winRate')}
 										</div>
 									</div>
 								</div>

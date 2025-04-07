@@ -248,6 +248,13 @@ export function calculateNewElo(p1Elo: number, p2Elo: number, win: number)
 	return(Math.round(p1Elo + 24 * (win - expectedOutcome)));
 }
 
+function calcWinRate(wins: number, total: number): number | null
+{
+	if (total === 0)
+		return null;
+	return 100 * (wins / total);
+}
+
 export async function endGame(match: Match, result: Result)
 {
 	match.state.result = result;
@@ -260,8 +267,8 @@ export async function endGame(match: Match, result: Result)
 		[winner, loser] = [loser, winner];
 	}
 
-	const winnerUser = await prisma.account.findUnique({where: {id: winner}}) as any;
-	const loserUser  = await prisma.account.findUnique({where: {id: loser}})  as any;
+	let winnerUser = await prisma.account.findUnique({where: {id: winner}}) as any;
+	let loserUser  = await prisma.account.findUnique({where: {id: loser}})  as any;
 
 	const newWinnerElo = calculateNewElo(winnerUser.elo, loserUser.elo, result === Result.DRAW ? 0.5 : 1);
 	const newLoserElo  = calculateNewElo(loserUser.elo, winnerUser.elo, result === Result.DRAW ? 0.5 : 0);
@@ -285,12 +292,24 @@ export async function endGame(match: Match, result: Result)
 	await prisma.account.update
 	({
 		where: { id: winner },
-		data:  { wins: { increment: 1 }, elo: newWinnerElo }
+		data:  { matchesPlayed: { increment: 1 }, wins: { increment: 1 }, elo: newWinnerElo }
+	});
+	winnerUser = await prisma.account.findUnique({where: {id: winner}}) as any;
+	await prisma.account.update
+	({
+		where: { id: winner },
+		data:  { winRate: calcWinRate(winnerUser.wins, winnerUser.matchesPlayed) }
 	});
 
 	await prisma.account.update
 	({
 		where: { id: loser },
-		data:  { losses: { increment: 1 }, elo: newLoserElo }
+		data:  { matchesPlayed: { increment: 1 }, losses: { increment: 1 }, elo: newLoserElo }
+	});
+	loserUser  = await prisma.account.findUnique({where: {id: loser}}) as any;
+	await prisma.account.update
+	({
+		where: { id: loser },
+		data:  { winRate: calcWinRate(loserUser.wins, winnerUser.matchesPlayed) }
 	});
 }

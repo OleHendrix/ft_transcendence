@@ -8,18 +8,20 @@ datasource db {
 }
 
 model Account {
-  id          Int           @id @default(autoincrement())
-  email       String     @unique
-  username    String     @unique
-  password    String
-  wins        Int        @default(0)
-  draws       Int        @default(0)
-  losses      Int        @default(0)
-  elo		  Int		 @default(400)
-  totpSecret  String?
-  twofa		  Boolean	 @default(false)
-  admin       Boolean    @default(false)
-  online      Boolean    @default(false)
+  id            Int        @id @default(autoincrement())
+  email         String     @unique
+  username      String     @unique
+  password      String
+  matchesPlayed Int        @default(0)
+  wins          Int        @default(0)
+  draws         Int        @default(0)
+  losses        Int        @default(0)
+  winRate       Float?
+  elo           Int        @default(400)
+  totpSecret    String?
+  twofa		    Boolean    @default(false)
+  admin         Boolean    @default(false)
+  online        Boolean    @default(false)
 
   Blocks                Block[]          @relation("Blocks")
   BlockedBy             Block[]          @relation("BlockedBy")

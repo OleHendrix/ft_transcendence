@@ -24,15 +24,17 @@ export interface QueueData
 
 export interface PlayerType
 {
-	id:			number;
-	admin:		boolean;
-	username:	string;
-	email:		string;
-	wins:		number;
-	draws:		number;
-	losses:		number;
-	elo:		number;
-	twofa:		boolean;
+	id:				number;
+	admin:			boolean;
+	username:		string;
+	email:			string;
+	matchesPlayed:	number;
+	wins:			number;
+	draws:			number;
+	losses:			number;
+	winRate:		number;
+	elo:			number;
+	twofa:			boolean;
 }
 
 export interface SignUpFormType
