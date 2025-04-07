@@ -310,6 +310,6 @@ export async function endGame(match: Match, result: Result)
 	await prisma.account.update
 	({
 		where: { id: loser },
-		data:  { winRate: calcWinRate(loserUser.wins, winnerUser.matchesPlayed) }
+		data:  { winRate: calcWinRate(loserUser.wins, loserUser.matchesPlayed) }
 	});
 }

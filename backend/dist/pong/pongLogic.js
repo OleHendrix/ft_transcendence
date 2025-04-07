@@ -253,7 +253,7 @@ function endGame(match, result) {
         loserUser = (yield server_1.prisma.account.findUnique({ where: { id: loser } }));
         yield server_1.prisma.account.update({
             where: { id: loser },
-            data: { winRate: calcWinRate(loserUser.wins, winnerUser.matchesPlayed) }
+            data: { winRate: calcWinRate(loserUser.wins, loserUser.matchesPlayed) }
         });
     });
 }

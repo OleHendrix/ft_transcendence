@@ -30,59 +30,60 @@ function PlayerStats()
 		</>
 	)
 
-	function calcWorseThan(player: PlayerType, stat: keyof PlayerType): number
+	function calcWorseThan(player: PlayerType, stat: keyof PlayerType): [number, number]
 	{
 		let worseThan = 0;
+		let total = 0;
 		
 		for (const account of accounts)
 		{
+			if (account.id === player.id || account[stat] === null)
+				continue;
 			if (account[stat] > player[stat])
 				worseThan++;
+			total++;
 		}
-		return worseThan;
+		return [worseThan, total];
 	}
 
 	function getPercentile(player: PlayerType, stat: keyof PlayerType): string
 	{
-		const worseThan = calcWorseThan(player, stat);
+		if (player[stat] === null)
+			return "Play a match to see ranking";
+		const [worseThan, total] = calcWorseThan(player, stat);
 
 		if (worseThan === 0)
 			return "Number #1!";
-		return `Top ${toPercentage(100 / ((accounts.length - 1) / worseThan), 1)}% - #${worseThan + 1}`
+		return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
 	}
 
-	function GetGradientStyle(player: PlayerType, stat: keyof PlayerType): React.CSSProperties
+	function redYellowGradient(val: number, range: number)
 	{
-		const worseThan = calcWorseThan(player, stat);
-		const percentage = worseThan === 0 ? 100 : ((accounts.length - 1) / worseThan) * 100;
-		const colour = percentage >= 50 ? "#00FF00" : "#FF0000";
+		if (Number.isNaN(val))
+			return "#777700";
 
+		const midpoint = (100 - range) / 2;
+		const normalized = (val - midpoint) / range;
+	
+		const r = Math.max(0, Math.min(255, 255 - normalized * 255));
+		const g = Math.max(0, Math.min(255, normalized * 255));
+	
+		const toHex = (v: number) => Math.round(v).toString(16).padStart(2, '0');
+		const str = `#${toHex(r)}${toHex(g)}00`;
+		console.log(str);
+		return str;
+	}
+
+	function GetGradientStyle(val: number, max: number): React.CSSProperties
+	{
+		console.log(val);
+		const percentage = val === null ? 50 :  Math.max(0, Math.min(((val / max) * 100), 100));
+		const colour = redYellowGradient(percentage, 20);
+	
 		return {
-			background: `linear-gradient(to right, ${colour}40 0%, ${colour}35 ${Math.max(percentage - 10, 0)}%, ${colour}15 ${Math.min(percentage + 10, 100)}%, ${colour}10 100%)`
+			background: `linear-gradient(to right, ${colour}40 0%, ${colour}35 ${Math.max(percentage - 3, 1)}%, ${colour}10 ${Math.min(percentage + 3, 99)}%, ${colour}08 100%)`
 		};
 	}
-
-	// function getWinPercent(player: PlayerType): string
-	// {
-	// 	let winPercent = calcWinPercent(player);
-	// 	let worseThan = 0;
-	// 	let total = 0;
-
-	// 	if (Number.isNaN(winPercent))
-	// 		return "Play a match to see ranking"
-	// 	for (const account of accounts)
-	// 	{
-	// 		if (account.id === player.id)
-	// 			continue;
-	// 		let enemyWinPercent = calcWinPercent(account);
-	// 		if (Number.isNaN(enemyWinPercent))
-	// 			enemyWinPercent = 50;
-	// 		if (enemyWinPercent > winPercent)
-	// 			worseThan++;
-	// 		total++;
-	// 	}
-	// 	return calcPercentile(worseThan, total);
-	// }
 
 	function StatWindow()
 	{
@@ -98,74 +99,103 @@ function PlayerStats()
 		return (
 			<AnimatePresence>
 				<motion.div
-					className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]"
+					className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
 				>
 					<motion.div
-						className="flex-col items-center bg-[#2a2a2a]/90 text-white p-8 gap-8 rounded-lg w-full min-w-[400px] min-h-[700px] max-w-xl max-h-[700px] relative shadow-xl"
+						className="flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl w-full min-w-[400px] min-h-[700px] max-w-xl max-h-[700px] relative shadow-2xl"
 						initial={{ scale: 0.9, y: 20 }}
 						animate={{ scale: 1, y: 0 }}
 						exit={{ scale: 0.9, y: 20 }}
 						transition={{ type: "spring", stiffness: 300, damping: 25 }}
 					>
-						<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-							onClick={() => setShowStats(false)}>
+						<button
+							className="absolute top-4 right-4 text-gray-400 hover:text-white hover:bg-neutral-700 p-1 rounded transition"
+							onClick={() => setShowStats(false)}
+						>
 							<IoMdClose size={24} />
 						</button>
-						
-						<header className="relative flex items-center justify-center gap-x-2 text-4xl mb-4">
-								{currentAccount?.username}
-								<img src={profileImage} className="h-12 w-12 rounded-full object-cover shadow-md" />
-						</header>
 
-						<hr className="border-t-[2px] border-dotted border-gray-500 my-4 custom-dotted-line" />
+						<header className="relative flex items-center justify-center gap-x-2 text-5xl mb-4 border-b border-neutral-700 pb-4">
+							{currentAccount?.username}
+							<img
+								src={profileImage}
+								className="h-14 w-14 rounded-full object-cover shadow-md hover:scale-105 transition-transform duration-300"
+							/>
+						</header>
 
 						<main className="flex h-full gap-x-4 text-2xl text-center">
 							<div className="w-2/4">
-								<div className="flex flex-col gap-y-4">
-									<div className="flex flex-col border-t-[2px] border border-gray-500 p-2 rounded"
-										style={GetGradientStyle(currentAccount, 'elo')}>
-										<div className="text-3xl font-bold">
-											Rating: {currentAccount?.elo}
+								<div className="flex flex-col gap-y-4 mb-6">
+									<div className="w-full grid grid-cols-3 gap-2 p-2 -mt-4 -mb-4">
+										<div className="stat flex flex-col items-center">
+											<div className="stat-title text-green-800 font-black">Wins</div>
+											<div className="stat-value">{currentAccount?.wins}</div>
 										</div>
+										<div className="stat flex flex-col items-center">
+											<div className="stat-title font-black">Draws</div>
+											<div className="stat-value">{currentAccount?.draws}</div>
+										</div>
+										<div className="stat flex flex-col items-center">
+											<div className="stat-title text-red-800 font-black">Losses</div>
+											<div className="stat-value">{currentAccount?.losses}</div>
+										</div>
+									</div>
+
+									<div
+										className="flex flex-col p-3 rounded-md shadow-inner backdrop-blur-sm border border-neutral-800"
+										style={{ ...GetGradientStyle(currentAccount?.elo, 800) }}
+									>
+										<div className="text-2xl font-medium">Rating: {currentAccount?.elo}</div>
 										<div className="italic text-xs font-medium text-gray-400">
 											{getPercentile(currentAccount, 'elo')}
 										</div>
 									</div>
-									<div className="flex flex-col border-t-[2px] border border-gray-500 p-2 rounded"
-										style={GetGradientStyle(currentAccount, 'elo')}>
-										<div className="text-3xl font-bold">
-											Win rate: {currentAccount?.winRate === null ? 'NaN' : currentAccount?.winRate + "%"}
+
+									<div
+										className="flex flex-col p-3 rounded-md shadow-inner backdrop-blur-sm border border-neutral-800"
+										style={{ ...GetGradientStyle(currentAccount?.winRate, 100) }}
+									>
+										<div className="text-2xl font-medium">
+											Win rate: {currentAccount?.winRate === null ? '-' : toPercentage(currentAccount?.winRate, 1) + "%"}
+										</div>
+										<div className="italic text-xs font-medium text-gray-400">
+											{getPercentile(currentAccount, 'winRate')}
+										</div>
+									</div>
+									
+
+									<div
+										className="flex flex-col p-3 rounded-md shadow-inner backdrop-blur-sm border border-neutral-800"
+										style={{ ...GetGradientStyle(currentAccount?.winRate, 100) }}
+									>
+										<div className="text-2xl font-medium">
+											Win rate: {currentAccount?.winRate === null ? '-' : toPercentage(currentAccount?.winRate, 1) + "%"}
+										</div>
+										<div className="italic text-xs font-medium text-gray-400">
+											{getPercentile(currentAccount, 'winRate')}
+										</div>
+									</div>
+
+									<div
+										className="flex flex-col p-3 rounded-md shadow-inner backdrop-blur-sm border border-neutral-800"
+										style={{ ...GetGradientStyle(currentAccount?.winRate, 100) }}
+									>
+										<div className="text-2xl font-medium">
+											Win rate: {currentAccount?.winRate === null ? '-' : toPercentage(currentAccount?.winRate, 1) + "%"}
 										</div>
 										<div className="italic text-xs font-medium text-gray-400">
 											{getPercentile(currentAccount, 'winRate')}
 										</div>
 									</div>
 								</div>
-
-								<div className="w-full grid grid-cols-3 gap-2 p-2 mt-2">
-									<div className="stat flex flex-col items-center">
-										<div className="stat-title text-green-800 font-black">Wins</div>
-										<div className="stat-value">{currentAccount?.wins}</div>
-									</div>
-									<div className="stat flex flex-col items-center">
-										<div className="stat-title font-black">Draws</div>
-										<div className="stat-value">{currentAccount?.draws}</div>
-									</div>
-									<div className="stat flex flex-col items-center">
-										<div className="stat-title text-red-800 font-black">Losses</div>
-										<div className="stat-value">{currentAccount?.losses}</div>
-									</div>
-								</div>
 							</div>
 
-							<div className="border-l-[2px] border-dotted border-gray-500 h-[580px]"></div>
+							<div className="border-l border-neutral-700 mx-2" />
 
-							<div className="flex-1">
-								Match history
-							</div>
+							<div className="flex-1">Match history</div>
 						</main>
 					</motion.div>
 				</motion.div>
