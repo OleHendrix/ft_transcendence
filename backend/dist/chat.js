@@ -125,6 +125,21 @@ function setupChat(server) {
             notifyClients(messageToClient);
             return reply.send({ success: true, messageToClient });
         }));
+        server.post('/api/send-istyping', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { senderId, receiverId } = request.body;
+            const chatSession = yield getOrCreateChatSession(senderId, receiverId);
+            const activeChatSockets = activeChats.get(chatSession.id);
+            const user = yield prisma.account.findUnique({ where: { id: senderId } });
+            if (activeChatSockets) {
+                activeChatSockets.forEach(socket => {
+                    if (socket.readyState === ws_1.default.OPEN) {
+                        socket.send(JSON.stringify({ isTyping: user === null || user === void 0 ? void 0 : user.username }));
+                        return reply.send({ success: true });
+                    }
+                });
+            }
+            reply.status(404).send({ success: false, error: "Failed to send isTyping notification" });
+        }));
         function getOrCreateChatSession(senderId, receiverId) {
             return __awaiter(this, void 0, void 0, function* () {
                 if (receiverId === -1) //globalchat

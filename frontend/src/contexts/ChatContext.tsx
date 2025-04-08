@@ -26,6 +26,8 @@ type ChatContextType =
 	setChatMessages:	Dispatch<SetStateAction<message[]>>;
 	messageMenu:		boolean;
 	setMessageMenu:		Dispatch<SetStateAction<boolean>>;
+	isTyping:			string;
+	setIsTyping:		Dispatch<SetStateAction<string>>;
 };
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -38,6 +40,7 @@ export function ChatProvider({ children }: {children: ReactNode})
 	const [chatSessionId, setChatSessionId] 	= useState(1);
 	const [chatMessages, setChatMessages] 		= useState<message[]>([]);
 	const [messageMenu, setMessageMenu] 		= useState(false);
+	const [isTyping, setIsTyping]				= useState('');
 
 	const value = useMemo(() => (
 	{
@@ -47,7 +50,8 @@ export function ChatProvider({ children }: {children: ReactNode})
 		chatSessionId, setChatSessionId,
 		chatMessages, setChatMessages,
 		messageMenu, setMessageMenu,
-	}), [receiverId, isOpen, messageReceived, chatSessionId, chatMessages]);
+		isTyping, setIsTyping
+	}), [receiverId, isOpen, messageReceived, chatSessionId, chatMessages, isTyping, setIsTyping]);
 
 	return (
 		<ChatContext.Provider value={value}>

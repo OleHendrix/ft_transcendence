@@ -9,13 +9,14 @@ import axios from 'axios';
 import { useAccountContext } from ".././contexts/AccountContext";
 import { useChatContext } from ".././contexts/ChatContext";
 import { format } from 'date-fns';
+import "../css/TypingLoader.css";
 
 function Chat()
 {
 	const {loggedInAccounts} 													= useAccountContext();
 	const {receiverId, chatSessionId, isOpen, messageReceived} 					= useChatContext();
-	const {setChatMessages, setChatSessionId, setMessageReceived, setIsOpen}	= useChatContext();
-
+	
+	const {setChatMessages, setChatSessionId, setMessageReceived, setIsOpen, isTyping, setIsTyping}	= useChatContext();
 	useEffect(() =>
 	{
 		async function getMessages()
@@ -54,10 +55,18 @@ function Chat()
 		console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
 		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/chat?chatSessionId=${chatSessionId}`);
 
-		socket.onmessage = function(message)
+		socket.onmessage = function(event)
 		{
-			console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
-			setMessageReceived(true);
+			const message = JSON.parse(event.data)
+			console.log(message.isTyping);
+			if (message.isTyping && message.isTyping !== loggedInAccounts[0].username && !isTyping)
+				setIsTyping(message.isTyping);
+			else
+			{
+				console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
+				setMessageReceived(true);
+				setIsTyping('');
+			}
 		};
 		
 		return () => {
@@ -99,7 +108,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 			</button>
 
 			<ChatHeader />
-			<MessageList />
+			<MessageList/>
 		</div>
 	</div>
 );
@@ -137,16 +146,28 @@ function ChatHeader()
 }
 
 
-function MessageList() {
+function MessageList( ) {
 	const { loggedInAccounts } = useAccountContext();
-	const { chatMessages, setChatMessages, receiverId } = useChatContext();
+	const { chatMessages, setChatMessages, receiverId, isTyping, setIsTyping } = useChatContext();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		if (messagesEndRef.current) {
 			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
 		}
-	}, [chatMessages]);
+	}, [chatMessages, isTyping]);
+
+	useEffect(() =>
+	{
+		async function typeStatus()
+		{
+			const startTime = Date.now();
+			const elapsedTime = Date.now() - startTime;
+			const remainingTime = Math.max(0, 5000 - elapsedTime);
+			await new Promise(resolve => setTimeout(resolve, remainingTime));
+			setIsTyping('');
+		}; typeStatus()
+	}, [isTyping])
 
 	const handleGameInviteResponse = async (messageId: number, newStatus: number) => {
 		try {
@@ -170,8 +191,8 @@ function MessageList() {
 		} catch (error) {
 			console.log("Error occurred when changing msg status:", error);
 		}
+		
 	};
-	
 	return (
 		<div className="h-full w-full flex flex-col gap-4 items-end overflow-y-auto">
 			<div className="h-[35vw] w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
@@ -247,6 +268,21 @@ function MessageList() {
 						</div>
 					);
 				})}
+				{isTyping &&
+				(
+					<div className="chat chat-start">
+						<div className="chat-header font-bold">
+							{isTyping}
+						</div>
+						<div className="chat-bubble bg-[#134588] text-white">
+							<div className="typing-indicator">
+								<span></span>
+								<span></span>
+								<span></span>
+							</div>
+						</div>
+					</div>
+				)}
 				<div ref={messagesEndRef} />
 			</div>
 			<MessageInput />
@@ -289,12 +325,29 @@ function MessageInput()
 		}
 	};
 
+	async function sendIsTyping()
+	{
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-istyping`,
+			{
+				senderId: loggedInAccounts[0]?.id,
+				receiverId: receiverId
+			})
+		}
+		catch (error: any)
+		{
+			console.error("Error in send isTyping", error)
+		}
+	}
+
 	return (
 		<div className="relative w-full">
 			<input
 				className="w-full bg-white/10 p-3 rounded-2xl pr-12"
 				placeholder="Type your message..."
 				onKeyDown={handleKeyDown}
+				onChange={sendIsTyping}
 			/>
 			<motion.div
 				whileHover={{ scale: 1.17 }}
