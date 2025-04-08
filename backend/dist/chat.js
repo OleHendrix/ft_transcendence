@@ -50,8 +50,12 @@ function setupChat(server) {
                 const senderIdNum = parseInt(senderId);
                 const receiverIdNum = parseInt(receiverId);
                 const chatSession = yield getOrCreateChatSession(senderIdNum, receiverIdNum);
+                const blockedUserIds = yield getBlockedUserIds(senderIdNum);
                 const messages = yield prisma.message.findMany({
-                    where: { chatSessionId: chatSession.id },
+                    where: {
+                        chatSessionId: chatSession.id,
+                        senderId: { notIn: blockedUserIds }
+                    },
                     orderBy: { timestamp: 'asc' },
                     include: {
                         sender: {
@@ -213,6 +217,22 @@ function setupChat(server) {
                     chatSession = yield prisma.chatSession.create({ data: { account1Id: senderId, account2Id: receiverId } });
                 }
                 return chatSession;
+            });
+        }
+        function getBlockedUserIds(senderId) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const senderBlocks = yield prisma.account.findUnique({
+                    where: { id: senderId },
+                    include: {
+                        Blocks: {
+                            select: {
+                                blockedId: true
+                            }
+                        }
+                    }
+                });
+                const blockedUserIds = (senderBlocks === null || senderBlocks === void 0 ? void 0 : senderBlocks.Blocks.map(b => b.blockedId)) || [];
+                return (blockedUserIds);
             });
         }
         function notifyClients(newMessage) {

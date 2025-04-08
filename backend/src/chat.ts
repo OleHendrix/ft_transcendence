@@ -2,6 +2,7 @@ import { FastifyInstance } 	from 'fastify';
 import { PrismaClient } 	from '@prisma/client';
 import WebSocket 			from 'ws';
 import { read } from 'fs';
+import { setDefaultAutoSelectFamily } from 'net';
 
 const prisma 		= new PrismaClient();
 const activeChats	= new Map<number, Set<WebSocket>>();
@@ -48,9 +49,13 @@ export async function setupChat(server: FastifyInstance)
 			const receiverIdNum = parseInt(receiverId);
 
 			const chatSession = await getOrCreateChatSession(senderIdNum, receiverIdNum);
+			const blockedUserIds = await getBlockedUserIds (senderIdNum);
 	
 			const messages = await prisma.message.findMany({
-				where: { chatSessionId: chatSession.id },
+				where: { 
+					chatSessionId: chatSession.id, 
+					senderId: { notIn: blockedUserIds }
+				},
 				orderBy: { timestamp: 'asc' },
 				include: {
 					sender: {
@@ -243,6 +248,23 @@ export async function setupChat(server: FastifyInstance)
 			chatSession = await prisma.chatSession.create({ data: { account1Id: senderId, account2Id: receiverId } });
 		}
 		return chatSession;
+	}
+
+	async function getBlockedUserIds( senderId: number)
+	{
+		const senderBlocks = await prisma.account.findUnique({
+			where: { id: senderId },
+			include: {
+				Blocks: {
+					select: {
+						blockedId: true
+					}
+				}
+			}
+		});
+
+		const blockedUserIds = senderBlocks?.Blocks.map(b => b.blockedId) || [];
+		return (blockedUserIds);
 	}
 
 	async function notifyClients(newMessage: any)

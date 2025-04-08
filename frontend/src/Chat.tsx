@@ -174,7 +174,6 @@ function MessageList() {
 	useEffect(() => {
 		const checkIfBlocked = async () => {
 			try {
-				console.log("CKEC IF BLOCKED");
 				const response = await axios.get(`http://${window.location.hostname}:5001/api/is-blocked`, {
 					params: {
 						senderId: loggedInAccounts[0]?.id,
