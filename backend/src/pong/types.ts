@@ -141,3 +141,17 @@ export interface MatchHistory
 	p1Diff:		number;
 	p2Diff:		number;
 };
+
+interface Round
+{
+	p1:		PlayerData;
+	p2:		PlayerData;
+	result:	Result;
+}
+
+export interface TournamentData
+{
+	players:	PlayerData[];
+	maxPlayers:	number;
+	rounds:		Round[] | null;
+};

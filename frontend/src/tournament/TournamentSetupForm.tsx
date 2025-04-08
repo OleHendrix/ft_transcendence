@@ -17,7 +17,6 @@ export default function TournamentSetupForm() {
 				host,
 				numberOfPlayers
 			});
-			
 		} catch ( error: any ) {
 			console.log(error);
 		}
