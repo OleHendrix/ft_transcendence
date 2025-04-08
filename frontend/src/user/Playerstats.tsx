@@ -13,8 +13,10 @@ function ShowMatchHistory()
 	const { indexPlayerStats } = useLoginContext();
 
 	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	const account = accounts.find(acc => acc.id === selectedAccount?.id);
-	const matchHistory = account?.matches ?? [];
+	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id);
+	if (currentAccount === null)
+		return "";
+	const matchHistory = currentAccount?.matches ?? [];
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
 	console.log(matchHistory);
@@ -34,7 +36,7 @@ function ShowMatchHistory()
 							<tr
 								key={match.id}
 								// TODO: add support for ties
-								className={`${"font-medium "} ${match.winner === account?.username
+								className={`${"font-medium "} ${match.winner === currentAccount?.username
 									? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
 									: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
 								style={{ height: '69px' }}
@@ -129,9 +131,10 @@ function ShowStats()
 	const { accounts, loggedInAccounts } = useAccountContext();
 	const { indexPlayerStats, showPlayerStats } = useLoginContext();
 
-	const currentAccount = accounts[loggedInAccounts[indexPlayerStats].id - 2];
+	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
+	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
 	if (currentAccount === null)
-		return;
+		return "";
 
 	return (
 		<div className="w-full overflow-y-auto border border-base-content/5 bg-transparent">
@@ -158,22 +161,17 @@ function ShowStats()
 function PlayerStats()
 {
 	const { accounts, loggedInAccounts } = useAccountContext();
-	const { indexPlayerStats, showPlayerStats } = useLoginContext();
-	const [ index, setIndex ]  = useState(-1);
+	const { indexPlayerStats } = useLoginContext();
 	const [ showStats, setShowStats ] = useState(false);
-
-	useEffect(() =>
-	{
-		setIndex(loggedInAccounts[indexPlayerStats].id - 2);
-	}, [ showPlayerStats ]);
 
 	function StatWindow()
 	{
 		const [profileImage, setProfileImage] = useState(Player);
 
-		const currentAccount = accounts[loggedInAccounts[indexPlayerStats].id - 2];
+		const selectedAccount = loggedInAccounts?.[indexPlayerStats];
+		const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
 		if (currentAccount === null)
-			return;
+			return "";
 
 		return (
 			<AnimatePresence>
