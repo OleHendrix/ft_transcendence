@@ -75,6 +75,29 @@ export default async function initPongServer(fastify: FastifyInstance)
 		reply.status(201);
 	});
 
+	fastify.post('/pong/is-local', async (request, reply) =>
+	{
+		const { userID } = request.body as { userID: number };
+		if (userID === undefined)
+		{
+			reply.status(204).send(false);
+			return;
+		}
+		if (matchIDTable.has(userID) === false)
+		{
+			reply.status(204).send(false);
+			return;
+		}
+		const key = matchIDTable.get(userID) as number;
+		if (matchTable.has(key) === false)
+		{
+			reply.status(204).send(false);
+			return;
+		}
+		const match = matchTable.get(key) as Match;
+		reply.status(200).send(match.isLocalGame);
+	});
+
 	fastify.post('/pong/end-game', async (request, reply) =>
 	{
 		const { userID } = request.body as { userID: number };

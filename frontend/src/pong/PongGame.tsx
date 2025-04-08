@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
-import { PlayerState, PongState, Result, Opponent } from '../types';
+import { PlayerState, PongState, Result, Opponent, PlayerData } from '../types';
 import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
 import { useLoginContext } from '../contexts/LoginContext';
@@ -38,7 +38,6 @@ function PongGame()
 
 	const socketRef = useRef<WebSocket | null>(null);
 	const keysPressed = useRef<{ [key: string]: boolean }>({});
-
 
 	// init websocket I/O
 	useEffect(() =>
@@ -128,14 +127,23 @@ function PongGame()
 		);
 	}
 
-	function getOpponentID(): number | Opponent
+	function getOpponent(): PlayerData
 	{
 		if (pong.p1Data.id !== loggedInAccounts[0].id)
-			return pong.p1Data.id;
+			return pong.p1Data;
 		else if (pong.p2Data.id === -1)
-			return Opponent.AI;
+			return { id: -1, username: "AI 👾"};
 		else
-			return pong.p2Data.id;
+			return pong.p2Data;
+	}
+
+	async function rematch(user1: PlayerData, user2: PlayerData, setIsPlaying: React.Dispatch<React.SetStateAction<PlayerState>>)
+	{
+		const isLocal = await axios.post(`http://${window.location.hostname}:5001/pong/is-local`, { user1, user2 });
+		if (isLocal && user2.id !== -1)
+			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true });
+		else
+			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying)
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
@@ -243,7 +251,7 @@ function PongGame()
 							<motion.button className="pt-2 bg-[#134588] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#246bcb] hover:cursor-pointer"
 								whileHover={{ scale: 1.03 }}
 								whileTap={{ scale: 0.97 }}
-								onClick={() => { startQueue({ player: loggedInAccounts[0], opponentID: getOpponentID() }, setIsPlaying) }}>Rematch
+								onClick={() => { rematch(loggedInAccounts[0], getOpponent(), setIsPlaying) }}>Rematch
 							</motion.button>
 						</div>
 					</motion.div>

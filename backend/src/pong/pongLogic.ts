@@ -271,6 +271,14 @@ function setMatchHistory(match: Match, p1Elo: number, p2Elo: number, p1NewElo: n
 	}
 }
 
+// export async function fillDB(match: Match, result: Result, isP1: boolean)
+// {
+// 	const id = isP1 ? match.p1.id : match.p2.id;
+// 	let player = await prisma.account.findUnique({ where: { id: id } }) as any;
+// 	const newElo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P1WON ? 1 : 0));
+
+// }
+
 export async function endGame(match: Match, result: Result)
 {
 	match.state.result = result;
@@ -284,15 +292,19 @@ export async function endGame(match: Match, result: Result)
 	let player2 = await prisma.account.findUnique({ where: { id: p2 } }) as any;
 
 	const newPlayer1Elo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P1WON ? 1 : 0));
-	const newPlayer2Elo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P2WON ? 1 : 0));
+	const newPlayer2Elo  = calculateNewElo(player2.elo,  player1.elo, result === Result.DRAW ? 0.5 : (result === Result.P2WON ? 1 : 0));
 
-	const p1MatchHistory = setMatchHistory(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo);
-	const p2MatchHistory = setMatchHistory(match, player2.elo, player1.elo, newPlayer2Elo, newPlayer1Elo);
-	console.log(p1MatchHistory);
-	console.log(p2MatchHistory);
+	const MatchHistory = setMatchHistory(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo);
 
-	let p1ResultField = result ===  Result.DRAW ? { draws: { increment: 1 } } : (result === Result.P1WON ? { wins: { increment: 1} } : { losses: { increment: 1 } } );
-	let p2ResultField = result ===  Result.DRAW ? { draws: { increment: 1 } } : (result === Result.P2WON ? { wins: { increment: 1} } : { losses: { increment: 1 } } );
+	const matchResult = (result: Result, isP1: boolean) =>
+	{
+		if (result === Result.DRAW)				return { draws:  { increment: 1 } };
+		if ((result === Result.P1WON) === isP1)	return { wins:   { increment: 1 } };
+		else									return { losses: { increment: 1 } };
+	}
+
+	let p1ResultField = matchResult(result, true);
+	let p2ResultField = matchResult(result, false);
 
 	await prisma.account.update
 	({
@@ -302,7 +314,7 @@ export async function endGame(match: Match, result: Result)
 			matchesPlayed: { increment: 1 },
 			elo: newPlayer1Elo,
 			...p1ResultField,
-			matches: { create: p1MatchHistory },
+			matches: { create: MatchHistory },
 		}
 	});
 
@@ -314,7 +326,7 @@ export async function endGame(match: Match, result: Result)
 			matchesPlayed: { increment: 1 },
 			elo: newPlayer2Elo,
 			...p2ResultField,
-			matches: { create: p2MatchHistory },
+			matches: { create: MatchHistory },
 		}
 	});
 
