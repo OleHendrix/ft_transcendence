@@ -1,6 +1,8 @@
 import { FastifyInstance } 	from 'fastify';
 import { PrismaClient } 	from '@prisma/client';
 import WebSocket 			from 'ws';
+import { read } from 'fs';
+import { setDefaultAutoSelectFamily } from 'net';
 
 const prisma 		= new PrismaClient();
 const activeChats	= new Map<number, Set<WebSocket>>();
@@ -47,9 +49,13 @@ export async function setupChat(server: FastifyInstance)
 			const receiverIdNum = parseInt(receiverId);
 
 			const chatSession = await getOrCreateChatSession(senderIdNum, receiverIdNum);
+			const blockedUserIds = await getBlockedUserIds (senderIdNum);
 	
 			const messages = await prisma.message.findMany({
-				where: { chatSessionId: chatSession.id },
+				where: { 
+					chatSessionId: chatSession.id, 
+					senderId: { notIn: blockedUserIds }
+				},
 				orderBy: { timestamp: 'asc' },
 				include: {
 					sender: {
@@ -57,15 +63,14 @@ export async function setupChat(server: FastifyInstance)
 					}
 				}
 			});
-	
-			// Transform messages before sending response
+
 			const transformedMessages = messages.map(({ id, content, timestamp, sender, senderId, chatSessionId, status }) => ({
 				id,
 				content,
 				timestamp,
 				senderUsername: sender.username,
 				senderId,
-				chatSessionId, 
+				chatSessionId,
 				status
 			}));
 	
@@ -73,6 +78,38 @@ export async function setupChat(server: FastifyInstance)
 		} catch (error) {
 			console.error("Error in /api/get-messages:", error);
 			reply.status(500).send({ success: false, error: "Internal Server Error" });
+		}
+	});
+
+	server.get('/api/is-blocked', async (request, reply) => {
+		try {
+			const { senderId, receiverId } = request.query as { senderId: string; receiverId: string; };
+			const senderIdNum = parseInt(senderId, 10);
+			const receiverIdNum = parseInt(receiverId, 10);
+			
+			const isBlocked = await prisma.block.findFirst({
+				where: {
+					OR:
+					[
+						{ blockerId: receiverIdNum, blockedId: senderIdNum },
+						{ blockerId: senderIdNum, blockedId: receiverIdNum }
+					]
+				}
+			});
+
+			if (isBlocked) {
+				// Determine who is the blocker
+				const amIBlocker = isBlocked.blockerId === senderIdNum;
+				return reply.send({ 
+					success: true, 
+					blocked: true, 
+					amIBlocker 
+				});
+			}
+			return reply.send({ success: true, blocked: false });
+		} catch (error) {
+			console.error("Error checking block status:", error);
+			reply.status(500).send({ success: false, error: "Internal server error" });
 		}
 	});
 
@@ -142,6 +179,53 @@ export async function setupChat(server: FastifyInstance)
 		return reply.send({ success: true, messageToClient });
 	});
 
+	server.post('/api/block-user', async (request, reply) => {
+		const { senderId, receiverId } = request.body as { senderId: number, receiverId: number };
+		if (receiverId === -1) return ;
+
+		let block = await prisma.block.findFirst({
+			where: {
+				blockerId: senderId,
+				blockedId: receiverId
+			}
+		});
+
+		if (!block)
+		{
+			block = await prisma.block.create(
+			{
+				data:
+				{
+					blockerId: senderId,
+					blockedId: receiverId,
+				}
+			});
+		}
+		notifyClients(block);
+		return reply.send({ succes: true });
+	});
+
+
+	server.post('/api/unblock-user', async (request, reply) => {
+		const { senderId, receiverId } = request.body as { senderId: number, receiverId: number };
+		if (receiverId === -1) return ;
+
+		const block = await prisma.block.findFirst({
+			where: {
+				blockerId: senderId,
+				blockedId: receiverId
+			}
+		});
+
+		if (!block) return ;
+		
+		await prisma.block.delete({
+			where: { id: block.id }
+		});
+		notifyClients(block);
+		return reply.send({ succes: true });
+	});
+
 	async function getOrCreateChatSession(senderId: number, receiverId: number) {
 		if (receiverId === -1) //globalchat
 		{
@@ -164,6 +248,23 @@ export async function setupChat(server: FastifyInstance)
 			chatSession = await prisma.chatSession.create({ data: { account1Id: senderId, account2Id: receiverId } });
 		}
 		return chatSession;
+	}
+
+	async function getBlockedUserIds( senderId: number)
+	{
+		const senderBlocks = await prisma.account.findUnique({
+			where: { id: senderId },
+			include: {
+				Blocks: {
+					select: {
+						blockedId: true
+					}
+				}
+			}
+		});
+
+		const blockedUserIds = senderBlocks?.Blocks.map(b => b.blockedId) || [];
+		return (blockedUserIds);
 	}
 
 	async function notifyClients(newMessage: any)

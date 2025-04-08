@@ -50,8 +50,12 @@ function setupChat(server) {
                 const senderIdNum = parseInt(senderId);
                 const receiverIdNum = parseInt(receiverId);
                 const chatSession = yield getOrCreateChatSession(senderIdNum, receiverIdNum);
+                const blockedUserIds = yield getBlockedUserIds(senderIdNum);
                 const messages = yield prisma.message.findMany({
-                    where: { chatSessionId: chatSession.id },
+                    where: {
+                        chatSessionId: chatSession.id,
+                        senderId: { notIn: blockedUserIds }
+                    },
                     orderBy: { timestamp: 'asc' },
                     include: {
                         sender: {
@@ -59,7 +63,6 @@ function setupChat(server) {
                         }
                     }
                 });
-                // Transform messages before sending response
                 const transformedMessages = messages.map(({ id, content, timestamp, sender, senderId, chatSessionId, status }) => ({
                     id,
                     content,
@@ -74,6 +77,35 @@ function setupChat(server) {
             catch (error) {
                 console.error("Error in /api/get-messages:", error);
                 reply.status(500).send({ success: false, error: "Internal Server Error" });
+            }
+        }));
+        server.get('/api/is-blocked', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { senderId, receiverId } = request.query;
+                const senderIdNum = parseInt(senderId, 10);
+                const receiverIdNum = parseInt(receiverId, 10);
+                const isBlocked = yield prisma.block.findFirst({
+                    where: {
+                        OR: [
+                            { blockerId: receiverIdNum, blockedId: senderIdNum },
+                            { blockerId: senderIdNum, blockedId: receiverIdNum }
+                        ]
+                    }
+                });
+                if (isBlocked) {
+                    // Determine who is the blocker
+                    const amIBlocker = isBlocked.blockerId === senderIdNum;
+                    return reply.send({
+                        success: true,
+                        blocked: true,
+                        amIBlocker
+                    });
+                }
+                return reply.send({ success: true, blocked: false });
+            }
+            catch (error) {
+                console.error("Error checking block status:", error);
+                reply.status(500).send({ success: false, error: "Internal server error" });
             }
         }));
         server.post('/api/change-msg-status', (request, reply) => __awaiter(this, void 0, void 0, function* () {
@@ -125,6 +157,45 @@ function setupChat(server) {
             notifyClients(messageToClient);
             return reply.send({ success: true, messageToClient });
         }));
+        server.post('/api/block-user', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { senderId, receiverId } = request.body;
+            if (receiverId === -1)
+                return;
+            let block = yield prisma.block.findFirst({
+                where: {
+                    blockerId: senderId,
+                    blockedId: receiverId
+                }
+            });
+            if (!block) {
+                block = yield prisma.block.create({
+                    data: {
+                        blockerId: senderId,
+                        blockedId: receiverId,
+                    }
+                });
+            }
+            notifyClients(block);
+            return reply.send({ succes: true });
+        }));
+        server.post('/api/unblock-user', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { senderId, receiverId } = request.body;
+            if (receiverId === -1)
+                return;
+            const block = yield prisma.block.findFirst({
+                where: {
+                    blockerId: senderId,
+                    blockedId: receiverId
+                }
+            });
+            if (!block)
+                return;
+            yield prisma.block.delete({
+                where: { id: block.id }
+            });
+            notifyClients(block);
+            return reply.send({ succes: true });
+        }));
         function getOrCreateChatSession(senderId, receiverId) {
             return __awaiter(this, void 0, void 0, function* () {
                 if (receiverId === -1) //globalchat
@@ -146,6 +217,22 @@ function setupChat(server) {
                     chatSession = yield prisma.chatSession.create({ data: { account1Id: senderId, account2Id: receiverId } });
                 }
                 return chatSession;
+            });
+        }
+        function getBlockedUserIds(senderId) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const senderBlocks = yield prisma.account.findUnique({
+                    where: { id: senderId },
+                    include: {
+                        Blocks: {
+                            select: {
+                                blockedId: true
+                            }
+                        }
+                    }
+                });
+                const blockedUserIds = (senderBlocks === null || senderBlocks === void 0 ? void 0 : senderBlocks.Blocks.map(b => b.blockedId)) || [];
+                return (blockedUserIds);
             });
         }
         function notifyClients(newMessage) {
