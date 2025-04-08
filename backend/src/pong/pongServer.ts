@@ -80,20 +80,24 @@ export default async function initPongServer(fastify: FastifyInstance)
 		const { userID } = request.body as { userID: number };
 		if (userID === undefined)
 		{
-			reply.status(204).send(false);
+			console.log(1);
+			reply.status(200).send(false);
 			return;
 		}
 		if (matchIDTable.has(userID) === false)
 		{
-			reply.status(204).send(false);
+			console.log(2);
+			reply.status(200).send(false);
 			return;
 		}
 		const key = matchIDTable.get(userID) as number;
 		if (matchTable.has(key) === false)
 		{
-			reply.status(204).send(false);
+			console.log(3);
+			reply.status(200).send(false);
 			return;
 		}
+		console.log(4);
 		const match = matchTable.get(key) as Match;
 		reply.status(200).send(match.isLocalGame);
 	});
