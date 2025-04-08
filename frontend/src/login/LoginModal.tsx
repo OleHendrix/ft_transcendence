@@ -1,9 +1,9 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
-import { PlayerType, LoginFormType, LoginValidationType } from "./types"
-import { useAccountContext } from "./contexts/AccountContext";
-import { useLoginContext } from "./contexts/LoginContext";
+import { PlayerType, LoginFormType, LoginValidationType } from "../types"
+import { useAccountContext } from "../contexts/AccountContext";
+import { useLoginContext } from "../contexts/LoginContext";
 import axios from "axios";
 
 interface CheckLoginProps
@@ -48,7 +48,7 @@ async function check2FA({ formData, token, setLoggedInAccounts, setValidation } 
 	return false;
 }
 
-async function checkLogin( { formData, setLoggedInAccounts, setValidation, setShow2FA }  : CheckLoginProps)
+async function checkLogin( { formData, token, setLoggedInAccounts, setValidation, setShow2FA }  : CheckLoginProps)
 {
 	const {username, password } = formData;
 	try
@@ -57,7 +57,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 		if (response.data.success)
 		{
 			const user = response.data.user;
-			if (user.totpSecret)
+			if (user.twofa)
 			{
 				setShow2FA(true);
 				return false;
@@ -75,10 +75,7 @@ async function checkLogin( { formData, setLoggedInAccounts, setValidation, setSh
 	}
 	catch (error: any)
 	{
-		if (error.response?.status === 400)
-			setValidation(prev => ({...prev, ['Username not found']: true}));
-		else if (error.response?.status === 401)
-			setValidation(prev => ({...prev, ['Password incorrect']: true}));
+		setValidation(prev => ({...prev, [error.response.data.error]: true}))
 		return false;
 	}
 }
@@ -135,7 +132,7 @@ function LoginModal()
 				}
 				else
 				{
-					const success = await checkLogin({ formData, setLoggedInAccounts, setValidation, setShow2FA });
+					const success = await checkLogin({ formData, token, setLoggedInAccounts, setValidation, setShow2FA });
 					if (success) setShowLoginModal(false); 
 				}
 			}} 
@@ -146,7 +143,7 @@ function LoginModal()
 					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
 					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
 					: 'border-red-800'} focus:outline-none`} 
-					name="username" type="text" placeholder="Type your username"
+					name="username" type="text" placeholder="Type your username" maxLength={10}
 					onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
 
@@ -156,8 +153,7 @@ function LoginModal()
 					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
 					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
 					: 'border-red-800'} focus:outline-none`} 
-					name="password" type="password" placeholder="Type your password"
-					maxLength={10}
+					name="password" type="password" placeholder="Type your password" maxLength={10}
 					onChange={(e) => {setFormData({...formData, [e.target.name]: e.target.value})}}/>
 			</div>
 
@@ -167,7 +163,7 @@ function LoginModal()
 					${Object.values(validation).every((value) => !value) ? 'border-gray-600 focus:border-white' 
 					: validation['Already logged in'] ? 'border-[#ff914d] focus:border-[#ff914d]' 
 					: 'border-red-800'} focus:outline-none`} 
-					name="username" type="text" placeholder="Enter 6 digit code"
+					name="username" type="text" placeholder="Enter 6 digit code" maxLength={6}
 					onChange={(e) => {setToken(e.target.value)}}/>
 			</div>}
 			{validation['Already logged in'] && 
@@ -202,6 +198,9 @@ function LoginModal()
 					type="submit" disabled={emptyForm || Object.values(validation).some((value) => value)}>{show2FA ? "Authorize" : "Login"}</motion.button>
 			</div>
 		</form>
+			<div className="pt-2">
+				<script src="https://accounts.google.com/gsi/client" async defer></script>
+			</div>
 		</div>
 	</div>
 	)

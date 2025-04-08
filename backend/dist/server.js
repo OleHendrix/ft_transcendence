@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.prisma = void 0;
 const fastify_1 = __importDefault(require("fastify"));
-const fastify_jwt_1 = __importDefault(require("fastify-jwt"));
+const jwt_1 = __importDefault(require("@fastify/jwt"));
 const cors_1 = __importDefault(require("@fastify/cors"));
 const client_1 = require("@prisma/client");
 const websocket_1 = __importDefault(require("@fastify/websocket"));
@@ -24,6 +24,7 @@ const deleteTotp_1 = __importDefault(require("./auth/deleteTotp"));
 const addAccount_1 = __importDefault(require("./user/addAccount"));
 const deleteAccount_1 = __importDefault(require("./user/deleteAccount"));
 const getAccounts_1 = __importDefault(require("./user/getAccounts"));
+const checkValidation_1 = __importDefault(require("./user/checkValidation"));
 const login_1 = __importDefault(require("./user/login"));
 const logout_1 = __importDefault(require("./user/logout"));
 const updateAccount_1 = __importDefault(require("./user/updateAccount"));
@@ -33,7 +34,7 @@ const chat_1 = require("./chat");
 const fastify = (0, fastify_1.default)();
 exports.prisma = new client_1.PrismaClient();
 fastify.register(cors_1.default);
-fastify.register(fastify_jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
+fastify.register(jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
 fastify.register(websocket_1.default, { options: { clientTracking: true } });
 (0, chat_1.setupChat)(fastify);
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
@@ -43,6 +44,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, addAccount_1.default)(fastify, exports.prisma);
     yield (0, deleteAccount_1.default)(fastify, exports.prisma);
     yield (0, getAccounts_1.default)(fastify, exports.prisma);
+    yield (0, checkValidation_1.default)(fastify, exports.prisma);
     yield (0, login_1.default)(fastify, exports.prisma);
     yield (0, logout_1.default)(fastify, exports.prisma);
     yield (0, updateAccount_1.default)(fastify, exports.prisma);

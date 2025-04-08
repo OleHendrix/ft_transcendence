@@ -1,7 +1,7 @@
 import { useLoginContext } from "./contexts/LoginContext";
-import SignUpModal from "./SignUpModal";
-import LoginModal from "./LoginModal";
-import PlayerInfo from "./PlayerInfo";
+import SignUpModal from "./signup/SignUpModal";
+import LoginModal from "./login/LoginModal";
+import PlayerInfo from "./user/PlayerInfo";
 
 function Modals()
 {

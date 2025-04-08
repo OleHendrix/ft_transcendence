@@ -12,7 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateGame = updateGame;
 exports.initGame = initGame;
 exports.mirrorGame = mirrorGame;
+exports.calculateNewElo = calculateNewElo;
 exports.endGame = endGame;
+const types_1 = require("./types");
 const server_1 = require("../server");
 const s = ({
     BOUNCE: { x: -1.03, y: -0.85 },
@@ -68,14 +70,14 @@ function handleColision(game, match) {
     if (ball.pos.x <= -2) {
         game.p2Score++;
         if (game.p2Score >= game.maxPoints) {
-            endGame(match, false);
+            endGame(match, types_1.Result.P2WON);
         }
         game.ball = resetBall(game.p1Score, game.p2Score);
     }
     if (ball.pos.x >= 102) {
         game.p1Score++;
         if (game.p1Score >= game.maxPoints) {
-            endGame(match, true);
+            endGame(match, types_1.Result.P1WON);
         }
         game.ball = resetBall(game.p1Score, game.p2Score);
     }
@@ -134,17 +136,29 @@ function updateInput(match, userID, game, keysPressed) {
         game.p2Input = Number(((_j = keysPressed['s']) !== null && _j !== void 0 ? _j : false) || ((_k = keysPressed['ArrowDown']) !== null && _k !== void 0 ? _k : false)) - Number(((_l = keysPressed['w']) !== null && _l !== void 0 ? _l : false) || ((_m = keysPressed['ArrowUp']) !== null && _m !== void 0 ? _m : false));
     }
 }
+function handleTimeOut(match) {
+    if (match.state.p1Score > match.state.p2Score)
+        endGame(match, types_1.Result.P1WON);
+    else if (match.state.p1Score < match.state.p2Score)
+        endGame(match, types_1.Result.P2WON);
+    else
+        endGame(match, types_1.Result.DRAW);
+}
+;
 function updateGame(match, userID, keysPressed) {
     let game = match.state;
     const now = Math.floor(Date.now() / 10);
     if (game.lastUpdate === -1)
         game.lastUpdate = now;
-    for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++) {
+    for (; game.lastUpdate < now && game.result === types_1.Result.PLAYING; game.lastUpdate++) {
         if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate) {
             manageAI(game);
             game.ai.lastActivation = game.lastUpdate;
         }
         tick(match, game, game.lastUpdate);
+        game.timer -= 10;
+        if (game.timer <= 0)
+            handleTimeOut(match);
     }
     updateInput(match, userID, game, keysPressed);
 }
@@ -175,6 +189,8 @@ function initGame(p1Data, p2Data) {
         p1Won: null,
         p1Data: p1Data,
         p2Data: p2Data,
+        timer: 180 * 1000,
+        result: types_1.Result.PLAYING,
     };
 }
 function mirrorGame(game) {
@@ -187,23 +203,62 @@ function mirrorGame(game) {
     mirror.ball.dir.x = -mirror.ball.dir.x;
     return mirror;
 }
-function endGame(match, p1Wins) {
+function calculateNewElo(p1Elo, p2Elo, win) {
+    const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
+    return (Math.round(p1Elo + 24 * (win - expectedOutcome)));
+}
+function calcWinRate(wins, total) {
+    if (total === 0)
+        return null;
+    return 100 * (wins / total);
+}
+function setMatchHistory(match, p1Elo, p2Elo, p1NewElo, p2NewElo) {
+    return {
+        winner: match.state.result === types_1.Result.DRAW ? "Draw" : (match.state.result === types_1.Result.P1WON ? match.p1.username : match.p2.username),
+        p1: match.p1.username,
+        p2: match.p2.username,
+        p1score: match.state.p1Score,
+        p2score: match.state.p2Score,
+        p1Elo: p1Elo,
+        p2Elo: p2Elo,
+        p1Diff: p1NewElo - p1Elo,
+        p2Diff: p2NewElo - p2Elo,
+    };
+}
+function endGame(match, result) {
     return __awaiter(this, void 0, void 0, function* () {
-        match.state.p1Won = p1Wins;
+        match.state.result = result;
         if (match.p2.id === -1)
             return;
-        let winner = match.p1.id;
-        let loser = match.p2.id;
-        if (p1Wins === false) {
-            [winner, loser] = [loser, winner];
-        }
+        const p1 = match.p1.id;
+        const p2 = match.p2.id;
+        let player1 = yield server_1.prisma.account.findUnique({ where: { id: p1 } });
+        let player2 = yield server_1.prisma.account.findUnique({ where: { id: p2 } });
+        const newPlayer1Elo = calculateNewElo(player1.elo, player2.elo, result === types_1.Result.DRAW ? 0.5 : (result === types_1.Result.P1WON ? 1 : 0));
+        const newPlayer2Elo = calculateNewElo(player1.elo, player2.elo, result === types_1.Result.DRAW ? 0.5 : (result === types_1.Result.P2WON ? 1 : 0));
+        const p1MatchHistory = setMatchHistory(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo);
+        const p2MatchHistory = setMatchHistory(match, player2.elo, player1.elo, newPlayer2Elo, newPlayer1Elo);
+        console.log(p1MatchHistory);
+        console.log(p2MatchHistory);
+        let p1ResultField = result === types_1.Result.DRAW ? { draws: { increment: 1 } } : (result === types_1.Result.P1WON ? { wins: { increment: 1 } } : { losses: { increment: 1 } });
+        let p2ResultField = result === types_1.Result.DRAW ? { draws: { increment: 1 } } : (result === types_1.Result.P2WON ? { wins: { increment: 1 } } : { losses: { increment: 1 } });
         yield server_1.prisma.account.update({
-            where: { id: winner },
-            data: { wins: { increment: 1 } }
+            where: { id: p1 },
+            data: Object.assign(Object.assign({ matchesPlayed: { increment: 1 }, elo: newPlayer1Elo }, p1ResultField), { matches: { create: p1MatchHistory } })
         });
         yield server_1.prisma.account.update({
-            where: { id: loser },
-            data: { losses: { increment: 1 } }
+            where: { id: p2 },
+            data: Object.assign(Object.assign({ matchesPlayed: { increment: 1 }, elo: newPlayer2Elo }, p2ResultField), { matches: { create: p2MatchHistory } })
+        });
+        player1 = (yield server_1.prisma.account.findUnique({ where: { id: p1 } }));
+        yield server_1.prisma.account.update({
+            where: { id: p1 },
+            data: { winRate: calcWinRate(player1.wins, player1.matchesPlayed) }
+        });
+        player2 = (yield server_1.prisma.account.findUnique({ where: { id: p2 } }));
+        yield server_1.prisma.account.update({
+            where: { id: p2 },
+            data: { winRate: calcWinRate(player2.wins, player2.matchesPlayed) }
         });
     });
 }

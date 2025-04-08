@@ -31,8 +31,14 @@ function verifyTotp(fastify, prisma) {
             });
             if (!isValid)
                 return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
+            const updatedAccount = yield prisma.account.update({
+                where: { username },
+                data: {
+                    twofa: true
+                }
+            });
             console.log("authorized:", username);
-            return { success: true, user: account };
+            return { success: true, user: updatedAccount };
         }));
     });
 }

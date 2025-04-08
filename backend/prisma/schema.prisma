@@ -8,16 +8,22 @@ datasource db {
 }
 
 model Account {
-  id          Int           @id @default(autoincrement())
-  email       String     @unique
-  username    String     @unique
-  password    String
-  totpSecret  String?
-  wins        Int        @default(0)
-  draws       Int        @default(0)
-  losses      Int        @default(0)
-  admin       Boolean    @default(false)
-  online      Boolean    @default(false)
+  id            Int        @id @default(autoincrement())
+  email         String     @unique
+  username      String     @unique
+  password      String
+  totpSecret    String?
+  twofa         Boolean    @default(false)
+  admin         Boolean    @default(false)
+  online        Boolean    @default(false)
+
+  matchesPlayed Int             @default(0)
+  wins          Int             @default(0)
+  draws         Int             @default(0)
+  losses        Int             @default(0)
+  winRate       Float?
+  elo           Int             @default(400)
+  matches       MatchHistory[]  @relation("matches")
 
   Blocks                Block[]          @relation("Blocks")
   BlockedBy             Block[]          @relation("BlockedBy")
@@ -60,4 +66,20 @@ model Block {
   blocker     Account  @relation("Blocks", fields: [blockerId], references: [id])
   blocked     Account  @relation("BlockedBy", fields: [blockedId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+model MatchHistory {
+  id      Int     @id @default(autoincrement())
+  winner  String
+  p1      String
+  p2      String
+  p1score Int
+  p2score Int
+  p1Elo   Int
+  p2Elo   Int
+  p1Diff  Int
+  p2Diff  Int
+
+  accountId Int
+  account   Account @relation("matches", fields: [accountId], references: [id])
 }

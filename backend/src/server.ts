@@ -1,9 +1,8 @@
 import Fastify 			from 'fastify';
-import fastifyJwt		from 'fastify-jwt';
+import fastifyJwt		from '@fastify/jwt';
 import fastifyCors		from '@fastify/cors';
 import { PrismaClient }	from '@prisma/client';
 import fastifyWebsocket 	from '@fastify/websocket';
-import WebSocket 			from 'ws';
 
 import setupTotp		from './auth/setupTotp';
 import verifyTotp		from './auth/verifyTotp';
@@ -12,6 +11,7 @@ import deleteTotp		from './auth/deleteTotp';
 import addAccount		from './user/addAccount';
 import deleteAccount	from './user/deleteAccount';
 import getAccounts		from './user/getAccounts';
+import checkValidation  from './user/checkValidation';
 import login			from './user/login';
 import logout			from './user/logout'
 import updateAccount 	from './user/updateAccount';
@@ -40,6 +40,7 @@ const start = async () =>
 	await addAccount(fastify, prisma);
 	await deleteAccount(fastify, prisma);
 	await getAccounts(fastify, prisma);
+	await checkValidation(fastify, prisma);
 	await login(fastify, prisma);
 	await logout(fastify, prisma);
 	await updateAccount(fastify, prisma);

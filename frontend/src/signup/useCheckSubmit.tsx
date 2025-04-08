@@ -1,7 +1,7 @@
 import axios from "axios";
-import { useAccountContext } from "./contexts/AccountContext";
-import { useLoginContext } from "./contexts/LoginContext";
-import { SignUpFormType } from "./types";
+import { useAccountContext } from "../contexts/AccountContext";
+import { useLoginContext } from "../contexts/LoginContext";
+import { SignUpFormType } from "../types";
 
 
 export function useCheckSubmit()

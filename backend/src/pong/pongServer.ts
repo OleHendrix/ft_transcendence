@@ -1,5 +1,5 @@
 import { initGame, updateGame, mirrorGame, endGame } from './pongLogic';
-import { PlayerData, Match } from './types';
+import { PlayerData, Match, Result } from './types';
 import { FastifyInstance } from "fastify";
 
 let matchTable   = new Map<number, Match>([]);
@@ -95,7 +95,7 @@ export default async function initPongServer(fastify: FastifyInstance)
 			return;
 		}
 		const match = matchTable.get(key) as Match;
-		endGame(match, match.p1.id !== userID);
+		endGame(match, match.p1.id !== userID ? Result.P1WON : Result.P2WON);
 		reply.status(200);
 	});
 

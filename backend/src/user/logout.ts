@@ -5,15 +5,15 @@ export default async function logout(fastify: FastifyInstance, prisma: PrismaCli
 {
 	fastify.post("/api/logout", async (req, res) =>
 	{
-		const { username } = req.body as { username: string };
+		const { userId } = req.body as { userId: number };
 	
-		const user = await prisma.account.findUnique({ where: { username } });
+		const user = await prisma.account.findUnique({ where: { id: userId } });
 		if (!user) 
 			return res.status(400).send({ error: 'User not found' })
 		
 		await prisma.account.update(
 		{
-				where: { username },
+				where: { id:     userId },
 				data:  { online: false }
 		}
 		);

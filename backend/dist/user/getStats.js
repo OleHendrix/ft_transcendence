@@ -9,19 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = logout;
-function logout(fastify, prisma) {
+exports.default = getStats;
+function getStats(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post("/api/logout", (req, res) => __awaiter(this, void 0, void 0, function* () {
+        fastify.post('/api/get-stats', (req, reply) => __awaiter(this, void 0, void 0, function* () {
             const { userId } = req.body;
-            const user = yield prisma.account.findUnique({ where: { id: userId } });
-            if (!user)
-                return res.status(400).send({ error: 'User not found' });
-            yield prisma.account.update({
+            console.log('id:', userId);
+            const stats = yield prisma.account.findUnique({
                 where: { id: userId },
-                data: { online: false }
+                select: { wins: true, draws: true, losses: true, elo: true }
             });
-            res.send({ success: true });
+            if (!stats)
+                return reply.status(404).send({ error: 'User not found' });
+            return reply.status(200).send({ stats });
         }));
     });
 }

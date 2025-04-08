@@ -24,6 +24,8 @@ function login(fastify, prisma) {
             const validPassword = yield bcrypt_1.default.compare(password, user.password);
             if (!validPassword)
                 return res.status(401).send({ error: 'Incorrect password' });
+            if (user.online)
+                res.status(402).send({ error: 'Already logged in' });
             yield prisma.account.update({
                 where: { username },
                 data: { online: true }

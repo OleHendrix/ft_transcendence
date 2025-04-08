@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addGame = addGame;
 exports.default = initPongServer;
 const pongLogic_1 = require("./pongLogic");
+const types_1 = require("./types");
 let matchTable = new Map([]);
 let matchIDTable = new Map([]);
 function addGame(user1, user2, isLocalGame) {
@@ -87,7 +88,7 @@ function initPongServer(fastify) {
                 return;
             }
             const match = matchTable.get(key);
-            (0, pongLogic_1.endGame)(match, match.p1.id !== userID);
+            (0, pongLogic_1.endGame)(match, match.p1.id !== userID ? types_1.Result.P1WON : types_1.Result.P2WON);
             reply.status(200);
         }));
         fastify.post('/pong/delete', (request, reply) => __awaiter(this, void 0, void 0, function* () {

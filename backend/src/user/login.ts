@@ -14,6 +14,9 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 		const validPassword = await bcrypt.compare(password, user.password);
 		if (!validPassword) return res.status(401).send({ error: 'Incorrect password'});
 
+		if (user.online)
+			res.status(402).send({ error: 'Already logged in'})
+
 		await prisma.account.update ({
 				where: { username },
 				data:  { online: true }

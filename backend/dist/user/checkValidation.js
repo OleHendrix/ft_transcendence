@@ -9,19 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = logout;
-function logout(fastify, prisma) {
+exports.default = checkValidation;
+function checkValidation(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post("/api/logout", (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const { userId } = req.body;
-            const user = yield prisma.account.findUnique({ where: { id: userId } });
-            if (!user)
-                return res.status(400).send({ error: 'User not found' });
-            yield prisma.account.update({
-                where: { id: userId },
-                data: { online: false }
-            });
-            res.send({ success: true });
+        fastify.post('/api/check-validation', (req, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { username, email } = req.body;
+            const usernameExist = yield prisma.account.findUnique({ where: { username } });
+            if (usernameExist !== null)
+                return reply.status(200).send({ success: false, type: 'Username exists' });
+            const emailExist = yield prisma.account.findUnique({ where: { email } });
+            if (emailExist !== null)
+                return reply.status(200).send({ success: false, type: 'Email exists' });
+            return reply.status(200).send({ success: true });
         }));
     });
 }

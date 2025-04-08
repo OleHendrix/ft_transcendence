@@ -23,12 +23,17 @@ function setupTotp(fastify, prisma) {
             const account = yield prisma.account.findUnique({ where: { username } });
             if (!account)
                 return reply.code(404).send({ message: 'User not found' });
-            const secret = speakeasy_1.default.generateSecret({ name: `NextBall (${username})` });
+            const secret = speakeasy_1.default.generateSecret({ name: `NextBall: ${username}` });
             yield prisma.account.update({
                 where: { username },
                 data: { totpSecret: secret.base32 }
             });
-            const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '');
+            const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '', {
+                color: {
+                    dark: '#FFFFFF',
+                    light: '#ff914d'
+                }
+            });
             return reply.send({ qrCodeUrl });
         }));
     });

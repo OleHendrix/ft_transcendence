@@ -17,11 +17,14 @@ function deleteTotp(fastify, prisma) {
             const account = yield prisma.account.findUnique({ where: { username } });
             if (!account)
                 return reply.status(404).send({ error: 'User not found' });
-            yield prisma.account.update({
+            const updatedAccount = yield prisma.account.update({
                 where: { username },
-                data: { totpSecret: null }
+                data: {
+                    totpSecret: null,
+                    twofa: false
+                }
             });
-            return reply.send({ message: '2FA Disabled' });
+            return reply.send({ success: true, user: updatedAccount });
         }));
     });
 }

@@ -29,6 +29,7 @@ export interface PlayerType
 	wins:		number;
 	draws:		number;
 	losses:		number;
+	elo:		number;
 	totpSecret:	boolean;
 	admin: boolean;
 }
@@ -92,6 +93,14 @@ export interface Statics
 	FRICTION:	number,
 }
 
+export enum Result
+{
+	PLAYING,
+	P1WON,
+	P2WON,
+	DRAW
+}
+
 export interface PongState
 {
 	p1:			Paddle;
@@ -107,6 +116,8 @@ export interface PongState
 	p1Won:		boolean | null;
 	p1Data:		PlayerData;
 	p2Data:		PlayerData;
+	timer:		number;
+	result:		Result;
 }
 
 export interface Match
@@ -115,4 +126,18 @@ export interface Match
 	p1:				PlayerData;
 	p2:				PlayerData;
 	isLocalGame:	boolean;
+};
+
+export interface MatchHistory
+{
+	id:			number;
+	winner:		string;
+	p1:			string;
+	p2:			string;
+	p1score:	number;
+	p2score:	number;
+	p1Elo:		number;
+	p2Elo:		number;
+	p1Diff:		number;
+	p2Diff:		number;
 };

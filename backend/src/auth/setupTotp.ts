@@ -14,7 +14,7 @@ export default async function setupTotp(fastify: FastifyInstance, prisma: Prisma
 		if (!account)
 			return reply.code(404).send({ message: 'User not found'});
 
-		const secret = speakeasy.generateSecret({ name: `NextBall (${username})` });
+		const secret = speakeasy.generateSecret({ name: `NextBall: ${username}` });
 
 		await prisma.account.update(
 			{
@@ -22,7 +22,14 @@ export default async function setupTotp(fastify: FastifyInstance, prisma: Prisma
 				data: { totpSecret: secret.base32 }
 			});
 		
-		const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url || '');
+		const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url || '',
+		{
+			color:
+			{
+				dark: '#FFFFFF', 
+				light: '#ff914d'
+			}
+		});
 
 		return reply.send({ qrCodeUrl });
 	});

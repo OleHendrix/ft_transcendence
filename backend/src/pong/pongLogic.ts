@@ -1,5 +1,6 @@
-import { PongState, Match, Statics, Paddle, Ball, PlayerData } from "./types";
+import { PongState, Match, Statics, Paddle, Ball, PlayerData, Result, MatchHistory } from "./types";
 import { prisma } from '../server';
+import { Prisma } from "@prisma/client/default";
 
 const s: Statics =
 ({
@@ -75,7 +76,7 @@ function handleColision(game: PongState, match: Match)
 		game.p2Score++;
 		if (game.p2Score >= game.maxPoints)
 		{
-			endGame(match, false);
+			endGame(match, Result.P2WON);
 		}
 		game.ball = resetBall(game.p1Score, game.p2Score);
 	}
@@ -84,7 +85,7 @@ function handleColision(game: PongState, match: Match)
 		game.p1Score++;
 		if (game.p1Score >= game.maxPoints)
 		{
-			endGame(match, true);
+			endGame(match, Result.P1WON);
 		}
 		game.ball = resetBall(game.p1Score, game.p2Score);
 			
@@ -162,6 +163,16 @@ function updateInput(match: Match, userID: number, game: PongState, keysPressed:
 	}	
 }
 
+function handleTimeOut(match: Match)
+{
+	if (match.state.p1Score > match.state.p2Score)
+		endGame(match, Result.P1WON);
+	else if (match.state.p1Score < match.state.p2Score)
+		endGame(match, Result.P2WON);
+	else
+		endGame(match, Result.DRAW);
+};
+
 export function updateGame(match: Match, userID: number, keysPressed: {[key: string]: boolean}): void
 {
 	let game = match.state;
@@ -169,7 +180,7 @@ export function updateGame(match: Match, userID: number, keysPressed: {[key: str
 
 	if (game.lastUpdate === -1)
 		game.lastUpdate = now;
-	for (; game.lastUpdate < now && game.p1Won === null; game.lastUpdate++)
+	for (; game.lastUpdate < now && game.result === Result.PLAYING; game.lastUpdate++)
 	{
 		if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate)
 		{
@@ -177,8 +188,13 @@ export function updateGame(match: Match, userID: number, keysPressed: {[key: str
 			game.ai.lastActivation = game.lastUpdate;
 		}
 		tick(match, game, game.lastUpdate);
+
+		game.timer -= 10;
+		if (game.timer <= 0)
+			handleTimeOut(match);
 	}
 	updateInput(match, userID, game, keysPressed);
+
 }
 
 export function initGame(p1Data: PlayerData, p2Data: PlayerData): PongState
@@ -209,6 +225,8 @@ export function initGame(p1Data: PlayerData, p2Data: PlayerData): PongState
 		p1Won: null,
 		p1Data: p1Data,
 		p2Data: p2Data,
+		timer: 180 * 1000,
+		result: Result.PLAYING,
 	};
 }
 
@@ -225,27 +243,91 @@ export function mirrorGame(game: PongState): PongState
 	return mirror;
 }
 
-export async function endGame(match: Match, p1Wins: boolean)
+export function calculateNewElo(p1Elo: number, p2Elo: number, win: number)
 {
-	match.state.p1Won = p1Wins;
+	const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
+	return(Math.round(p1Elo + 24 * (win - expectedOutcome)));
+}
+
+function calcWinRate(wins: number, total: number): number | null
+{
+	if (total === 0)
+		return null;
+	return 100 * (wins / total);
+}
+
+function setMatchHistory(match: Match, p1Elo: number, p2Elo: number, p1NewElo: number, p2NewElo: number): any
+{
+	return {
+		winner:		match.state.result === Result.DRAW ? "Draw" : (match.state.result === Result.P1WON ? match.p1.username : match.p2.username),
+		p1:			match.p1.username,
+		p2:			match.p2.username,
+		p1score:	match.state.p1Score,
+		p2score:	match.state.p2Score,
+		p1Elo:		p1Elo,
+		p2Elo:		p2Elo,
+		p1Diff:		p1NewElo - p1Elo,
+		p2Diff:		p2NewElo - p2Elo,
+	}
+}
+
+export async function endGame(match: Match, result: Result)
+{
+	match.state.result = result;
 	if (match.p2.id === -1)
 		return;
-	let winner = match.p1.id;
-	let loser  = match.p2.id;
-	if (p1Wins === false)
-	{
-		[winner, loser] = [loser, winner];
-	}
+
+	const p1 = match.p1.id;
+	const p2 = match.p2.id;
+
+	let player1 = await prisma.account.findUnique({ where: { id: p1 } }) as any;
+	let player2 = await prisma.account.findUnique({ where: { id: p2 } }) as any;
+
+	const newPlayer1Elo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P1WON ? 1 : 0));
+	const newPlayer2Elo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P2WON ? 1 : 0));
+
+	const p1MatchHistory = setMatchHistory(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo);
+	const p2MatchHistory = setMatchHistory(match, player2.elo, player1.elo, newPlayer2Elo, newPlayer1Elo);
+	console.log(p1MatchHistory);
+	console.log(p2MatchHistory);
+
+	let p1ResultField = result ===  Result.DRAW ? { draws: { increment: 1 } } : (result === Result.P1WON ? { wins: { increment: 1} } : { losses: { increment: 1 } } );
+	let p2ResultField = result ===  Result.DRAW ? { draws: { increment: 1 } } : (result === Result.P2WON ? { wins: { increment: 1} } : { losses: { increment: 1 } } );
 
 	await prisma.account.update
 	({
-		where: { id: winner },
-		data:  { wins: { increment: 1 } }
+		where: { id: p1 },
+		data:
+		{
+			matchesPlayed: { increment: 1 },
+			elo: newPlayer1Elo,
+			...p1ResultField,
+			matches: { create: p1MatchHistory },
+		}
 	});
 
 	await prisma.account.update
 	({
-		where: { id: loser },
-		data:  { losses: { increment: 1 } }
+		where: { id: p2 },
+		data:
+		{
+			matchesPlayed: { increment: 1 },
+			elo: newPlayer2Elo,
+			...p2ResultField,
+			matches: { create: p2MatchHistory },
+		}
+	});
+
+	player1 = await prisma.account.findUnique({where: { id: p1 }}) as any;
+	await prisma.account.update
+	({
+		where: { id: p1 },
+		data:  { winRate: calcWinRate(player1.wins, player1.matchesPlayed) }
+	});
+	player2  = await prisma.account.findUnique({where: {id: p2}}) as any;
+	await prisma.account.update
+	({
+		where: { id: p2 },
+		data:  { winRate: calcWinRate(player2.wins, player2.matchesPlayed) }
 	});
 }
