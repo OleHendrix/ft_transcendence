@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { motion } from 'framer-motion';
 import Player from "../../assets/Player.svg";
 import { BiSolidChat, BiSearch } from "react-icons/bi";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiCheckCircle } from "react-icons/fi";
+import { MdOutlineCancel } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
 import axios from 'axios';
@@ -103,7 +104,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 				setIsOpen(false);
 		}}>
 		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col items-start p-6 pt-10 h-[700px] w-[800px] bg-black/90 shadow-2xl rounded-2xl z-50">
-			<button className="absolute top-2 right-2 text-gray-400 hover:text-white" onClick={() => setIsOpen(false)}>
+			<button className="absolute top-2 right-2 text-gray-400 hover:text-white hover:cursor-pointer" onClick={() => setIsOpen(false)}>
 				<IoMdClose size={24} />
 			</button>
 
@@ -116,8 +117,8 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 
 function ChatHeader()
 {
-	const {accounts, loggedInAccounts} 	= useAccountContext();
-	const {setReceiverId} 				= useChatContext();
+	const {accounts, loggedInAccounts} 				= useAccountContext();
+	const {receiverId, setReceiverId} 				= useChatContext();
 
 	return (
 		<div className="flex justify-end space-x-2 w-full flex-wrap mb-2">
@@ -125,17 +126,17 @@ function ChatHeader()
 				.filter((account) => 
 					account.username !== loggedInAccounts[0]?.username && !account.admin )
 				.map((account, index) => (
-					<div key={index} className="flex items-center flex-col space-y-0.5 w-12">
+					<div key={index} className={`flex items-center flex-col space-y-0.5 w-12  ${receiverId !== account.id ? 'opacity-40' : 'opacity-100'}`}>
 						<motion.img
 							src={Player}
 							className="h-10 w-auto cursor-pointer"
 							whileHover={{ scale: 1.07 }}
 							whileTap={{ scale: 0.93 }}
 							onClick={() => setReceiverId(account.id)}/>
-						<p className="text-[10px] opacity-50 w-full text-center truncate">{account.username}</p>
+						<p className="text-[10px] opacity-90 w-full text-center truncate">{account.username}</p>
 					</div>
 				))}
-			<div className="flex items-center flex-col space-y-0.5 w-12">
+			<div className={`flex items-center flex-col space-y-0.5 w-12 ${receiverId !== -1 ? 'opacity-20' : 'opacity-100'}`}>
 				<motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }} onClick={() => setReceiverId(-1)}>
 					<RiGroup2Line className="h-10 w-auto cursor-pointer text-[#ff914d] hover:text-[#ab5a28] transition-colors" />
 				</motion.div>
@@ -265,39 +266,38 @@ function MessageList( ) {
 							</div>
 
 							{isGameInvite ? (
-								<div
-									className={`chat-bubble px-4 py-2 rounded-lg font-bold flex flex-col items-center ${
-										isSender ? "bg-[#ff914d] text-white" : "bg-[#134588] text-white"
-									}`}
-								>
+								<div className="chat-bubble px-4 py-2 rounded-lg flex flex-col items-center bg-black/40 text-white shadow-2xl">
 									<p className="mb-2">
-										🎮 {isSender ? "You sent a game invite!" : `${message.senderUsername} invited you to play a game!`}
+										{isSender ? "You sent a game invite!" : `${message.senderUsername} invited you to play a game!`}
 									</p>
 									{isSender && msgStatus === 1 && (
 										<div className="flex gap-2">
-											<button
-												onClick={() => handleGameInviteResponse(message.id, 4)}
-												className="bg-red-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-green-600"
-											>
-												Cancel
-											</button>
+											<motion.div whileHover={{ scale: 1.17 }} whileTap={{ scale: 0.89 }}>
+												<MdOutlineCancel
+													className="text-red-800 hover:text-red-600 transition-colors cursor-pointer"
+													size={18}
+													onClick={() => handleGameInviteResponse(message.id, 4)}
+												/>
+											</motion.div>
 										</div>
 									)}
 
 									{!isSender && msgStatus === 1 && (
 										<div className="flex gap-2">
-											<button
-												onClick={() => handleGameInviteResponse(message.id, 2)}
-												className="bg-green-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-green-600"
-											>
-												Accept
-											</button>
-											<button
-												onClick={() => handleGameInviteResponse(message.id, 3)}
-												className="bg-red-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-red-600"
-											>
-												Decline
-											</button>
+											<motion.div whileHover={{ scale: 1.17 }} whileTap={{ scale: 0.89 }}>
+												<FiCheckCircle
+													size={18}
+													className="text-green-800 hover:text-green-600 transition-colors cursor-pointer"
+													onClick={() => handleGameInviteResponse(message.id, 2)}
+												/>
+											</motion.div>
+											<motion.div whileHover={{ scale: 1.17 }} whileTap={{ scale: 0.89 }}>
+												<MdOutlineCancel
+													size={18}
+													className="text-red-800 hover:text-red-600 transition-colors cursor-pointer"
+													onClick={() => handleGameInviteResponse(message.id, 3)}
+												/>
+											</motion.div>
 										</div>
 									)}
 									{msgStatus === 2 && <p className="text-green-400 mt-2">✔️ {isSender ? "Your invite was accepted!" : "You accepted the game invite"}</p>}
@@ -395,22 +395,22 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 	}
 
 	return (
-		<div className="absolute bottom-full right-5 mb-5 bg-black text-white p-3 rounded-xl shadow-lg w-64 z-50">
-			<ul className="mt-2 space-y-2">
+		<div className="absolute bottom-full flex right-5 mb-5 bg-black text-white p-3 rounded-xl shadow-2xl z-50">
+			<ul className="space-y-2">
 				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					className="cursor-pointer bg-gray-950 p-2 rounded-md hover:bg-gray-700 transition-colors"
 					onClick={sendGameInvite}
 				>
 					Send game invite
 				</li>
 				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					className="cursor-pointer bg-gray-950 p-2 rounded-md hover:bg-gray-700 transition-colors"
 					onClick={blockUser}
 				>
 					Block this bitch
 				</li>
 				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					className="cursor-pointer bg-gray-950 p-2 rounded-md hover:bg-gray-700 transition-colors"
 					onClick={unblockUser}
 				>
 					Unblock this bitch

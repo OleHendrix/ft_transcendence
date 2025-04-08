@@ -17,7 +17,7 @@ interface CheckLoginProps
 
 async function check2FA({ formData, token, setLoggedInAccounts, setValidation }  : CheckLoginProps)
 {
-	const { username }= formData;
+	const { username } = formData;
 	try
 	{
 		const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-totp`,
