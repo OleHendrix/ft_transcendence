@@ -19,7 +19,7 @@ function createTournament(fastify) {
             let key;
             for (key = 0; tournamentLobbies.has(key); key++)
                 ;
-            let users = new number[];
+            // let users = new number[];
             tournamentLobbies.set(key, new );
         }));
     });

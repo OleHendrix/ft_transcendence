@@ -14,7 +14,7 @@ export function toPercentage(n: number, decimals: number): number
 
 export default function Leaderboard() {
 	const { accounts, setShowLeaderboard } = useAccountContext();
-	const [sortedAccounts, setSortedAccounts] = useState<PlayerType[]>([]);
+	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
 
 	useEffect(() => {
 		setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));

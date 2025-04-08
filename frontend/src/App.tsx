@@ -9,10 +9,11 @@ import { AccountProvider, useAccountContext } from './contexts/AccountContext';
 import { LoginProvider } from "./contexts/LoginContext";
 import { PlayerState } from "./types"
 import Leaderboard from "./Leaderboard";
+import TournamentSetup from "./tournament/TournamentSetup"
 
 function MainContent()
 {
-	const { isPlaying, showLeaderboard } = useAccountContext();
+	const { isPlaying, showLeaderboard, showTournamentSetup } = useAccountContext();
 
 	return (
 		<>
@@ -22,6 +23,7 @@ function MainContent()
 			</ChatProvider>
 			{isPlaying === PlayerState.playing  && <PongGame />}
 			{isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
+			{isPlaying !== PlayerState.playing && showTournamentSetup && <TournamentSetup/> }
 		</>
 	)
 }

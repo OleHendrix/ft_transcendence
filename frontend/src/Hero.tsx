@@ -75,7 +75,7 @@ function endQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 
 function Buttons()
 {
-	const { loggedInAccounts, setIsPlaying } = useAccountContext();
+	const { loggedInAccounts, setIsPlaying, setShowTournamentSetup } = useAccountContext();
 	const hoverScale = 1.03;
 	const tapScale = 0.97;
 
@@ -129,9 +129,10 @@ function Buttons()
 			<p className="text-s text-lg font-medium">3+ Players:</p>
 			<div className="flex flex-row space-x-4 ml-2">
 				<motion.button className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-4 py-0 rounded-3xl w-auto
-				${loggedInAccounts.length < 3 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
+				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
 					whileHover={(loggedInAccounts.length > 2 ? { scale: hoverScale } : {})}
-					whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}>
+					whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}
+					onClick={() => setShowTournamentSetup(true)}>
 					<p>Tournament</p>
 					<TbTournament />
 				</motion.button>
