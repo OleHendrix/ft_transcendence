@@ -59,7 +59,6 @@ function Chat()
 		socket.onmessage = function(event)
 		{
 			const message = JSON.parse(event.data)
-			console.log(message.isTyping);
 			if (message.isTyping && message.isTyping !== loggedInAccounts[0].username && !isTyping)
 				setIsTyping(message.isTyping);
 			else
@@ -460,6 +459,7 @@ function MessageInput()
 	{
 		try
 		{
+			console.log("yesssss")
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-istyping`,
 			{
 				senderId: loggedInAccounts[0]?.id,

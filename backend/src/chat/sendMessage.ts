@@ -37,4 +37,5 @@ export default async function sendMessage(server: FastifyInstance, prisma: Prism
 			notifyClients(messageToClient);
 			return reply.send({ success: true, messageToClient });
 		});
+
 }
