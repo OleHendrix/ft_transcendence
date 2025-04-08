@@ -225,6 +225,12 @@ function setMatchHistory(match, p1Elo, p2Elo, p1NewElo, p2NewElo) {
         p2Diff: p2NewElo - p2Elo,
     };
 }
+// export async function fillDB(match: Match, result: Result, isP1: boolean)
+// {
+// 	const id = isP1 ? match.p1.id : match.p2.id;
+// 	let player = await prisma.account.findUnique({ where: { id: id } }) as any;
+// 	const newElo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P1WON ? 1 : 0));
+// }
 function endGame(match, result) {
     return __awaiter(this, void 0, void 0, function* () {
         match.state.result = result;
@@ -235,20 +241,25 @@ function endGame(match, result) {
         let player1 = yield server_1.prisma.account.findUnique({ where: { id: p1 } });
         let player2 = yield server_1.prisma.account.findUnique({ where: { id: p2 } });
         const newPlayer1Elo = calculateNewElo(player1.elo, player2.elo, result === types_1.Result.DRAW ? 0.5 : (result === types_1.Result.P1WON ? 1 : 0));
-        const newPlayer2Elo = calculateNewElo(player1.elo, player2.elo, result === types_1.Result.DRAW ? 0.5 : (result === types_1.Result.P2WON ? 1 : 0));
-        const p1MatchHistory = setMatchHistory(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo);
-        const p2MatchHistory = setMatchHistory(match, player2.elo, player1.elo, newPlayer2Elo, newPlayer1Elo);
-        console.log(p1MatchHistory);
-        console.log(p2MatchHistory);
-        let p1ResultField = result === types_1.Result.DRAW ? { draws: { increment: 1 } } : (result === types_1.Result.P1WON ? { wins: { increment: 1 } } : { losses: { increment: 1 } });
-        let p2ResultField = result === types_1.Result.DRAW ? { draws: { increment: 1 } } : (result === types_1.Result.P2WON ? { wins: { increment: 1 } } : { losses: { increment: 1 } });
+        const newPlayer2Elo = calculateNewElo(player2.elo, player1.elo, result === types_1.Result.DRAW ? 0.5 : (result === types_1.Result.P2WON ? 1 : 0));
+        const MatchHistory = setMatchHistory(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo);
+        const matchResult = (result, isP1) => {
+            if (result === types_1.Result.DRAW)
+                return { draws: { increment: 1 } };
+            if ((result === types_1.Result.P1WON) === isP1)
+                return { wins: { increment: 1 } };
+            else
+                return { losses: { increment: 1 } };
+        };
+        let p1ResultField = matchResult(result, true);
+        let p2ResultField = matchResult(result, false);
         yield server_1.prisma.account.update({
             where: { id: p1 },
-            data: Object.assign(Object.assign({ matchesPlayed: { increment: 1 }, elo: newPlayer1Elo }, p1ResultField), { matches: { create: p1MatchHistory } })
+            data: Object.assign(Object.assign({ matchesPlayed: { increment: 1 }, elo: newPlayer1Elo }, p1ResultField), { matches: { create: MatchHistory } })
         });
         yield server_1.prisma.account.update({
             where: { id: p2 },
-            data: Object.assign(Object.assign({ matchesPlayed: { increment: 1 }, elo: newPlayer2Elo }, p2ResultField), { matches: { create: p2MatchHistory } })
+            data: Object.assign(Object.assign({ matchesPlayed: { increment: 1 }, elo: newPlayer2Elo }, p2ResultField), { matches: { create: MatchHistory } })
         });
         player1 = (yield server_1.prisma.account.findUnique({ where: { id: p1 } }));
         yield server_1.prisma.account.update({

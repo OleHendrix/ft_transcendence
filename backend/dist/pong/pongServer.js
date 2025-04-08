@@ -72,6 +72,24 @@ function initPongServer(fastify) {
             addGame(user1, user2, isLocalGame);
             reply.status(201);
         }));
+        fastify.post('/pong/is-local', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { userID } = request.body;
+            if (userID === undefined) {
+                reply.status(204).send(false);
+                return;
+            }
+            if (matchIDTable.has(userID) === false) {
+                reply.status(204).send(false);
+                return;
+            }
+            const key = matchIDTable.get(userID);
+            if (matchTable.has(key) === false) {
+                reply.status(204).send(false);
+                return;
+            }
+            const match = matchTable.get(key);
+            reply.status(200).send(match.isLocalGame);
+        }));
         fastify.post('/pong/end-game', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { userID } = request.body;
             if (userID === undefined) {
