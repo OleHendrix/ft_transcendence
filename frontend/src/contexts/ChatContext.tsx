@@ -28,6 +28,8 @@ type ChatContextType = {
 	setIsBlocked: Dispatch<SetStateAction<boolean>>;
 	amIBlocker: boolean;
 	setAmIBlocker: Dispatch<SetStateAction<boolean>>;
+	isTyping:			string;
+	setIsTyping:		Dispatch<SetStateAction<string>>;
 };
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -41,6 +43,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 	const [messageMenu, setMessageMenu] = useState(false);
 	const [isBlocked, setIsBlocked] = useState(false);
 	const [amIBlocker, setAmIBlocker] = useState(false);
+	const [isTyping, setIsTyping]				= useState('');
 
 	const value = useMemo(
 		() => ({
@@ -60,8 +63,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 			setIsBlocked,
 			amIBlocker,
 			setAmIBlocker,
-		}),
-		[receiverId, isOpen, messageReceived, chatSessionId, chatMessages, isBlocked, amIBlocker]
+			isTyping, setIsTyping
+	}),
+		[receiverId, isOpen, messageReceived, chatSessionId, chatMessages, isTyping, setIsTyping, isBlocked, amIBlocker]
 	);
 
 	return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
