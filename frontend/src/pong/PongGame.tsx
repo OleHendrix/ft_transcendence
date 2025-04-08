@@ -139,8 +139,11 @@ function PongGame()
 
 	async function rematch(user1: PlayerData, user2: PlayerData, setIsPlaying: React.Dispatch<React.SetStateAction<PlayerState>>)
 	{
-		const isLocal = await axios.post(`http://${window.location.hostname}:5001/pong/is-local`, { user1, user2 });
-		if (isLocal && user2.id !== -1)
+		const response = await axios.post(`http://${window.location.hostname}:5001/pong/is-local`, { userID: user1.id });
+		const isLocal: boolean = response.data;
+
+		console.log(isLocal);
+		if (isLocal === true && user2.id !== -1)
 			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true });
 		else
 			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying)

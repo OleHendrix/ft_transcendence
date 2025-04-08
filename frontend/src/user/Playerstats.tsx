@@ -19,38 +19,47 @@ function ShowMatchHistory()
 	const matchHistory = currentAccount?.matches ?? [];
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
-	console.log(matchHistory);
-	console.log("Accounts:", accounts);
-	console.log("LoggedIn:", loggedInAccounts);
+	// console.log(matchHistory);
+	// console.log("Accounts:", accounts);
+	// console.log("LoggedIn:", loggedInAccounts);
 	return (
-		<div className="w-full h-117 overflow-y-auto border border-base-content/5 bg-transparent">
-			<div className="overflow-x-auto">
-				<table className="table text-center whitespace-nowrap">
-					<thead>
-						<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
-							<th className=" text-center" colSpan={6}>Match History</th>
+		<div className="border w-95 border-base-content/5 bg-transparent h-116.5 overflow-y-auto">
+			<table className="table-fixed w-full table overflow-y-auto whitespace-nowrap">
+				<thead>
+					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
+						<th className=" text-center" colSpan={3}>Match History</th>
+					</tr>
+				</thead>
+				<tbody>
+					{SMH.map((match, index) => (
+						<tr
+							key={match.id}
+							className={`${"font-medium "} ${match.winner === "draw"
+								? "bg-[#303030]/80"
+								: match.winner === currentAccount?.username 
+								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
+								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
+							style={{ height: '68.8px' }}
+						>
+							<td className="w-2/5 text-left p-2">
+								<div className="text-2xl">                     {SMH[index].p1} </div>
+								<div className="text-xs italic text-gray-400"> {`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`} </div>
+							</td>
+
+							<td className="w-1/5 text-center text-2xl font-bold">
+								<div className="flex justify-center w-full">
+									{match.p1score}-{match.p2score}
+								</div>
+							</td>
+								
+							<td className="w-2/5 text-right p-2">
+								<div className="text-2xl">                     {SMH[index].p2} </div>
+								<div className="text-xs italic text-gray-400"> {`${SMH[index].p2Elo} (${SMH[index].p2Diff >= 0 ? `+${SMH[index].p2Diff}` : SMH[index].p2Diff})`} </div>
+							</td>
 						</tr>
-					</thead>
-					<tbody>
-						{SMH.map((match, index) => (
-							<tr
-								key={match.id}
-								// TODO: add support for ties
-								className={`${"font-medium "} ${match.winner === currentAccount?.username
-									? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
-									: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
-								style={{ height: '69px' }}
-							>
-								<td className="text-left text-2xl pl-3">     		   		{SMH[index].p1}</td>
-								<td className="italic text-gray-300 text-xs pr-4">			{`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`}</td>
-								<td className="text-center text-2xl font-bold flex-grow">	{SMH[index].p1score}-{SMH[index].p2score}</td>
-								<td className="italic text-gray-300 text-xs pl-4">			{`${SMH[index].p2Elo} (${SMH[index].p2Diff >= 0 ? `+${SMH[index].p2Diff}` : SMH[index].p2Diff})`}</td>
-								<td className="text-right text-2xl pr-3">     				{SMH[index].p2}</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+					))}
+				</tbody>
+			</table>
 		</div>
 	);
 }
@@ -195,7 +204,7 @@ function PlayerStats()
 							<IoMdClose size={24} />
 						</button>
 
-						<header className="relative flex items-center justify-center gap-x-2 text-4xl mb-4 border-b border-neutral-700 pb-4">
+						<header className="relative flex items-center justify-center gap-x-2 text-4xl -mt-2 mb-4 border-b border-neutral-700 pb-4">
 							{currentAccount?.username}
 							<img
 								src={profileImage}
