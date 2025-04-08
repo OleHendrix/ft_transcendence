@@ -3,11 +3,8 @@ import axios from "axios";
 import { RiGamepadLine } from "react-icons/ri";
 import { TbTournament } from "react-icons/tb";
 import { RiRobot2Line } from "react-icons/ri";
-import { LuCable } from "react-icons/lu";
-import { BsBroadcast } from "react-icons/bs";
 import { BiRocket } from "react-icons/bi";
 import { useAccountContext } from "./contexts/AccountContext";
-import Players from "./Players";
 import "./css/ponganimation.css";
 import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
@@ -111,7 +108,7 @@ function Buttons()
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 					whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
 					whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
-					onClick={() => AddGame(loggedInAccounts[0], { id: -1, username: "AI" }, false)}>
+					onClick={() => startQueue( { player: { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username }, opponentID: Opponent.AI }, setIsPlaying)}>
 					<p>Versus AI</p>
 					<RiRobot2Line />
 				</motion.button>

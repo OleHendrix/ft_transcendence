@@ -30,13 +30,13 @@ const logout_1 = __importDefault(require("./user/logout"));
 const updateAccount_1 = __importDefault(require("./user/updateAccount"));
 const pongServer_1 = __importDefault(require("./pong/pongServer"));
 const matchMaking_1 = __importDefault(require("./pong/matchMaking"));
-const chat_1 = require("./chat");
+const chat_1 = require("./chat/chat");
 const fastify = (0, fastify_1.default)();
 exports.prisma = new client_1.PrismaClient();
 fastify.register(cors_1.default);
 fastify.register(jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
 fastify.register(websocket_1.default, { options: { clientTracking: true } });
-(0, chat_1.setupChat)(fastify);
+(0, chat_1.setupChat)(fastify, exports.prisma);
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     return { message: 'Server is running!' };
 }));

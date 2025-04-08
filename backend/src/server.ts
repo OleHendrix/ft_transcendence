@@ -16,10 +16,10 @@ import login			from './user/login';
 import logout			from './user/logout'
 import updateAccount 	from './user/updateAccount';
 
-import initPongServer from './pong/pongServer';
-import initMatchMaking from "./pong/matchMaking"
+import initPongServer 	from './pong/pongServer';
+import initMatchMaking 	from "./pong/matchMaking"
 
-import { setupChat } from './chat';
+import { setupChat } 	from './chat/chat';
 
 const fastify = Fastify();
 export const prisma = new PrismaClient();
@@ -28,7 +28,7 @@ fastify.register(fastifyCors);
 fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
 
-setupChat(fastify);
+setupChat(fastify, prisma);
 
 fastify.get('/', async (request, reply) =>
 {

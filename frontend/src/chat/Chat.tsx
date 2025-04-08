@@ -31,6 +31,7 @@ function Chat()
 						receiverId: receiverId
 					}
 				})
+
 				if (response.data.success)
 				{
 					setChatMessages(response.data.messages);
@@ -145,10 +146,9 @@ function ChatHeader()
 	);
 }
 
-
 function MessageList( ) {
 	const { loggedInAccounts } = useAccountContext();
-	const { chatMessages, setChatMessages, receiverId, isTyping, setIsTyping } = useChatContext();
+	const { setMessageReceived, chatMessages, setChatMessages, receiverId, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -179,9 +179,8 @@ function MessageList( ) {
 				status: newStatus,
 				messageId,
 			});
-	
-			// Update the local message status
-			setChatMessages((prevMessages) =>
+
+			setChatMessages((prevMessages) => // update localstorage 
 				prevMessages.map((msg) =>
 					msg.id === messageId ? { ...msg, status: newStatus } : msg
 				)
@@ -193,6 +192,62 @@ function MessageList( ) {
 		}
 		
 	};
+
+	useEffect(() => {
+		const checkIfBlocked = async () => {
+			try {
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/is-blocked`, {
+					params: {
+						senderId: loggedInAccounts[0]?.id,
+						receiverId,
+					},
+				});
+	
+				setIsBlocked(response.data.blocked);
+				setAmIBlocker(response.data.amIBlocker); // Store whether the user is the blocker
+			} catch (error) {
+				console.error("Error checking block status:", error);
+			}
+		};
+	
+		if (receiverId) {
+			checkIfBlocked();
+		}
+	}, [receiverId, messageReceived, isBlocked]);
+
+	const unblockUser = async () => {
+		try {
+			const unblock = await axios.post(`http://${window.location.hostname}:5001/api/unblock-user`, {
+				receiverId,
+				senderId: loggedInAccounts[0]?.id
+			})
+			if (unblock.data.succes)
+			{
+				console.log("unBlockUser:Succes");
+				setIsBlocked(false);
+				setMessageReceived(true);
+			}
+		} catch (error) {
+			console.log("unBlockuser:ERROR:", error);
+		}
+	}
+
+	if (isBlocked) {
+		return (
+			<div className="h-full w-full flex flex-col gap-4 items-center justify-center text-gray-400">
+				<p>You cannot send or receive messages from this user.</p>
+				{amIBlocker && (
+					<button 
+						onClick={unblockUser} 
+						className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold transition hover:bg-red-600"
+					>
+						Unblock User
+					</button>
+				)}
+			</div>
+		);
+	}
+	
 	return (
 		<div className="h-full w-full flex flex-col gap-4 items-end overflow-y-auto">
 			<div className="h-[35vw] w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
@@ -200,38 +255,37 @@ function MessageList( ) {
 					const isGameInvite = message.content === "::gameInvite::";
 					const msgStatus = message.status;
 					const isSender = loggedInAccounts[0]?.id === message.senderId;
-	
+
 					return (
-						<div
-							key={message.id}
-							className={`chat ${isSender ? "chat-end" : "chat-start"}`}
-						>
+						<div key={message.id} className={`chat ${isSender ? "chat-end" : "chat-start"}`}>
 							<div className="chat-header font-bold">
 								{message.senderUsername}
 								<time className="text-xs opacity-50">
 									{format(new Date(message.timestamp), "HH:mm")}
 								</time>
 							</div>
-	
+
 							{isGameInvite ? (
 								<div
 									className={`chat-bubble px-4 py-2 rounded-lg font-bold flex flex-col items-center ${
 										isSender ? "bg-[#ff914d] text-white" : "bg-[#134588] text-white"
 									}`}
 								>
-									<p className="mb-2">🎮 {isSender ? "You sent a game invite!" : `${message.senderUsername} invited you to play a game!`}</p>
+									<p className="mb-2">
+										🎮 {isSender ? "You sent a game invite!" : `${message.senderUsername} invited you to play a game!`}
+									</p>
 									{isSender && msgStatus === 1 && (
 										<div className="flex gap-2">
-										<button
-											onClick={() => handleGameInviteResponse(message.id, 4)}
-											className="bg-red-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-green-600"
-										>
-											cancel
-										</button>
-									</div>
+											<button
+												onClick={() => handleGameInviteResponse(message.id, 4)}
+												className="bg-red-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-green-600"
+											>
+												Cancel
+											</button>
+										</div>
 									)}
-	
-									{!isSender && msgStatus === 1 && ( // Show buttons only for receiver if status is pending
+
+									{!isSender && msgStatus === 1 && (
 										<div className="flex gap-2">
 											<button
 												onClick={() => handleGameInviteResponse(message.id, 2)}
@@ -247,21 +301,12 @@ function MessageList( ) {
 											</button>
 										</div>
 									)}
-	
-									{msgStatus === 2 && (
-										<p className="text-green-400 mt-2">✔️ {isSender ? "Your invite was accepted!" : "You accepted the game invite"}</p>
-									)}
-									{msgStatus === 3 && (
-										<p className="text-red-400 mt-2">❌ {isSender ? "Your invite was declined" : "You declined the game invite"}</p>
-									)}
-									{msgStatus === 4 && (
-										<p className="text-red-400 mt-2"> {"The invite was cancelled"}</p>
-									)}
+									{msgStatus === 2 && <p className="text-green-400 mt-2">✔️ {isSender ? "Your invite was accepted!" : "You accepted the game invite"}</p>}
+									{msgStatus === 3 && <p className="text-red-400 mt-2">❌ {isSender ? "Your invite was declined" : "You declined the game invite"}</p>}
+									{msgStatus === 4 && <p className="text-red-400 mt-2"> {"The invite was cancelled"}</p>}
 								</div>
 							) : (
-								<div
-									className={`chat-bubble ${isSender ? "bg-[#ff914d]" : "bg-[#134588]"}`}
-								>
+								<div className={`chat-bubble ${isSender ? "bg-[#ff914d]" : "bg-[#134588]"}`}>
 									{message.content}
 								</div>
 							)}
@@ -285,10 +330,96 @@ function MessageList( ) {
 				)}
 				<div ref={messagesEndRef} />
 			</div>
-			<MessageInput />
+			<MessageInput isBlocked={isBlocked} />
 		</div>
 	);
-}	
+}
+
+function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => void }) 
+{
+	const { loggedInAccounts } = useAccountContext();
+	const { receiverId, setMessageReceived, setIsBlocked } = useChatContext();
+	const sendGameInvite = async () => 
+	{
+		try {
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-message`, {
+					content: "::gameInvite::",
+					senderId: loggedInAccounts[0]?.id,
+					receiverId: receiverId,
+					status: 1 // pending invite
+			});
+
+			if (response.data.success)
+			{
+				console.log("SendGameInvite:succes");
+				setMessageReceived(true);
+			}
+		} catch (error) {
+			console.log("SendGameInvite:ERROR:", error);
+		}
+		setMessageMenu(false);
+	}
+
+	const blockUser = async () => 
+	{
+		try {
+			const block = await axios.post(`http://${window.location.hostname}:5001/api/block-user`, {
+				receiverId,
+				senderId: loggedInAccounts[0]?.id
+			})
+			if (block.data.succes)
+			{
+				console.log("BlockUser:Succes");
+				setIsBlocked(true);
+				setMessageReceived(true);
+			}
+		} catch (error) {
+			console.log("Blockuser:ERROR:", error);
+		}
+	}
+
+	const unblockUser = async () => {
+		try {
+			const unblock = await axios.post(`http://${window.location.hostname}:5001/api/unblock-user`, {
+				receiverId,
+				senderId: loggedInAccounts[0]?.id
+			})
+			if (unblock.data.succes)
+			{
+				console.log("unBlockUser:Succes");
+				setIsBlocked(false);
+				setMessageReceived(true);
+			}
+		} catch (error) {
+			console.log("unBlockuser:ERROR:", error);
+		}
+	}
+
+	return (
+		<div className="absolute bottom-full right-5 mb-5 bg-black text-white p-3 rounded-xl shadow-lg w-64 z-50">
+			<ul className="mt-2 space-y-2">
+				<li
+					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					onClick={sendGameInvite}
+				>
+					Send game invite
+				</li>
+				<li
+					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					onClick={blockUser}
+				>
+					Block this bitch
+				</li>
+				<li
+					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					onClick={unblockUser}
+				>
+					Unblock this bitch
+				</li>
+			</ul>
+		</div>
+	);
+}
 
 function MessageInput()
 {
@@ -311,7 +442,7 @@ function MessageInput()
 				senderId: loggedInAccounts[0]?.id,
 				receiverId: receiverId,
 				content: message,
-				status: 0 // basic
+				status: 0
 			});
 
 			if (response.data.success)
@@ -362,57 +493,5 @@ function MessageInput()
 		</div>
 	);
 }
-
-function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => void }) 
-{
-	const { loggedInAccounts } = useAccountContext();
-	const { receiverId, setMessageReceived } = useChatContext();
-	const sendGameInvite = async () => 
-	{
-		try {
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-message`, {
-					content: "::gameInvite::",
-					senderId: loggedInAccounts[0]?.id,
-					receiverId: receiverId,
-					status: 1 // pending invite
-			});
-
-			if (response.data.success)
-			{
-				console.log("SendGameInvite:succes");
-				setMessageReceived(true);
-			}
-		} catch (error) {
-			console.log("SendGameInvite:ERROR:", error);
-		}
-		setMessageMenu(false);
-	}
-
-	return (
-		<div className="absolute bottom-full right-5 mb-5 bg-black text-white p-3 rounded-xl shadow-lg w-64 z-50">
-			<ul className="mt-2 space-y-2">
-				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
-					onClick={sendGameInvite}
-				>
-					Send game invite
-				</li>
-				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
-					onClick={() => console.log("Send Friendship Request")}
-				>
-					Send Friendship Request
-				</li>
-				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
-					onClick={() => console.log("Invite to Tournament")}
-				>
-					Invite to Tournament
-				</li>
-			</ul>
-		</div>
-	);
-}
-
 
 export default Chat

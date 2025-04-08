@@ -15,35 +15,35 @@ function ShowMatchHistory()
 	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
 	const account = accounts.find(acc => acc.id === selectedAccount?.id);
 	const matchHistory = account?.matches ?? [];
-	const SMD = [...matchHistory].sort((a, b) => b.id - a.id); //shortenedMatchHistory
+	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
 	console.log(matchHistory);
 	console.log("Accounts:", accounts);
 	console.log("LoggedIn:", loggedInAccounts);
 	return (
 		<div className="w-full h-117 overflow-y-auto border border-base-content/5 bg-transparent">
-			<div className="overflow-x-auto max-w-full">  {/* Add this wrapper div */}
-				<table className="table w-full max-w-full text-center">
+			<div className="overflow-x-auto">
+				<table className="table text-center whitespace-nowrap">
 					<thead>
 						<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
-							<th className="w-100 text-center" colSpan={6}>Match History</th>
+							<th className=" text-center" colSpan={6}>Match History</th>
 						</tr>
 					</thead>
 					<tbody>
-						{SMD.map((match, index) => (
+						{SMH.map((match, index) => (
 							<tr
 								key={match.id}
 								// TODO: add support for ties
-								className={`${"font-medium "} ${match.winner === match.p1
+								className={`${"font-medium "} ${match.winner === account?.username
 									? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
 									: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
 								style={{ height: '69px' }}
 							>
-								<td className="text-left text-2xl pl-3">     		   		{SMD[index].p1}</td>
-								<td className="italic text-gray-300 text-xs pr-4">			{`${SMD[index].p1Elo} (${SMD[index].p1Diff >= 0 ? `+${SMD[index].p1Diff}` : SMD[index].p1Diff})`}</td>
-								<td className="text-center text-2xl font-bold flex-grow">	{SMD[index].p1score}-{SMD[index].p2score}</td>
-								<td className="italic text-gray-300 text-xs pl-4">			{`${SMD[index].p2Elo} (${SMD[index].p2Diff >= 0 ? `+${SMD[index].p2Diff}` : SMD[index].p1Diff})`}</td>
-								<td className="text-right text-2xl pr-3">     				{SMD[index].p2}</td>
+								<td className="text-left text-2xl pl-3">     		   		{SMH[index].p1}</td>
+								<td className="italic text-gray-300 text-xs pr-4">			{`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`}</td>
+								<td className="text-center text-2xl font-bold flex-grow">	{SMH[index].p1score}-{SMH[index].p2score}</td>
+								<td className="italic text-gray-300 text-xs pl-4">			{`${SMH[index].p2Elo} (${SMH[index].p2Diff >= 0 ? `+${SMH[index].p2Diff}` : SMH[index].p2Diff})`}</td>
+								<td className="text-right text-2xl pr-3">     				{SMH[index].p2}</td>
 							</tr>
 						))}
 					</tbody>
@@ -113,8 +113,8 @@ function ShowStats()
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{
 		return (
-			<tr className={`${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
-				<td className="text-left text-2xl font-medium pl-2" style={{ height: '45px' }}>
+			<tr className={`whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
+				<td className="text-left text-2xl font-medium pl-2 pr-12" style={{ height: '45px' }}>
 					{startStr}
 				</td>
 				<td className="text-right p-2">
@@ -139,7 +139,7 @@ function ShowStats()
 			<table className="table w-full">
 				<thead>
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
-						<th className="w-100 text-center" colSpan={6}>Stats</th>
+						<th className="text-center" colSpan={6}>Stats</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -155,64 +155,6 @@ function ShowStats()
 	)
 }
 
-function StatWindow()
-{
-	const { accounts, loggedInAccounts } = useAccountContext();
-	const { indexPlayerStats, showPlayerStats } = useLoginContext();
-	const [ index, setIndex ]  = useState(-1);
-	const [profileImage, setProfileImage] = useState(Player);
-	const [ showStats, setShowStats ] = useState(false);
-
-	const currentAccount = accounts[loggedInAccounts[indexPlayerStats].id - 2];
-	if (currentAccount === null)
-		return;
-
-	return (
-		<AnimatePresence>
-			<motion.div
-				className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				exit={{ opacity: 0 }}
-			>
-				<motion.div
-					className="flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl w-full min-w-[800px] max-w-[1200px] min-h-[700px] max-w-xl max-h-[700px] relative shadow-2xl"
-					initial={{ scale: 0.9, y: 20 }}
-					animate={{ scale: 1, y: 0 }}
-					exit={{ scale: 0.9, y: 20 }}
-					transition={{ type: "spring", stiffness: 300, damping: 25 }}
-				>
-					{/* // TODO: unfuck exit button */}
-					<button
-						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:bg-neutral-700 p-1 rounded transition"
-						onClick={() => setShowStats(false)}
-					>
-						<IoMdClose size={24} />
-					</button>
-
-					<header className="relative flex items-center justify-center gap-x-2 text-5xl mb-4 border-b border-neutral-700 pb-4">
-						{currentAccount?.username}
-						<img
-							src={profileImage}
-							className="h-14 w-14 rounded-full object-cover shadow-md hover:scale-105 transition-transform duration-300"
-						/>
-					</header>
-
-					<main className="flex h-full gap-x-4 text-2xl text-center">
-						<div className="w-7/20">
-							<ShowStats />
-						</div>
-							
-						<div className="w-13/20">
-							<ShowMatchHistory />
-						</div>
-					</main>
-				</motion.div>
-			</motion.div>
-		</AnimatePresence>
-	);
-}
-
 function PlayerStats()
 {
 	const { accounts, loggedInAccounts } = useAccountContext();
@@ -224,6 +166,59 @@ function PlayerStats()
 	{
 		setIndex(loggedInAccounts[indexPlayerStats].id - 2);
 	}, [ showPlayerStats ]);
+
+	function StatWindow()
+	{
+		const [profileImage, setProfileImage] = useState(Player);
+
+		const currentAccount = accounts[loggedInAccounts[indexPlayerStats].id - 2];
+		if (currentAccount === null)
+			return;
+
+		return (
+			<AnimatePresence>
+				<motion.div
+					className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+				>
+					<motion.div
+						className="flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl relative shadow-2xl"
+						initial={{ scale: 0.9, y: 20 }}
+						animate={{ scale: 1, y: 0 }}
+						exit={{ scale: 0.9, y: 20 }}
+						transition={{ type: "spring", stiffness: 300, damping: 25 }}
+					>
+						<button
+							className="absolute top-4 right-4 text-gray-400 hover:text-white hover:bg-neutral-700 p-1 rounded transition"
+							onClick={() => setShowStats(false)}
+						>
+							<IoMdClose size={24} />
+						</button>
+
+						<header className="relative flex items-center justify-center gap-x-2 text-4xl mb-4 border-b border-neutral-700 pb-4">
+							{currentAccount?.username}
+							<img
+								src={profileImage}
+								className="h-11 w-11 rounded-full object-cover shadow-md hover:scale-105 transition-transform duration-300"
+							/>
+						</header>
+
+						<main className="flex h-[120] gap-x-4 text-2xl text-center">
+							<div className="flex flex-col h-full w-auto">
+								<ShowStats />
+							</div>
+								
+							<div className="flex flex-col h-full w-auto">
+								<ShowMatchHistory />
+							</div>
+						</main>
+					</motion.div>
+				</motion.div>
+			</AnimatePresence>
+		);
+	}
 
 	return (
 		<>
