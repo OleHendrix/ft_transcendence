@@ -1,19 +1,22 @@
+import './css/index.css'
 import Navbar from "./Navbar";
 import Hero from "./Hero";
 import Modals from "./Modals";
 import PongGame from "./pong/PongGame";
 import Chat from "./chat/Chat";
-import { ChatProvider } from "./contexts/ChatContext";
-import './css/index.css'
-import { AccountProvider, useAccountContext } from './contexts/AccountContext';
-import { LoginProvider } from "./contexts/LoginContext";
-import { PlayerState } from "./types"
 import Leaderboard from "./Leaderboard";
 import TournamentSetup from "./tournament/TournamentSetup"
+import { PlayerState } from "./types"
+import { ChatProvider } from "./contexts/ChatContext";
+import { LoginProvider } from "./contexts/LoginContext";
+import { AccountProvider, useAccountContext } from './contexts/AccountContext';
+import { TournamentProvider, useTournamentContext } from "./contexts/TournamentContext";
+import TournamentLobbyList from './tournament/TournamentLobbyList';
 
 function MainContent()
 {
-	const { isPlaying, showLeaderboard, showTournamentSetup } = useAccountContext();
+	const { isPlaying, showLeaderboard } = useAccountContext();
+	const { showTournamentSetup, showTournamentLobbyList } = useTournamentContext();
 
 	return (
 		<>
@@ -24,6 +27,7 @@ function MainContent()
 			{isPlaying === PlayerState.playing  && <PongGame />}
 			{isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
 			{isPlaying !== PlayerState.playing && showTournamentSetup && <TournamentSetup/> }
+			{isPlaying !== PlayerState.playing && showTournamentLobbyList && <TournamentLobbyList/> }
 		</>
 	)
 }
@@ -32,13 +36,15 @@ function App()
 {
 	return (
 		<div className='h-screen w-screen bg-[#222222] font-satoshi text-white'>
-			<AccountProvider>
-				<LoginProvider>
+		<AccountProvider>
+			<LoginProvider>
+				<TournamentProvider>
 					<Navbar />
 					<MainContent />
 					<Modals />
-				</LoginProvider>
-			</AccountProvider>
+				</TournamentProvider>
+			</LoginProvider>
+		</AccountProvider>
 		</div>
 	)
 }

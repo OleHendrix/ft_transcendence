@@ -3,20 +3,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAccountContext } from '../contexts/AccountContext';
 import { IoMdClose } from 'react-icons/io';
 import axios from 'axios';
+import { useTournamentContext } from '../contexts/TournamentContext';
 
 
 export default function TournamentSetupForm() {
-	const { setShowTournamentSetup, loggedInAccounts } = useAccountContext();
+	const { setShowTournamentSetup, setShowTournamentLobbyList } = useTournamentContext();
+	const { loggedInAccounts } = useAccountContext();
 
-	async function createTournament( numberOfPlayers: number )
+	async function createTournament( maxPlayers: number )
 	{
 		const host = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
  		try {
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/create-tournament`,
 			{
 				host,
-				numberOfPlayers
+				maxPlayers
 			});
+			if (!response) return;
+			const tournamentId = response.data.tournamentId;
+			console.log("tournament created with tournamentId:", tournamentId);
 		} catch ( error: any ) {
 			console.log(error);
 		}
@@ -46,29 +51,45 @@ export default function TournamentSetupForm() {
 
 					{/* Player Count Section */}
 					<section className="w-full">
-					<h1 className="flex justify-center text-3xl gap-2 font-normal font-black items-center"> 
-						select number of players 
+					<h1 className="text-3xl font-black text-center mb-6">
+						Create Tournament:
+					</h1>
+					<h1 className="text-2xl font-black text-center mb-6">
+						Select number of players
 					</h1>
 
-						<div className="flex flex-row space-x-4 ml-2">
-								<motion.button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-4 py-0 rounded-3xl w-auto`}
-									onClick={() => createTournament(4)}>
-									4 players
-								</motion.button>
-								<motion.button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-4 py-0 rounded-3xl w-auto`}
-									onClick={() => createTournament(8)}>
-									8 players
-								</motion.button>
-								<motion.button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-4 py-0 rounded-3xl w-auto`}
-									onClick={() => createTournament(16)}>
-									16 players
-								</motion.button>
-								<motion.button className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-4 py-0 rounded-3xl w-auto`}
-									onClick={() => createTournament(32)}>
-									32 players
-								</motion.button>
-						</div>
-					
+					<div className="flex justify-center mt-6 gap-4">
+						{[4, 8, 16, 32].map((count) => (
+							<motion.button
+								key={count}
+								className="h-10 px-4 py-0 rounded-3xl bg-[#134588] text-white text-sm font-medium"
+								onClick={() => createTournament(count)}
+							>
+								{count} players
+							</motion.button>
+						))}
+					</div>
+					</section>
+
+					{/* Join existing tournament*/}
+					<section className="w-full">
+					<h1 className="text-3xl font-black text-center mb-6">
+						Join existing tournament
+					</h1>
+
+					<div className="flex justify-center mt-6 gap-4">
+
+					<motion.button
+						className="h-10 px-4 py-0 rounded-3xl bg-[#134588] text-white text-sm font-medium"
+						onClick={() => {
+							setShowTournamentLobbyList(true); 
+							setShowTournamentSetup(false)
+						}}
+					>
+						Find a lobby
+					</motion.button>
+
+					</div>
 					</section>
 
 				</motion.div>

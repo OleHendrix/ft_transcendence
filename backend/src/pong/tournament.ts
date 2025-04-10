@@ -84,6 +84,17 @@ export async function manageTournaments(fastify: FastifyInstance)
 	});
 }
 
+export async function getTournamentLobbies(fastify: FastifyInstance)
+{
+	fastify.get('/api/get-tournament-lobbies', async (request, reply) => {
+		
+		for (const lobby of tournamentLobbies)
+		{
+
+		}
+	})
+}
+
 async function setRounds(tournamentId: number)
 {
 	let lobby = tournamentLobbies.get(tournamentId);
