@@ -134,3 +134,12 @@ export enum PlayerState
 	playing,
 	queueing
 }
+
+export interface Round
+{
+	p1:			PlayerData;
+	p2:			PlayerData;
+	p1score:	number;
+	p2score:	number;
+	result:		Result;
+}

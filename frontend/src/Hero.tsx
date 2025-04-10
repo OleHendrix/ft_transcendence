@@ -6,9 +6,10 @@ import { RiRobot2Line } from "react-icons/ri";
 import { BiRocket } from "react-icons/bi";
 import { useAccountContext } from "./contexts/AccountContext";
 import "./css/ponganimation.css";
-import { PlayerState, PlayerData, QueueData, Opponent } from './types';
+import { PlayerState, PlayerData, QueueData, Opponent, Round } from './types';
 import { useState, useEffect } from 'react';
 import { useTournamentContext } from './contexts/TournamentContext';
+// import useLocalTournament from './tournament/LocalTournament';
 
 function SimplePong()
 {
@@ -81,15 +82,78 @@ function Buttons()
 	const hoverScale = 1.03;
 	const tapScale = 0.97;
 
-	async function AddGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
+	const [ tournamentId, setTournamentId ] = useState(-1);
+	const [ rounds, setRounds ] = useState<Round[]>([]);
+
+	async function AddGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean, tournament: number)
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournament: -1 });
+
+		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournament });
 		if (response.status >= 400)
 		{
 			console.log("Failed to create match");
 			return;
 		}
 		setIsPlaying(PlayerState.playing);
+	}
+
+	async function startLocalTournament()
+	{
+		try
+		{
+			const host       = { username: loggedInAccounts[0].username, id: loggedInAccounts[0].id};
+			const maxPlayers = loggedInAccounts.length;
+
+			let response = await axios.post(`http://${window.location.hostname}:5001/api/create-tournament`, { host, maxPlayers });
+			if (!response)
+			{
+				console.log("broken", host, maxPlayers);
+				return ;
+			}
+
+			// const id = response.data;
+			console.log("before:", response.data.tournamentId);
+			const tournamentIdValue = response.data.tournamentId;
+			setTournamentId(tournamentIdValue);
+			console.log("after:", tournamentId);
+
+			for (let i = 1; i < maxPlayers; i++)
+			{
+				const player = { username: loggedInAccounts[i].username, id: loggedInAccounts[i].id};
+				console.log("tournamentid", tournamentId);
+				response = await axios.post(`http://${window.location.hostname}:5001/api/join-tournament`, { player, tournamentId: tournamentIdValue});
+				if (response.data.start === true)
+				{
+					setRounds(response.data.rounds);
+					manageTournament(tournamentIdValue, response.data.rounds);
+				}
+			}
+		}
+		catch (error)
+		{
+			console.error(error);
+		}
+	}
+	
+	async function manageTournament(tournamentId: number, rounds: Round[])
+	{
+		for (const round of rounds)
+		{
+			console.log(round);
+			await AddGame(round.p1, round.p2, true, tournamentId);
+		}
+
+		try
+		{
+			let response = await axios.post(`http://${window.location.hostname}:5001/api/tournament`, { tournamentId: tournamentId });
+			if (response.data.end === true)
+				console.log("Tournament finished!", response.data.winner);
+
+		}
+		catch (error)
+		{
+			console.error(error);
+		}
 	}
 
 	return(
@@ -122,7 +186,7 @@ function Buttons()
 				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 					whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
 					whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
-					onClick={() => AddGame(loggedInAccounts[0], loggedInAccounts[1], true)}>
+					onClick={() => AddGame(loggedInAccounts[0], loggedInAccounts[1], true, -1)}>
 					<p>Local Game</p>
 					<RiGamepadLine />
 				</motion.button>
@@ -135,7 +199,18 @@ function Buttons()
 					whileHover={(loggedInAccounts.length > 2 ? { scale: hoverScale } : {})}
 					whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}
 					onClick={() => setShowTournamentSetup(true)}>
-					<p>Tournament</p>
+					<p>Online Tournament</p>
+					<TbTournament />
+				</motion.button>
+				<motion.button className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-4 py-0 rounded-3xl w-auto
+				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
+					whileHover={(loggedInAccounts.length > 2 ? { scale: hoverScale } : {})}
+					whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}
+					onClick={async () => {
+						await startLocalTournament();
+						}
+					}>
+					<p>Local Tournament</p>
 					<TbTournament />
 				</motion.button>
 			</div>

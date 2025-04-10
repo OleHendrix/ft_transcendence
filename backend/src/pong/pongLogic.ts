@@ -1,6 +1,7 @@
 import { PongState, Match, Statics, Paddle, Ball, PlayerData, Result, MatchHistory } from "./types";
 import { prisma } from '../server';
 import { Prisma } from "@prisma/client/default";
+import { setResults } from "./tournament";
 
 const s: Statics =
 ({
@@ -298,7 +299,7 @@ export async function endGame(match: Match, result: Result)
 
 	const matchResult = (result: Result, isP1: boolean) =>
 	{
-		if (result === Result.DRAW)				return { draws:  { increment: 1 } };
+		if (result  === Result.DRAW)				return { draws:  { increment: 1 } };
 		if ((result === Result.P1WON) === isP1)	return { wins:   { increment: 1 } };
 		else									return { losses: { increment: 1 } };
 	}
@@ -345,6 +346,6 @@ export async function endGame(match: Match, result: Result)
 
 	if (match.tournament !== -1)
 	{
-		
+		setResults(match.tournament, p1, match.state.p1Score, match.state.p2Score, result);
 	}
 }

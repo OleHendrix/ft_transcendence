@@ -15,12 +15,13 @@ const pongLogic_1 = require("./pongLogic");
 const types_1 = require("./types");
 let matchTable = new Map([]);
 let matchIDTable = new Map([]);
-function addGame(user1, user2, isLocalGame) {
+function addGame(user1, user2, isLocalGame, tournament) {
     let newMatch = {
         state: (0, pongLogic_1.initGame)(user1, user2),
         p1: user1,
         p2: user2,
         isLocalGame: isLocalGame,
+        tournament: tournament
     };
     let key = 0;
     while (matchTable.has(key)) {
@@ -64,12 +65,12 @@ function initPongServer(fastify) {
         });
         // adds a new match between userID1 and userID2
         fastify.post('/pong/add', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { user1, user2, isLocalGame } = request.body;
-            if (user1 === undefined || user2 === undefined || isLocalGame === undefined) {
+            const { user1, user2, isLocalGame, tournament } = request.body;
+            if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournament === undefined) {
                 reply.status(400);
                 return;
             }
-            addGame(user1, user2, isLocalGame);
+            addGame(user1, user2, isLocalGame, tournament);
             reply.status(201);
         }));
         fastify.post('/pong/is-local', (request, reply) => __awaiter(this, void 0, void 0, function* () {

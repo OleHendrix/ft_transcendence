@@ -14,7 +14,7 @@ const pongServer_1 = require("./pongServer");
 const types_1 = require("./types");
 const queue = new Map();
 function matchMake(socket1, user1, socket2, user2) {
-    (0, pongServer_1.addGame)(user1.player, user2.player, false);
+    (0, pongServer_1.addGame)(user1.player, user2.player, false, -1);
     socket1.send("Starting match");
     socket2.send("Starting match");
     console.log("Starting match");
@@ -32,7 +32,7 @@ function findMatch(socket, user) {
     return false;
 }
 function matchVsAI(socket, user) {
-    (0, pongServer_1.addGame)(user.player, { id: -1, username: "AI👾" }, true);
+    (0, pongServer_1.addGame)(user.player, { id: -1, username: "AI👾" }, true, -1);
     socket.send("Starting match");
 }
 function initMatchMaking(fastify) {

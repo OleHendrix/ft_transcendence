@@ -16,6 +16,7 @@ exports.calculateNewElo = calculateNewElo;
 exports.endGame = endGame;
 const types_1 = require("./types");
 const server_1 = require("../server");
+const tournament_1 = require("./tournament");
 const s = ({
     BOUNCE: { x: -1.03, y: -0.85 },
     CARRYOVER: 0.4,
@@ -271,5 +272,8 @@ function endGame(match, result) {
             where: { id: p2 },
             data: { winRate: calcWinRate(player2.wins, player2.matchesPlayed) }
         });
+        if (match.tournament !== -1) {
+            (0, tournament_1.setResults)(match.tournament, p1, match.state.p1Score, match.state.p2Score, result);
+        }
     });
 }
