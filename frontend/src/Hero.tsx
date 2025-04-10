@@ -83,7 +83,7 @@ function Buttons()
 
 	async function AddGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame });
+		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournament: -1 });
 		if (response.status >= 400)
 		{
 			console.log("Failed to create match");

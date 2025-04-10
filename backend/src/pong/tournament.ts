@@ -13,8 +13,8 @@ export async function createTournament(fastify: FastifyInstance)
 		for (key = 0; tournamentLobbies.has(key); key++);
 
 		let tournamentData = { players: [ host ], maxPlayers: maxPlayers, rounds: null };
-		
-		tournamentLobbies.set(key, tournamentData );
+
+		tournamentLobbies.set(key, tournamentData);
 
 		return reply.send({ tournamentId: key });
 	});
@@ -74,9 +74,11 @@ export async function manageTournaments(fastify: FastifyInstance)
 				for (let i = 0; i < winners.length; i += 2)
 				{
 					lobby.rounds.push({
-						p1: winners[i],
-						p2: winners[i + 1],
-						result: Result.PLAYING,
+						p1:			winners[i],
+						p2:			winners[i + 1],
+						p1score:	0,
+						p2score:	0,
+						result:		Result.PLAYING,
 					});
 				}
 			}
@@ -95,7 +97,7 @@ export async function getTournamentLobbies(fastify: FastifyInstance)
 	})
 }
 
-async function setRounds(tournamentId: number)
+function setRounds(tournamentId: number)
 {
 	let lobby = tournamentLobbies.get(tournamentId);
 	if (!lobby)
@@ -106,9 +108,26 @@ async function setRounds(tournamentId: number)
 	for (let i = 0; i < lobby.players.length; i += 2)
 	{
 		lobby.rounds?.push({
-			p1: lobby.players[i],
-			p2: lobby.players[i + 1],
-			result: Result.PLAYING
+			p1:			lobby.players[i],
+			p2:			lobby.players[i + 1],
+			p1score:	0,
+			p2score:	0,
+			result:		Result.PLAYING
 		});
 	}
+}
+
+export function setResults(tournamentId: number, p1: number, p1score: number, p2score: number, result: Result)
+{
+	let lobby = tournamentLobbies.get(tournamentId);
+	if (!lobby)
+		return ;
+
+	let round = lobby.rounds?.find(round => round.p1.id === p1);
+	if (!round)
+		return ;
+
+	round.p1score = p1score;
+	round.p2score = p2score;
+	round.result = result;
 }
