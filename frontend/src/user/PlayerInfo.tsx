@@ -467,9 +467,10 @@ function PlayerInfo()
 
 	const [editProfile, setEditProfile] = useState(false);
 	const [profileImage, setProfileImage] = useState(Player);
-	const [ settingUp2FA, setSettingUp2FA ] = useState(false);
+	const [settingUp2FA, setSettingUp2FA] = useState(false);
 	const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
 	const [showCropper, setShowCropper] = useState(false);
+	const [showStats, setShowStats] = useState(false);
 
 	function handleProfileImageUpload(e: React.ChangeEvent<HTMLInputElement>)
 	{
@@ -543,7 +544,7 @@ function PlayerInfo()
 							<BiLogOut size={24} />
 						</button>
 					)}
-					<div className="flex flex-col items-center gap-2">
+					<div className="flex w-full flex-col items-center gap-2">
 						<h2 className="text-2xl font-bold text-center">{loggedInAccounts[indexPlayerStats]?.username}</h2>
 						  <div className="relative">
 							<img src={profileImage} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
@@ -564,19 +565,30 @@ function PlayerInfo()
 						)}
 						{!editProfile &&
 						(
-							<div className="flex flex-col items-center">
-								<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
-									key="edit-button" 
-									whileHover={ {scale: 1.17}}
-									whileTap={ {scale: 0.87}}
-									onClick={() => setEditProfile(true)}><LiaUserEditSolid size={24} />
-								</motion.button>
-								<p className="font-thin text-xs opacity-40">Edit profile</p>
+							<div className="flex w-full justify-between">
+								<div className="flex flex-col items-center">
+									<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
+										key="edit-button" 
+										whileHover={ {scale: 1.17}}
+										whileTap={ {scale: 0.87}}
+										onClick={() => setEditProfile(true)}><LiaUserEditSolid size={24} />
+									</motion.button>
+									<p className="font-thin text-xs opacity-40">Edit profile</p>
+								</div>
+								<div className="flex flex-col items-center">
+									<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
+										key="edit-button" 
+										whileHover={ {scale: 1.17}}
+										whileTap={ {scale: 0.87}}
+										onClick={() => setShowStats(true)}><LiaUserEditSolid size={24} />
+									</motion.button>
+									<p className="font-thin text-xs opacity-40">Show Stats</p>
+								</div>
 							</div>
 						)}
 					</div>
 					<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA}/>
-					{!editProfile && <Playerstats/>}
+					{showStats && <Playerstats setShowStats={setShowStats}/>}
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>

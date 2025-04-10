@@ -2,7 +2,8 @@ import { useAccountContext } from "../contexts/AccountContext";
 import { useLoginContext } from "../contexts/LoginContext";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
-import { IoMdClose } from "react-icons/io";
+import { IoMdClose, IoIosStats } from "react-icons/io";
+import { RiGamepadLine } from "react-icons/ri";
 import Player from "../../assets/Player.svg";
 import { MatchHistory, PlayerType } from "../types";
 import { toPercentage } from "../Leaderboard";
@@ -20,15 +21,17 @@ function ShowMatchHistory()
 	const matchHistory = currentAccount?.matches ?? [];
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
-	// console.log(matchHistory);
-	// console.log("Accounts:", accounts);
-	// console.log("LoggedIn:", loggedInAccounts);
 	return (
-		<div className="border w-95 border-base-content/5 bg-transparent h-126 overflow-y-auto">
-			<table className="table-fixed w-full table overflow-y-auto whitespace-nowrap">
-				<thead>
+		<div className="border border-base-content/20 bg-transparent h-126 overflow-y-auto">
+			<table className="w-full table overflow-y-auto whitespace-nowrap">
+				<thead className="sticky top-0 z-10 bg-black shadow-2xl">
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
-						<th className=" text-center" colSpan={3}>Match History</th>
+						<th className="text-center" colSpan={6}>
+						<div className="flex w-full items-center justify-center gap-1">
+							Match History
+							<RiGamepadLine />
+						</div>
+						</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -40,8 +43,7 @@ function ShowMatchHistory()
 								: match.winner === currentAccount?.username 
 								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
 								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
-							style={{ height: '75px' }}
-						>
+							style={{ height: '75px' }}>
 							<td className="w-2/5 text-left pr-2">
 								<div className="text-2xl">                     {SMH[index].p1} </div>
 								<div className="text-xs italic text-gray-400"> {`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`} </div>
@@ -127,7 +129,7 @@ function ShowStats()
 	{
 		return (
 			<tr className={`whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
-				<td className="text-left text-2xl font-medium pl-2 pr-12" style={{ height: '75px' }}>
+				<td className="text-left text-xl font-medium pl-2 pr-12" style={{ height: '75px' }}>
 					{startStr}
 				</td>
 				<td className="text-right p-2">
@@ -148,12 +150,17 @@ function ShowStats()
 		return "";
 
 	return (
-		<div className="w-full overflow-y-auto border border-base-content/5 bg-transparent">
+		<div className="w-full overflow-y-auto border border-base-content/20 bg-transparent">
 			<link href="https://fonts.googleapis.com/css2?family=Droid+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet"></link>
 			<table className="table w-full">
-				<thead>
+				<thead className="bg-black">
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
-						<th className="text-center" colSpan={6}>Stats</th>
+						<th className="text-center" colSpan={6}>
+						<div className="flex w-full items-center justify-center gap-1">
+							Stats
+							<IoIosStats />
+						</div>
+						</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -169,76 +176,54 @@ function ShowStats()
 	)
 }
 
-function PlayerStats()
+function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetStateAction<boolean>>})
 {
 	const { accounts, loggedInAccounts } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
-	const [ showStats, setShowStats ] = useState(false);
 
-	function StatWindow()
-	{
-		const [profileImage, setProfileImage] = useState(Player);
-
-		const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-		const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
-		if (currentAccount === null)
-			return "";
-
-		return (
-			<AnimatePresence>
-				<motion.div
-					className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					exit={{ opacity: 0 }}
-				>
-					<motion.div
-						className="flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl relative shadow-2xl"
-						initial={{ scale: 0.9, y: 20 }}
-						animate={{ scale: 1, y: 0 }}
-						exit={{ scale: 0.9, y: 20 }}
-						transition={{ type: "spring", stiffness: 300, damping: 25 }}
-					>
-						<button
-							className="absolute top-4 right-4 text-gray-400 hover:text-white hover:bg-neutral-700 p-1 rounded transition"
-							onClick={() => setShowStats(false)}
-						>
-							<IoMdClose size={24} />
-						</button>
-
-						<header className="relative flex items-center justify-center gap-x-2 text-4xl -mt-2 mb-4 border-b border-neutral-700 pb-4">
-							{currentAccount?.username}
-							<img
-								src={profileImage}
-								className="h-11 w-11 rounded-full object-cover shadow-md hover:scale-105 transition-transform duration-300"
-							/>
-						</header>
-
-						<main className="flex h-[120] gap-x-4 text-2xl text-center">
-							<div className="flex flex-col h-full w-auto">
-								<ShowStats />
-							</div>
-								
-							<div className="flex flex-col h-full w-auto">
-								<ShowMatchHistory />
-							</div>
-						</main>
-					</motion.div>
-				</motion.div>
-			</AnimatePresence>
-		);
-	}
+	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
+	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
+	if (currentAccount === null)
+		return "";
 
 	return (
-		<>
-			<motion.button className="pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
-				whileHover={{ scale: 1.03 }}
-				whileTap={{ scale: 0.97 }}
-				onClick={() => { setShowStats(true) }}>Show stats
-			</motion.button>
-			{showStats && <StatWindow />}
-		</>
-	)
+		<AnimatePresence>
+			<motion.div
+				className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0 }}>
+				<motion.div
+					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl relative shadow-xl w-[50vw] min-w-3xl"
+					initial={{ scale: 0.9, y: 20 }}
+					animate={{ scale: 1, y: 0 }}
+					exit={{ scale: 0.9, y: 20 }}
+					transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+
+					<button
+						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
+						onClick={() => setShowStats(false)}>
+						<IoMdClose size={24} />
+					</button>
+
+					<div className="flex w-full flex-col items-center gap-2">
+						<h2 className="text-2xl font-bold text-center">{currentAccount?.username}</h2>
+						<img src={Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+					</div>
+
+					<div className="flex justify-center w-full">
+						<div className="w-1/2">
+							<ShowStats />
+						</div>
+
+						<div className="w-1/2">
+							<ShowMatchHistory />
+						</div>
+					</div>
+				</motion.div>
+			</motion.div>
+		</AnimatePresence>
+	);
 }
 
 export default PlayerStats

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { PlayerType } from './types';
+import logo from "../assets/Logo.png";
 import axios from 'axios';
 import { useAccountContext } from './contexts/AccountContext';
 import { IoMdClose } from 'react-icons/io';
@@ -42,35 +43,35 @@ export default function Leaderboard() {
 				className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
-				exit={{ opacity: 0 }}
-			>
+				exit={{ opacity: 0 }}>
 				<motion.div
 					className="flex flex-col items-center bg-[#2a2a2a]/90 text-white p-8 gap-8 rounded-lg w-full min-w-[400px] min-h-[500px] max-w-xl max-h-[600px] relative shadow-xl"
 					initial={{ scale: 0.9, y: 20 }}
 					animate={{ scale: 1, y: 0 }}
 					exit={{ scale: 0.9, y: 20 }}
-					transition={{ type: "spring", stiffness: 300, damping: 25 }}
-				>
-					<h1 className="flex justify-center text-4xl gap-2 font-normal font-black items-center">
-						Leaderboard <GoTrophy />
-					</h1>
+					transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+					<div className='flex flex-col items-center font-bold'>
+						<img src={logo} className='h-12 w-auto'/>
+						<p>Top Players</p>
+						<GoTrophy className='text-[#ff914d] mt-2'/>
+					</div>
+					
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => setShowLeaderboard(false)}
-					>
+						onClick={() => setShowLeaderboard(false)}>
 						<IoMdClose size={24} />
 					</button>
 
 					<div className="w-full h-80 overflow-y-auto rounded-lg border border-base-content/5 bg-transparent">
 						<table className="table w-full text-center">
-							<thead>
-								<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
-									<th className="font-[450] text-left">#</th>
-									<th className="font-[450] text-left">Name</th>
-									<th className="font-[450]">ELO</th>
-									<th className="font-[450]">Wins</th>
-									<th className="font-[450]">Losses</th>
-									<th className="font-[450]">Win Rate</th>
+							<thead className="sticky top-0 z-10 bg-black shadow-2xl">
+								<tr className="text-m font-light bg-[#303030]/90 text-lightgrey">
+									<th className="text-m text-left">#</th>
+									<th className="text-left">Name</th>
+									<th>ELO</th>
+									<th>Wins</th>
+									<th>Losses</th>
+									<th>Win Rate</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -81,9 +82,7 @@ export default function Leaderboard() {
 											index === 0 ? "bg-[linear-gradient(to_right,_#FFD70080_0%,_#FFD70032_15%,_#E0B32022_25%,_#F0D00001_100%)]" :
 											index === 1 ? "bg-[linear-gradient(to_right,_#C0C0D080_0%,_#C0C0D032_15%,_#C0C0D022_25%,_#C0C0D001_100%)]" :
 											index === 2 ? "bg-[linear-gradient(to_right,_#B85C0080_0%,_#B85C0032_15%,_#B85C0022_25%,_#B85C0001_100%)]" :
-											index % 2 === 0 ? "bg-[#303030]/80" : "bg-[#383838]/80"}
-									>
-
+											index % 2 === 0 ? "bg-[#303030]/80" : "bg-[#383838]/80"}>
 										<td className="w-6 p-[0.25px]">
 											<div className={`w-9 h-9 rounded-md ml-1 flex items-center justify-center 
 												${getBorderColour(index + 1)}`}
