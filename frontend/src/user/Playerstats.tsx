@@ -6,6 +6,7 @@ import { IoMdClose } from "react-icons/io";
 import Player from "../../assets/Player.svg";
 import { MatchHistory, PlayerType } from "../types";
 import { toPercentage } from "../Leaderboard";
+import { format } from 'date-fns';
 
 function ShowMatchHistory()
 {
@@ -23,7 +24,7 @@ function ShowMatchHistory()
 	// console.log("Accounts:", accounts);
 	// console.log("LoggedIn:", loggedInAccounts);
 	return (
-		<div className="border w-95 border-base-content/5 bg-transparent h-116.5 overflow-y-auto">
+		<div className="border w-95 border-base-content/5 bg-transparent h-126 overflow-y-auto">
 			<table className="table-fixed w-full table overflow-y-auto whitespace-nowrap">
 				<thead>
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
@@ -39,20 +40,21 @@ function ShowMatchHistory()
 								: match.winner === currentAccount?.username 
 								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
 								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
-							style={{ height: '68.8px' }}
+							style={{ height: '75px' }}
 						>
-							<td className="w-2/5 text-left p-2">
+							<td className="w-2/5 text-left pr-2">
 								<div className="text-2xl">                     {SMH[index].p1} </div>
 								<div className="text-xs italic text-gray-400"> {`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`} </div>
 							</td>
 
-							<td className="w-1/5 text-center text-2xl font-bold">
-								<div className="flex justify-center w-full">
-									{match.p1score}-{match.p2score}
+							<td className="w-1/5 text-center">
+								<div className="flex flex-col justify-center w-full">
+									<span className="text-2xl font-bold">{match.p1score}-{match.p2score}</span>
+									<span className="text-xs italic text-gray-400">{format(new Date(match.time), "MM-dd HH:mm")}</span>
 								</div>
 							</td>
 								
-							<td className="w-2/5 text-right p-2">
+							<td className="w-2/5 text-right pl-2">
 								<div className="text-2xl">                     {SMH[index].p2} </div>
 								<div className="text-xs italic text-gray-400"> {`${SMH[index].p2Elo} (${SMH[index].p2Diff >= 0 ? `+${SMH[index].p2Diff}` : SMH[index].p2Diff})`} </div>
 							</td>
@@ -125,7 +127,7 @@ function ShowStats()
 	{
 		return (
 			<tr className={`whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
-				<td className="text-left text-2xl font-medium pl-2 pr-12" style={{ height: '45px' }}>
+				<td className="text-left text-2xl font-medium pl-2 pr-12" style={{ height: '75px' }}>
 					{startStr}
 				</td>
 				<td className="text-right p-2">

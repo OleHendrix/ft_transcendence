@@ -39,7 +39,7 @@ function PongGame()
 	const socketRef = useRef<WebSocket | null>(null);
 	const keysPressed = useRef<{ [key: string]: boolean }>({});
 
-	// init websocket I/O
+	// websocket in
 	useEffect(() =>
 	{
 		const socket = new WebSocket(`ws://${window.location.hostname}:5001/pong`);
@@ -58,13 +58,20 @@ function PongGame()
 			}
 		});
 
+		const handleUnload = () =>
+		{
+			axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
+			socket.close();
+		};
+		window.addEventListener("beforeunload", handleUnload);
+
 		return () =>
 		{
-			socket.close();
+			window.removeEventListener("beforeunload", handleUnload);
 		};
 	}, []);
 
-	// game loop
+	// game loop / websocket out
 	useEffect(() =>
 	{
 		const sendData = () =>
@@ -80,7 +87,10 @@ function PongGame()
 		};
 		const interval = setInterval(sendData, 1000 / 60);
 
-		return () => clearInterval(interval);
+		return () => 
+		{
+			clearInterval(interval);
+		}
 	}, []);
 
 	// init player I/O

@@ -79,6 +79,7 @@ model MatchHistory {
   p2Elo   Int
   p1Diff  Int
   p2Diff  Int
+  time    DateTime @default(now())
 
   accountId Int
   account   Account @relation("matches", fields: [accountId], references: [id])
