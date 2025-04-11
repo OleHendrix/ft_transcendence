@@ -1,6 +1,6 @@
 import { useAccountContext } from "../contexts/AccountContext";
 import { useLoginContext } from "../contexts/LoginContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose, IoIosStats } from "react-icons/io";
 import { RiGamepadLine } from "react-icons/ri";
@@ -68,10 +68,12 @@ function ShowMatchHistory()
 	);
 }
 
-function ShowStats()
+function getPercentile(player: PlayerType, stat: keyof PlayerType): string
 {
 	function calcWorseThan(player: PlayerType, stat: keyof PlayerType): [number, number]
 	{
+		const { accounts } = useAccountContext();
+
 		let worseThan = 0;
 		let total = 0;
 		
@@ -86,45 +88,17 @@ function ShowStats()
 		return [worseThan, total];
 	}
 
-	function getPercentile(player: PlayerType, stat: keyof PlayerType): string
-	{
-		if (player[stat] === null)
-			return "Play a match to see ranking";
-		const [worseThan, total] = calcWorseThan(player, stat);
+	if (player[stat] === null)
+		return "Play a match to see ranking";
+	const [worseThan, total] = calcWorseThan(player, stat);
 
-		if (worseThan === 0)
-			return "Number #1!";
-		return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
-	}
+	// if (worseThan === 0)	
+	// 	return "#1!";
+	return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
+}
 
-	function redYellowGradient(val: number, range: number)
-	{
-		if (Number.isNaN(val))
-			return "#777700";
-
-		const midpoint = (100 - range) / 2;
-		const normalized = (val - midpoint) / range;
-	
-		const r = Math.max(0, Math.min(255, 255 - normalized * 255));
-		const g = Math.max(0, Math.min(255, normalized * 255));
-	
-		const toHex = (v: number) => Math.round(v).toString(16).padStart(2, '0');
-		const str = `#${toHex(r)}${toHex(g)}00`;
-		console.log(str);
-		return str;
-	}
-
-	function GetGradientStyle(val: number, max: number): React.CSSProperties
-	{
-		console.log(val);
-		const percentage = val === null ? 50 :  Math.max(0, Math.min(((val / max) * 100), 100));
-		const colour = redYellowGradient(percentage, 20);
-	
-		return {
-			background: `linear-gradient(to right, ${colour}40 0%, ${colour}35 ${Math.max(percentage - 3, 1)}%, ${colour}10 ${Math.min(percentage + 3, 99)}%, ${colour}08 100%)`
-		};
-	}
-
+function ShowStats()
+{
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{
 		return (
@@ -140,7 +114,6 @@ function ShowStats()
 		);
 	}
 	
-
 	const { accounts, loggedInAccounts } = useAccountContext();
 	const { indexPlayerStats, showPlayerStats } = useLoginContext();
 
@@ -185,6 +158,7 @@ function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetSt
 	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
 	if (currentAccount === null)
 		return "";
+	const playerRank = Number(getPercentile(currentAccount, "elo").split(" ")[3].slice(1, 2));
 
 	return (
 		<AnimatePresence>
@@ -194,7 +168,7 @@ function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetSt
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}>
 				<motion.div
-					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl relative shadow-xl w-[50vw] min-w-3xl"
+					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl relative shadow-xl w-[30vw] min-w-3xl"
 					initial={{ scale: 0.9, y: 20 }}
 					animate={{ scale: 1, y: 0 }}
 					exit={{ scale: 0.9, y: 20 }}
@@ -209,14 +183,20 @@ function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetSt
 					<div className="flex w-full flex-col items-center gap-2">
 						<h2 className="text-2xl font-bold text-center">{currentAccount?.username}</h2>
 						<img src={Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+						<div className="flex flex-col p-2 items-center text-white">
+							<div className="flex flex-col justify-center items-center">
+								<p className="font-light text-s">Rank:</p>
+								<h2 className="font-semibold text-3xl font-mono" style={{ fontFamily: '"Droid Sans Mono", monospace' }}>{"#" + playerRank}</h2>
+							</div>
+						</div>
 					</div>
 
-					<div className="flex justify-center w-full">
-						<div className="w-1/2">
+					<div className="flex justify-center w-full gap-3">
+						<div className="w-2/5">
 							<ShowStats />
 						</div>
 
-						<div className="w-1/2">
+						<div className="w-3/5">
 							<ShowMatchHistory />
 						</div>
 					</div>
@@ -225,5 +205,7 @@ function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetSt
 		</AnimatePresence>
 	);
 }
+
+// bg-[#ff914d]
 
 export default PlayerStats

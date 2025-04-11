@@ -4,7 +4,7 @@ import { useLoginContext } from "../contexts/LoginContext";
 import Player from "../../assets/Player.svg";
 import { motion, AnimatePresence } from 'framer-motion';
 import Playerstats from "./Playerstats";
-import { IoMdClose } from "react-icons/io";
+import { IoMdClose, IoIosStats } from "react-icons/io";
 import { LiaUserEditSolid } from "react-icons/lia";
 import { BiLogOut } from "react-icons/bi";
 import { FiEdit3, FiCamera } from "react-icons/fi";
@@ -580,7 +580,7 @@ function PlayerInfo()
 										key="edit-button" 
 										whileHover={ {scale: 1.17}}
 										whileTap={ {scale: 0.87}}
-										onClick={() => setShowStats(true)}><LiaUserEditSolid size={24} />
+										onClick={() => setShowStats(true)}><IoIosStats size={24} />
 									</motion.button>
 									<p className="font-thin text-xs opacity-40">Show Stats</p>
 								</div>

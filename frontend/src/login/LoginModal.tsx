@@ -75,6 +75,7 @@ async function checkLogin( { formData, token, setLoggedInAccounts, setValidation
 	}
 	catch (error: any)
 	{
+		console.log(error.response.data.error);
 		setValidation(prev => ({...prev, [error.response.data.error]: true}))
 		return false;
 	}
