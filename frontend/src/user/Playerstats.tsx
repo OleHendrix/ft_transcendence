@@ -35,8 +35,8 @@ function ShowMatchHistory()
 					{SMH.map((match, index) => (
 						<tr
 							key={match.id}
-							className={`${"font-medium "} ${match.winner === "draw"
-								? "bg-[#303030]/80"
+							className={`${"font-medium "} ${match.winner === "Draw"
+								? "bg-[linear-gradient(to_bottom_right,_#40404050_0%,_#47474790_30%,_#40404070_70%,_#33333337_100%)]"
 								: match.winner === currentAccount?.username 
 								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
 								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
