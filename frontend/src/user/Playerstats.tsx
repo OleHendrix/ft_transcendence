@@ -22,7 +22,7 @@ function ShowMatchHistory()
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
 	return (
-		<div className="border border-base-content/20 bg-transparent h-126 overflow-y-auto">
+		<div className="border border-base-content/20 bg-transparent min-h-full overflow-y-auto">
 			<table className="w-full table overflow-y-auto whitespace-nowrap">
 				<thead className="sticky top-0 z-10 bg-black shadow-2xl">
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
@@ -42,8 +42,7 @@ function ShowMatchHistory()
 								? "bg-[#303030]/80"
 								: match.winner === currentAccount?.username 
 								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
-								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
-							style={{ height: '75px' }}>
+								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}>
 							<td className="w-2/5 text-left pr-2">
 								<div className="text-2xl">                     {SMH[index].p1} </div>
 								<div className="text-xs italic text-gray-400"> {`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`} </div>
@@ -103,7 +102,7 @@ function ShowStats()
 	{
 		return (
 			<tr className={`whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
-				<td className="text-left text-xl font-medium pl-2 pr-12" style={{ height: '75px' }}>
+				<td className="text-left text-xl font-medium pl-2 pr-6">
 					{startStr}
 				</td>
 				<td className="text-right p-2">
@@ -123,9 +122,9 @@ function ShowStats()
 		return "";
 
 	return (
-		<div className="w-full overflow-y-auto border border-base-content/20 bg-transparent">
+		<div className="w-full overflow-y-auto min-h-full border border-base-content/20 bg-transparent">
 			<link href="https://fonts.googleapis.com/css2?family=Droid+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet"></link>
-			<table className="table w-full">
+			<table className="table w-full table-auto">
 				<thead className="bg-black">
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
 						<th className="text-center" colSpan={6}>
@@ -168,7 +167,7 @@ function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetSt
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}>
 				<motion.div
-					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl relative shadow-xl w-[30vw] min-w-3xl"
+					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-4 md:p-8 gap-8 w-full max-w-xl md:max-w-3xl mx-4 md:mx-8 lg:mx-16 h-auto max-h-[80vh] overflow-y-auto rounded-xl relative shadow-xl"
 					initial={{ scale: 0.9, y: 20 }}
 					animate={{ scale: 1, y: 0 }}
 					exit={{ scale: 0.9, y: 20 }}
@@ -190,15 +189,16 @@ function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetSt
 							</div>
 						</div>
 					</div>
-
-					<div className="flex justify-center w-full gap-3">
-						<div className="w-2/5">
+					<div className="flex-1 w-full overflow-y-auto">
+					<div className="flex flex-col md:flex-row justify-center w-full gap-3">
+						<div className="w-full md:w-2/5">
 							<ShowStats />
 						</div>
 
-						<div className="w-3/5">
+						<div className="w-full md:w-3/5">
 							<ShowMatchHistory />
 						</div>
+					</div>
 					</div>
 				</motion.div>
 			</motion.div>

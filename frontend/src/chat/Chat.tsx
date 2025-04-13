@@ -77,7 +77,7 @@ function Chat()
 	}, [chatSessionId]);
 
 	return(
-		<div className="absolute left-[2vw] bottom-[2vw] hover:cursor-pointer">
+		<div className="fixed left-[2vw] bottom-[2vw] hover:cursor-pointer z-10">
 		{!isOpen &&
 		(
 			<motion.div whileHover={{ scale: 1.17 }} whileTap={{ scale: 0.89 }}>
@@ -103,7 +103,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 			if (!(e.target as HTMLElement).closest('.chat'))
 				setIsOpen(false);
 		}}>
-		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col items-start p-6 pt-10 h-[700px] w-[800px] bg-black/90 shadow-2xl rounded-2xl z-50">
+		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between items-end p-6 pt-10 h-[calc(100vh-6vw)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-black/90 shadow-2xl rounded-2xl z-50">
 			<button className="absolute top-2 right-2 text-gray-400 hover:text-white hover:cursor-pointer" onClick={() => setIsOpen(false)}>
 				<IoMdClose size={24} />
 			</button>
@@ -121,7 +121,7 @@ function ChatHeader()
 	const {receiverId, setReceiverId} 				= useChatContext();
 
 	return (
-		<div className="flex justify-end space-x-2 w-full flex-wrap mb-2">
+		<div className="flex justify-end space-x-2 w-full mb-2 overflow-x-scroll">
 			{accounts
 				.filter((account) => 
 					account.username !== loggedInAccounts[0]?.username && !account.admin )
@@ -250,7 +250,7 @@ function MessageList( ) {
 	
 	return (
 		<div className="h-full w-full flex flex-col gap-4 items-end overflow-y-auto">
-			<div className="h-[35vw] w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
+			<div className="h-full w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
 				{chatMessages.map((message) => {
 					const isGameInvite = message.content === "::gameInvite::";
 					const msgStatus = message.status;

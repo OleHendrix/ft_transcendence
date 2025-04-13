@@ -25,9 +25,8 @@ function Navbar()
 	}
 
 	return (
-		<>
-		<nav className="bg-[#313131] text-white h-[8vh] p-5 px-[6vw] flex items-center shadow-xl text-lg font-medium relative">
-			<div className="absolute left-[6vw]">
+		<nav className="sticky top-0 bg-[#313131] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+			<div className="absolute left-[6vw] md:left-[4vw]">
 				<motion.button 
 					className="hover:cursor-pointer" 
 					whileHover={{scale: 1.07}} 
@@ -43,11 +42,10 @@ function Navbar()
 				</button>
 			</div>
 			
-			<div className="absolute right-[6vw]">
+			<div className="absolute right-[6vw] md:right-[4vw] hidden md:block">
 				<Players />
 			</div>
 		</nav>
-		</>
 	);
 }
 

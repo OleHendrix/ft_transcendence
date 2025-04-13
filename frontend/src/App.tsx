@@ -29,14 +29,16 @@ function MainContent()
 function App()
 {
 	return (
-		<div className='h-screen w-screen bg-[#222222] font-satoshi text-white'>
-			<AccountProvider>
+		<div className='h-screen min-h-screen w-screen overflow-x-hidden bg-[#222222] font-satoshi text-white'>
+			<div className="flex flex-col w-full h-full bg-[#222222]">
+				<AccountProvider>
 				<LoginProvider>
 					<Navbar />
 					<MainContent />
 					<Modals />
 				</LoginProvider>
-			</AccountProvider>
+				</AccountProvider>
+			</div>
 		</div>
 	)
 }
