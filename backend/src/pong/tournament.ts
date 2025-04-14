@@ -1,53 +1,90 @@
 import { FastifyInstance } from "fastify";
 import { PlayerData, TournamentData, Result } from "./types";
+import { WebSocket } from 'ws';
+import 'ws';
+
+declare module 'ws' {
+	interface WebSocket {
+		playerId?: number;
+	}
+}
 
 let tournamentLobbies = new Map<number, TournamentData>();
 
 export async function createTournament(fastify: FastifyInstance)
 {
-	fastify.post('/api/create-tournament', async (request, reply) =>
+	fastify.register(async function (fastify)
 	{
-		const { host, maxPlayers } = request.body as { host: PlayerData, maxPlayers: number };
-
-		let key;
-		for (key = 0; tournamentLobbies.has(key); key++);
-
-		let tournamentData = { players: [ host ], maxPlayers: maxPlayers, rounds: null };
+		fastify.get('/ws/create-tournament', { websocket: true }, (connection, req) => {
+			const { hostId, hostUsername, maxPlayers } = req.query as {
+				hostId: string;
+				hostUsername: string;
+				maxPlayers: string;
+			};
 		
-		tournamentLobbies.set(key, tournamentData );
+			let tournamentId = 1;
+			while (tournamentLobbies.has(tournamentId)) tournamentId++;
+		
+			connection.playerId = Number(hostId);
+			const sockets = new Set<WebSocket>();
+			sockets.add(connection);
+		
+			const tournamentData = {
+				players: [{ id: Number(hostId), username: hostUsername }],
+				maxPlayers: Number(maxPlayers),
+				rounds: null,
+				sockets: new Set([connection])
+			};
 
-		return reply.send({ tournamentId: key });
+		
+			tournamentLobbies.set(tournamentId, tournamentData);
+
+			connection.send(JSON.stringify({ tournamentId }));
+		
+			connection.on("close", () => {
+				console.log(`Tournament ${tournamentId} creator disconnected`);
+			});
+		})
 	});
 }
 
 export async function joinTournament(fastify: FastifyInstance)
 {
-	fastify.post('/api/join-tournament', async (request, reply) =>
+	fastify.register(async function (fastify)
 	{
-		const { player, tournamentId } = request.body as { player: PlayerData, tournamentId: number };
+		fastify.get('/ws/join-tournament', { websocket: true }, (connection, req) => {
+			const { playerId, playerUsername, tournamentId } = req.query as {
+				playerId: string;
+				playerUsername: string;
+				tournamentId: string;
+			};
 
-		let lobby = tournamentLobbies.get(tournamentId);
-		if (!lobby)
-			return reply.status(404).send({ error: 'Tournament not found'});
+			let tournament = tournamentLobbies.get(Number(tournamentId));
+			if (!tournament)
+				return console.log("Tournament not found");
+			if (tournament.players.length >= tournament.maxPlayers)
+				return console.log("Tournament already full");
 
-		if (lobby.players.length >= lobby.maxPlayers)
-			return reply.send({ error: 'Tournament already full'});
+			const parsedPlayer: PlayerData = {
+				id: Number(playerId),
+				username: playerUsername,
+			};
 
-		lobby.players.push(player);
+			connection.playerId = Number(playerId);
 
-		if (lobby.players.length == lobby.maxPlayers)
-		{
-			setRounds(tournamentId);
-			return reply.send({ start: true, rounds: lobby.rounds });
-		}
+			tournament.players.push(parsedPlayer);
+			tournament.sockets.add(connection);
 
-		return reply.send({ message: 'Joined the tournament succesfully!'});
+			connection.on("close", () => {
+				console.log(`Tournament: ${tournamentId} player: ${ parsedPlayer.id } disconnected`);
+			});
+		})
 	});
 }
 
 export async function manageTournaments(fastify: FastifyInstance)
 {
-	fastify.post('/api/tournament', async (request, reply) =>
+	fastify.post('/api/tournament', async (request, reply) => // rename
 	{
 		for (const [id, lobby] of tournamentLobbies)
 		{
@@ -84,13 +121,73 @@ export async function manageTournaments(fastify: FastifyInstance)
 	});
 }
 
+export async function getTournamentById(fastify: FastifyInstance) {
+	fastify.get('/api/get-tournament/:id', async (request, reply) => {
+		const { id } = request.params as { id: string };
+		const tournamentId = parseInt(id, 10);
+
+		if (isNaN(tournamentId)) {
+			return reply.status(400).send({ error: "Invalid tournament ID" });
+		}
+
+		const tournament = tournamentLobbies.get(tournamentId);
+
+		if (!tournament) {
+			return reply.status(404).send({ error: "Tournament not found" });
+		}
+
+		const tournamentInfo = {
+			tournamentId,
+			hostUsername: tournament.players[0]?.username || "Unknown",
+			players: tournament.players.map(player => player.username),
+			maxPlayers: tournament.maxPlayers,
+			currentPlayers: tournament.players.length,
+			roundsStarted: tournament.rounds !== null,
+		};
+
+		reply.send(tournamentInfo);
+	});
+}
+
 export async function getTournamentLobbies(fastify: FastifyInstance)
 {
 	fastify.get('/api/get-tournament-lobbies', async (request, reply) => {
-		
-		for (const lobby of tournamentLobbies)
-		{
+		const lobbySummaries = Array.from(tournamentLobbies.entries()).map(
+			([tournamentId, lobby]) => ({
+				tournamentId,
+				hostUsername: lobby.players[0]?.username || 'Unknown',
+				currentPlayers: lobby.players.length,
+				maxPlayers: lobby.maxPlayers,
+			})
+		);
 
+		reply.send(lobbySummaries);
+	})
+}
+
+export async function leaveTournament(fastify: FastifyInstance)
+{
+	fastify.post('/api/leave-tournament', async (request, reply) => {
+		const { playerId, tournamentId } = request.body as { playerId: number, tournamentId: number };
+		console.log(`player ${ playerId} leaving tournament ${tournamentId}`);
+
+		let tournament = tournamentLobbies.get(tournamentId);
+		if (!tournament)
+			return reply.status(400).send({ error: "Invalid tournament ID" });
+
+		for (let socket of tournament.sockets) {
+			if (socket.playerId = playerId) {
+				console.log(`player ${playerId} left tournament lobby ${tournamentId}`);
+				socket.close();
+				tournament.sockets.delete(socket);
+			}
+		}
+
+		tournament.players = tournament.players.filter(player => player.id !== playerId);
+
+		if (tournament.players.length === 0) {
+			console.log(`tournamentId ${tournamentId} empty. deleting`);
+			tournamentLobbies.delete(tournamentId);
 		}
 	})
 }

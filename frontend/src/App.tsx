@@ -12,11 +12,12 @@ import { LoginProvider } from "./contexts/LoginContext";
 import { AccountProvider, useAccountContext } from './contexts/AccountContext';
 import { TournamentProvider, useTournamentContext } from "./contexts/TournamentContext";
 import TournamentLobbyList from './tournament/TournamentLobbyList';
+import TournamentWaitingRoom from './tournament/TournamentWaitingRoom';
 
 function MainContent()
 {
 	const { isPlaying, showLeaderboard } = useAccountContext();
-	const { showTournamentSetup, showTournamentLobbyList } = useTournamentContext();
+	const { showTournamentSetup, showTournamentLobbyList, showTournamentWaitingRoom } = useTournamentContext();
 
 	return (
 		<>
@@ -28,6 +29,7 @@ function MainContent()
 			{isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
 			{isPlaying !== PlayerState.playing && showTournamentSetup && <TournamentSetup/> }
 			{isPlaying !== PlayerState.playing && showTournamentLobbyList && <TournamentLobbyList/> }
+			{isPlaying !== PlayerState.playing && showTournamentWaitingRoom && <TournamentWaitingRoom/> }
 		</>
 	)
 }

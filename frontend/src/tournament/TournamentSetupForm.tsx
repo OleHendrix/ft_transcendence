@@ -7,24 +7,39 @@ import { useTournamentContext } from '../contexts/TournamentContext';
 
 
 export default function TournamentSetupForm() {
-	const { setShowTournamentSetup, setShowTournamentLobbyList } = useTournamentContext();
+	const { setShowTournamentSetup, setShowTournamentLobbyList, setShowTournamentWaitingRoom, setTournamentId } = useTournamentContext();
 	const { loggedInAccounts } = useAccountContext();
 
 	async function createTournament( maxPlayers: number )
 	{
 		const host = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
- 		try {
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/create-tournament`,
-			{
-				host,
-				maxPlayers
-			});
-			if (!response) return;
-			const tournamentId = response.data.tournamentId;
-			console.log("tournament created with tournamentId:", tournamentId);
-		} catch ( error: any ) {
-			console.log(error);
-		}
+		
+		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/create-tournament?hostId=${host.id}&hostUsername=${host.username}&maxPlayers=${maxPlayers}`);
+		socket.onopen = () => {
+			console.log("WebSocket connection established for tournament host");
+		};
+
+		socket.onmessage = (event) => {
+			try {
+				const data = JSON.parse(event.data);
+				if (data.tournamentId) {
+					console.log("Tournament created with ID:", data.tournamentId);
+					setTournamentId(data.tournamentId);
+					setShowTournamentWaitingRoom(true);
+					setShowTournamentSetup(false);
+				}
+			} catch (err) {
+				console.error("Failed to parse tournament creation response", err);
+			}
+		};
+	
+		socket.onerror = (error) => {
+			console.error("WebSocket error:", error);
+		};
+	
+		socket.onclose = () => {
+			console.log("WebSocket closed");
+		};
 	};
 	return (
 		<AnimatePresence>
@@ -54,7 +69,7 @@ export default function TournamentSetupForm() {
 					<h1 className="text-3xl font-black text-center mb-6">
 						Create Tournament:
 					</h1>
-					<h1 className="text-2xl font-black text-center mb-6">
+					<h1 className="text-2xl fastifyfont-black text-center mb-6">
 						Select number of players
 					</h1>
 

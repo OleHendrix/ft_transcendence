@@ -2,6 +2,7 @@
 // |               WARNING: is a duplicate of frontend/types.ts               |
 // +--------------------------------------------------------------------------+
 
+
 export interface PlayerData
 {
 	id:			number;
@@ -149,9 +150,12 @@ interface Round
 	result:	Result;
 }
 
+import type { WebSocket } from 'ws';
+
 export interface TournamentData
 {
 	players:	PlayerData[];
 	maxPlayers:	number;
 	rounds:		Round[] | null;
+	sockets:	Set<WebSocket>;
 };
