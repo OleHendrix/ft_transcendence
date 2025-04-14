@@ -127,6 +127,7 @@ export interface Match
 	p1:				PlayerData;
 	p2:				PlayerData;
 	isLocalGame:	boolean;
+	tournament:		number;
 };
 
 export interface MatchHistory
@@ -145,9 +146,11 @@ export interface MatchHistory
 
 interface Round
 {
-	p1:		PlayerData;
-	p2:		PlayerData;
-	result:	Result;
+	p1:			PlayerData;
+	p2:			PlayerData;
+	p1score:	number;
+	p2score:	number;
+	result:		Result;
 }
 
 import type { WebSocket } from 'ws';
