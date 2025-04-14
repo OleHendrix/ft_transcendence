@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from 'framer-motion';
 import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
+import { Link } from 'react-router-dom';
 import Player from "../assets/Player.svg";
 import Player1 from "../assets/Player1.svg";
 import Player2 from "../assets/Player2.svg";
@@ -22,8 +23,10 @@ const Players = React.memo(function Players()
 				</div>
 				)}
 				<div className="flex items-center flex-col space-y-0.5 w-18">
-					<motion.img src={PlayerAdd} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => setShowSignUpModal(true)}/>
+					<Link to="/signup">
+					<motion.img src={PlayerAdd} className="h-12 w-auto hover:cursor-pointer" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}}/>
 					{loggedInAccounts.length > 0 && (<p className="text-[12px] w-full text-center truncate invisible">placeholder</p>)}
+					</Link>
 				</div>
 			</div>
 		</>
