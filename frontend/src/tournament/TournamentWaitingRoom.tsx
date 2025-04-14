@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { IoMdClose } from 'react-icons/io';
 import axios from 'axios';
 import { useTournamentContext } from '../contexts/TournamentContext';
@@ -10,6 +11,7 @@ export default function TournamentWaitingRoom() {
 	const { tournamentId, setShowTournamentWaitingRoom } = useTournamentContext();
 	const [ tournamentData, setTournamentData ] = useState<any>(null);
 	const [ players, setPlayers ] = useState<any[]>([]);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		async function fetchTournamentData() {
@@ -44,7 +46,7 @@ export default function TournamentWaitingRoom() {
 		} catch (error) {
 			console.log(error);
 		}
-		setShowTournamentWaitingRoom(false);
+		navigate(-1);
 	};
 
 	return (

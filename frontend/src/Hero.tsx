@@ -31,6 +31,7 @@ let queueStartTime = new Map<number, number>();
 export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) => void)
 {
 	socket = new WebSocket(`ws://${window.location.hostname}:5001/matchmake`);
+	const navigate = useNavigate();
 
 	if (socket === null)
 		return;
@@ -49,6 +50,7 @@ export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) =
 		{
 			console.log("Match found! Redirecting...");
 			setIsPlaying(PlayerState.playing);
+			navigate('/pong-game');
 		}
 	});
 	queueStartTime.set(user.player.id, Date.now());
@@ -93,6 +95,7 @@ function Buttons()
 			return;
 		}
 		setIsPlaying(PlayerState.playing);
+		navigate('/pong-game');
 	}
 
 	return(
@@ -148,7 +151,7 @@ function Buttons()
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length > 2 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}
-					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament-setup')}}>
+					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/setup')}}>
 				<p>Tournament</p>
 				<TbTournament />
 			</motion.button>

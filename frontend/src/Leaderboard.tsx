@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { PlayerType } from './types';
 import logo from "../assets/Logo.png";
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
 import { useAccountContext } from './contexts/AccountContext';
 import PlayerStats from './user/Playerstats';
@@ -17,14 +17,27 @@ export function toPercentage(n: number, decimals: number): number
 
 export default function Leaderboard()
 {
-	const { accounts, setShowLeaderboard, showStats, setShowStats } = useAccountContext();
+	const [ accounts, setAccounts ] = useState<PlayerType[]>([]);
 	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
-	const [accountId, setAccountId] = useState(0);
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));
-	}, []);
+	useEffect(() =>
+	{
+		async function fetchAccounts()
+		{
+			try
+			{
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
+				setAccounts(response.data.accounts);
+			}
+			catch (error: any)
+			{
+				console.log(error.response.data);
+			}
+		} fetchAccounts();
+	}, [])
+
+	useEffect(() => {setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));}, [accounts]);
 
 	function getBorderColour(position: number): string
 	{
@@ -95,7 +108,7 @@ export default function Leaderboard()
 												{index + 1}
 											</div>
 										</td>
-										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => {setAccountId(account.id);  setShowStats(true)}}>{account.username}</span></td>
+										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => navigate(`./${account.username}`) }>{account.username}</span></td>
 										<td className="w-25">{account.elo}</td>
 										<td className="w-25">{account.wins}</td>
 										<td className="w-25">{account.losses}</td>
@@ -105,7 +118,7 @@ export default function Leaderboard()
 							</tbody>
 						</table>
 					</div>
-					{showStats && <PlayerStats setShowStats={setShowStats} accountId={accountId} />}
+					<Outlet />
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>

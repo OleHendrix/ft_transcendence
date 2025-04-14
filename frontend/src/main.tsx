@@ -7,16 +7,40 @@ import SignUpModal from './signup/SignUpModal.tsx';
 import LoginModal from './login/LoginModal.tsx';
 import Leaderboard from './Leaderboard.tsx';
 import TournamentSetup from './tournament/TournamentSetup.tsx';
+import TournamentWaitingRoom from './tournament/TournamentWaitingRoom.tsx';
+import TournamentLobbyList from './tournament/TournamentLobbyList.tsx';
+import PongGame from './pong/PongGame.tsx';
+import PlayerInfo from './user/PlayerInfo.tsx';
+import PlayerStats from './user/Playerstats.tsx';
 
 const router = createBrowserRouter([
 	{
 		path: '/',
 		element: <App />,
 		children: [
-		{ path: '/signup', element: <SignUpModal />},
-		{ path: '/login', element: <LoginModal />},
-		{ path: '/leaderboard', element: <Leaderboard />},
-		{ path: '/tournament-setup', element: <TournamentSetup />},
+		{ path: 'signup', element: <SignUpModal />},
+		{ path: 'login', element: <LoginModal />},
+		{ path: 'leaderboard', element: <Leaderboard />,
+			children:
+			[
+				{ path: ':username', element: <PlayerStats />}
+			]
+		},
+		{ path: 'playerinfo/:username', element: <PlayerInfo />,
+			children:
+			[
+				{ path: 'stats', element: <PlayerStats />}
+			]
+		},
+		{ path: '/pong-game', element: <PongGame />},
+		{ path: 'tournament',
+			children:
+			[
+				{ path: 'setup', element: <TournamentSetup />},
+				{ path: 'waiting-room', element: <TournamentWaitingRoom />},
+				{ path: 'lobby-list', element: <TournamentLobbyList />}
+			]
+		}
 		]
 	}
 ]);

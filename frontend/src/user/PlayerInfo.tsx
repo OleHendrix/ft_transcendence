@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Outlet } from 'react-router-dom';
 import { useAccountContext } from "../contexts/AccountContext";
 import { useLoginContext } from "../contexts/LoginContext";
 import Player from "../../assets/Player.svg";
@@ -12,6 +13,7 @@ import { MdOutlineDeleteForever } from "react-icons/md";
 import ImageCropper from "../ImageCrop";
 
 import axios from "axios";
+import { PlayerType } from "../types";
 
 interface EditIconProps
 {
@@ -175,14 +177,15 @@ interface ShowInfoProps
 	setEditProfile: React.Dispatch<React.SetStateAction<boolean>>
 	settingUp2FA: boolean,
 	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>
+	selectedAccount: PlayerType | undefined;
 }
 
-function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}: ShowInfoProps )
+function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, selectedAccount}: ShowInfoProps )
 {
 	const { accounts, loggedInAccounts, setTriggerFetchAccounts, setLoggedInAccounts }  = useAccountContext();
 	const { indexPlayerStats, setShowPlayerStats } = useLoginContext();
 
-	const [formData, setFormData] = useState({username: loggedInAccounts[indexPlayerStats].username, email: loggedInAccounts[indexPlayerStats].email, password: '', confirmPassword: ''});
+	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
 	const [confirmDisable2Fa, setConfirmDisable2Fa] = useState(false);
 	const [confirmDelete, setConfirmDelete] = useState(false);
@@ -196,6 +199,13 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		'Password don\'t matches': false,
 		'Password matches!': false
 	});
+	const navigate = useNavigate();
+
+	useEffect(() =>
+	{
+		if (selectedAccount)
+			setFormData({ username: selectedAccount.username, email: selectedAccount.email, password: '', confirmPassword: ''});
+	}, [selectedAccount]);
 
 	useEffect(() =>
 	{
@@ -212,9 +222,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		setValidation(prev => (
 		{
 			...prev,
-			'Already logged in': ((loggedInAccounts.some(player => player.username === formData.username) && loggedInAccounts[indexPlayerStats].username !== formData.username ) || (loggedInAccounts.some(player => player.email === formData.email) && loggedInAccounts[indexPlayerStats].email !== formData.email)),
-			// 'Username exists': (accounts.some(player => player.username === formData.username) && loggedInAccounts[indexPlayerStats].username !== formData.username),
-			// 'Email exists': (accounts.some(player => player.email === formData.email) && loggedInAccounts[indexPlayerStats].email !== formData.email),
+			'Already logged in': ((loggedInAccounts.some(player => player.username === formData.username) && selectedAccount?.username !== formData.username ) || (loggedInAccounts.some(player => player.email === formData.email) && selectedAccount?.email !== formData.email)),
 			'Password don\'t matches': passwordDontMatch,
 			'Password matches!': passwordMatches
 		}));
@@ -226,34 +234,31 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
   		}
   		const isEmptyForm = editPassword ? Object.values(formData).some(field => field === "") : [formData.username, formData.email].some(field => field === "");
   
- 		const currentAccount = loggedInAccounts[indexPlayerStats];
-		const hasChanges = editPassword ? (formData.username !== currentAccount.username 
-		|| formData.email !== currentAccount.email || (formData.password && formData.password !== ""))
-		: (formData.username !== currentAccount.username
-		|| formData.email !== currentAccount.email);
+		const hasChanges = editPassword ? (formData.username !== selectedAccount?.username 
+		|| formData.email !== selectedAccount?.email || (formData.password && formData.password !== ""))
+		: (formData.username !== selectedAccount?.username
+		|| formData.email !== selectedAccount?.email);
 
   		setEmptyForm(isEmptyForm || !hasChanges);
 	}, [formData, editPassword]);
 
 	const disable2FA = async () =>
 	{
-		console.log("uhh");
 		try
 		{
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`,
 			{
-				username: loggedInAccounts[indexPlayerStats].username
+				username: selectedAccount?.username
 			});
 			if (response.data.success)
 			{
-				const updatedloggedInAccounts = [...loggedInAccounts];
-				updatedloggedInAccounts[indexPlayerStats] =
-				{
-					...updatedloggedInAccounts[indexPlayerStats],
-					twofa: response.data.user.twofa
-				};
-				setLoggedInAccounts(updatedloggedInAccounts);
-				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
+				const updatedLoggedInAccounts = loggedInAccounts.map((account) =>
+					account.username === selectedAccount?.username
+						? { ...account, twofa: response.data.user.twofa }
+						: account
+				);
+				setLoggedInAccounts(updatedLoggedInAccounts);
+				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedLoggedInAccounts));
 				setTriggerFetchAccounts(true);
 			}
 		}
@@ -272,8 +277,8 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		setFormData( prev => (
 		{
 			...prev,
-			username: loggedInAccounts[indexPlayerStats].username,
-			email: loggedInAccounts[indexPlayerStats].email,
+			username: selectedAccount?.username,
+			email: selectedAccount?.email,
 			password: '',
 			confirmPassword: ''
 		}))
@@ -285,15 +290,16 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 		{
 			const response = await axios.post('http://localhost:5001/api/delete-account',
 			{
-				username: loggedInAccounts[indexPlayerStats].username
+				username: selectedAccount?.username
 			});
 			if (response.data.success)
 			{
-				const updatedaccounts = loggedInAccounts.filter((player, index) => index !== indexPlayerStats)
+				const updatedaccounts = loggedInAccounts.filter((player, index) => player.username !== selectedAccount?.username)
 				setLoggedInAccounts(updatedaccounts);
 				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
 				setTriggerFetchAccounts(true);
-				setShowPlayerStats(false);
+				// setShowPlayerStats(false);
+				navigate('/');
 			}
 		}
 		catch (error)
@@ -344,24 +350,27 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 							{
 								const response = await axios.post(`http://${window.location.hostname}:5001/api/update-account`,
 								{
-									prev_username: loggedInAccounts[indexPlayerStats].username,
+									prev_username: selectedAccount?.username,
 									username: formData.username, 
 									email: formData.email, 
 									password: formData.password
 								})
 								if (response.data.success)
 								{
-									const updatedloggedInAccounts = [...loggedInAccounts];
-									updatedloggedInAccounts[indexPlayerStats] =
-									{
-										...updatedloggedInAccounts[indexPlayerStats],
-										username: response.data.user.username,
-										email: response.data.user.email,
-									};
+									const updatedloggedInAccounts = loggedInAccounts.map((account) =>
+									account.username === selectedAccount?.username
+										? { 
+											...account, 
+											username: response.data.user.username,
+											email: response.data.user.email 
+										}
+										: account
+									);
 									setLoggedInAccounts(updatedloggedInAccounts);
 									localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
 									setEditProfile(false);
 									setEditPassword(false);
+									navigate(`/playerinfo/${response.data.user.username}`);
 									setTriggerFetchAccounts(true);
 								}
 							}
@@ -392,7 +401,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 				</div>
 				{editProfile ? <InputField name={"username"} value={formData.username} validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/> :
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
-						<p>{loggedInAccounts[indexPlayerStats]?.username}</p>
+						<p>{selectedAccount?.username}</p>
 					</div>}
 			</div>
 			<div className="w-full">
@@ -401,7 +410,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 				</div>
 				{editProfile ? <InputField name={"email"} value={formData.email} validation={validation} onChange={(e) => setFormData({...formData, [e.target.name]: e.target.value})}/> :
 					<div className=" w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
-						<p className="">{loggedInAccounts[indexPlayerStats]?.email}</p>
+						<p className="">{selectedAccount?.email}</p>
 					</div>}
 			</div>
 			<div className="w-full">
@@ -429,7 +438,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 			(
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
 						<p>{loggedInAccounts[indexPlayerStats]?.twofa ? 'Yes' : 'No'}</p>
-						{ editProfile && <EditIcon onClick={() => {!loggedInAccounts[indexPlayerStats].twofa ? setSettingUp2FA(true) : setConfirmDisable2Fa(true)}} keyName="edit-2fa"/>}
+						{ editProfile && <EditIcon onClick={() => {!selectedAccount?.twofa ? setSettingUp2FA(true) : setConfirmDisable2Fa(true)}} keyName="edit-2fa"/>}
 					</div>
 			)}
 			{settingUp2FA && editProfile && <Enable2FA setSettingUp2FA={setSettingUp2FA}/>}
@@ -470,6 +479,29 @@ function PlayerInfo()
 	const [settingUp2FA, setSettingUp2FA] = useState(false);
 	const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
 	const [showCropper, setShowCropper] = useState(false);
+
+	const [selectedAccount, setSelectedAccount] = useState<PlayerType>();
+	const navigate = useNavigate();
+	const { username } = useParams();
+
+	useEffect(() =>
+	{
+		async function getPlayer()
+		{
+			try
+			{
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
+					{ params: { username: username }})
+				if (response.data.success)
+					setSelectedAccount(response.data.user);
+
+			}
+			catch (error: any)
+			{
+				console.log(error.response)
+			}
+		}; getPlayer()
+	}, [editProfile])
 
 	function handleProfileImageUpload(e: React.ChangeEvent<HTMLInputElement>)
 	{
@@ -518,8 +550,9 @@ function PlayerInfo()
 			const updatedaccounts = loggedInAccounts.filter((account, index) => index !== indexPlayerStats)
 			setLoggedInAccounts(updatedaccounts);
 			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
-			setShowPlayerStats(false);
 			setTriggerFetchAccounts(false);
+			navigate('/');
+			// setShowPlayerStats(false);
 		}
 		catch (error: any)
 		{
@@ -533,7 +566,8 @@ function PlayerInfo()
 			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 				<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-md h-auto max-h-[80vh] overflow-y-auto relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 					<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => {setShowPlayerStats(false); setTriggerFetchAccounts(false)}}>
+						onClick={() => {navigate('/'); setTriggerFetchAccounts(false)}}>
+						{/* onClick={() => {setShowPlayerStats(false); setTriggerFetchAccounts(false)}}> */}
 						<IoMdClose size={24} />
 					</button>
 					{!editProfile &&
@@ -544,7 +578,7 @@ function PlayerInfo()
 						</button>
 					)}
 					<div className="flex w-full flex-col items-center gap-2">
-						<h2 className="text-2xl font-bold text-center">{loggedInAccounts[indexPlayerStats]?.username}</h2>
+						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
 						  <div className="relative">
 							<img src={profileImage} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
 							{profileImage !== Player && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
@@ -576,18 +610,18 @@ function PlayerInfo()
 								</div>
 								<div className="flex flex-col items-center">
 									<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
-										key="edit-button" 
+										key="stats-button" 
 										whileHover={ {scale: 1.17}}
 										whileTap={ {scale: 0.87}}
-										onClick={() => setShowStats(true)}><IoIosStats size={24} />
+										onClick={() => navigate('./stats')}><IoIosStats size={24} />
 									</motion.button>
 									<p className="font-thin text-xs opacity-40">Show Stats</p>
 								</div>
 							</div>
 						)}
 					</div>
-					<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA}/>
-					{showStats && <Playerstats setShowStats={setShowStats} accountId={loggedInAccounts[indexPlayerStats].id}/>}
+					<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA} selectedAccount={selectedAccount}/>
+					<Outlet />
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>

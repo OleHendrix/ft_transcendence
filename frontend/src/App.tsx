@@ -22,15 +22,15 @@ function MainContent()
 
 	return (
 		<>
-			{isPlaying !== PlayerState.playing && <Hero />}
 			<ChatProvider>
+				{isPlaying !== PlayerState.playing && <Hero />}
 				{isPlaying === PlayerState.idle && <Chat/>}
 			</ChatProvider>
-			{isPlaying === PlayerState.playing  && <PongGame />}
-			{isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
+			{/* {isPlaying === PlayerState.playing  && <PongGame />} */}
+			{/* {isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
 			{isPlaying !== PlayerState.playing && showTournamentSetup && <TournamentSetup/> }
 			{isPlaying !== PlayerState.playing && showTournamentLobbyList && <TournamentLobbyList/> }
-			{isPlaying !== PlayerState.playing && showTournamentWaitingRoom && <TournamentWaitingRoom/> }
+			{isPlaying !== PlayerState.playing && showTournamentWaitingRoom && <TournamentWaitingRoom/> } */}
 		</>
 	)
 }
