@@ -93,7 +93,6 @@ function SignUpModal()
 			'Password matches!': (formData.password && formData.confirmPassword && formData.password === formData.confirmPassword) ? true : false
 		}));
 		setEmptyForm(Object.values(formData).some(field => field === ""));
-		console.log(validation);
 	}, [formData]);
 
 	return(

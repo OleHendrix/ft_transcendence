@@ -12,13 +12,6 @@ import axios from "axios";
 
 function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 {
-	// const { accounts, loggedInAccounts } = useAccountContext();
-	// const { indexPlayerStats } = useLoginContext();
-
-	// const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	// const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id);
-	// if (currentAccount === null)
-	// 	return "";
 	const matchHistory = currentAccount?.matches ?? [];
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
@@ -72,8 +65,6 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 {
 	function calcWorseThan(player: PlayerType, stat: keyof PlayerType, accountsList: PlayerType[]): [number, number]
 	{
-		// const { accounts } = useAccountContext();
-
 		let worseThan = 0;
 		let total = 0;
 		
@@ -91,15 +82,11 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 	if (player[stat] === null)
 		return "Play a match to see ranking";
 	const [worseThan, total] = calcWorseThan(player, stat, accounts);
-
-	// if (worseThan === 0)	
-	// 	return "#1!";
 	return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
 }
 
 function ShowStats({currentAccount} : {currentAccount: PlayerType})
 {
-
 	const { accounts } = useAccountContext();
 
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
@@ -116,14 +103,6 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 			</tr>
 		);
 	}
-	
-	// const { accounts, loggedInAccounts } = useAccountContext();
-	// const { indexPlayerStats, showPlayerStats } = useLoginContext();
-
-	// const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	// const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
-	// if (currentAccount === null)
-	// 	return "";
 
 	return (
 		<div className="w-full overflow-y-auto min-h-full border border-base-content/20 bg-transparent">
@@ -154,8 +133,7 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 
 function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<React.SetStateAction<boolean>>; accountId: number})
 {
-	const { accounts, loggedInAccounts } = useAccountContext();
-	// const { indexPlayerStats } = useLoginContext();
+	const { accounts } = useAccountContext();
 	const [ currentAccount, setCurrentAccount ] = useState<PlayerType>();
 
 
@@ -177,11 +155,6 @@ function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<
 			}
 		}; getPlayer()
 	}, [])
-
-	// const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	// const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
-	// if (currentAccount === null)
-	// 	return "";
 
 	let playerRank;
 	if (currentAccount && currentAccount !== undefined)
@@ -235,7 +208,5 @@ function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<
 		</AnimatePresence>
 	);
 }
-
-// bg-[#ff914d]
 
 export default PlayerStats
