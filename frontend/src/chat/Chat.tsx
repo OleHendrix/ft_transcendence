@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Player from "../../assets/Player.svg";
 import { BiSolidChat, BiSearch } from "react-icons/bi";
 import { FiPlus, FiCheckCircle } from "react-icons/fi";
 import { MdOutlineCancel } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
+import { BiRocket } from "react-icons/bi";
 import axios from 'axios';
 import { useAccountContext } from ".././contexts/AccountContext";
 import { useChatContext } from ".././contexts/ChatContext";
@@ -98,12 +99,12 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 	return (
 	<div
 		className="fixed inset-0 backdrop-blur-sm z-40"
-		onClick={(e) =>
+		onClick={(e: any) =>
 		{
 			if (!(e.target as HTMLElement).closest('.chat'))
 				setIsOpen(false);
 		}}>
-		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between items-end p-6 pt-10 h-[calc(100vh-6vw)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-black/90 shadow-2xl rounded-2xl z-50">
+		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between p-6 pt-10 h-[calc(100vh-6vw)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-black/90 shadow-2xl rounded-2xl z-50">
 			<button className="absolute top-2 right-2 text-gray-400 hover:text-white hover:cursor-pointer" onClick={() => setIsOpen(false)}>
 				<IoMdClose size={24} />
 			</button>
@@ -121,15 +122,16 @@ function ChatHeader()
 	const {receiverId, setReceiverId} 				= useChatContext();
 
 	return (
-		<div className="flex justify-end space-x-2 w-full mb-2 overflow-x-scroll">
+		<div className="w-full max-w-full">
+		<div className="flex justify-end space-x-2 mb-2 overflow-x-scroll overscroll-x-contain whitespace-nowrap">
 			{accounts
 				.filter((account) => 
 					account.username !== loggedInAccounts[0]?.username && !account.admin )
 				.map((account, index) => (
-					<div key={index} className={`flex items-center flex-col space-y-0.5 w-12  ${receiverId !== account.id ? 'opacity-40' : 'opacity-100'}`}>
+					<div key={index} className={`flex items-center flex-col space-y-0.5 w-12 flex-shrink-0 ${receiverId !== account.id ? 'opacity-40' : 'opacity-100'}`}>
 						<motion.img
 							src={Player}
-							className="h-10 w-auto cursor-pointer"
+							className="h-10 w-10 cursor-pointer"
 							whileHover={{ scale: 1.07 }}
 							whileTap={{ scale: 0.93 }}
 							onClick={() => setReceiverId(account.id)}/>
@@ -142,6 +144,7 @@ function ChatHeader()
 				</motion.div>
 				<p className="text-[10px] text-[#ff914d] opacity-90 font-bold w-full text-center truncate">Group</p>
 			</div>
+		</div>
 		</div>
 	);
 }
@@ -395,22 +398,21 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 	}
 
 	return (
-		<div className="absolute bottom-full flex right-5 mb-5 bg-black text-white p-3 rounded-xl shadow-2xl z-50">
-			<ul className="space-y-2">
-				<li
-					className="cursor-pointer bg-gray-950 p-2 rounded-md hover:bg-gray-700 transition-colors"
-					onClick={sendGameInvite}
-				>
+		<div className="absolute bottom-full flex right-0 mb-5 bg-[#222222] text-white p-3 rounded-xl shadow-2xl z-50">
+			<ul className="space-y-2 text-sm font-bold">
+				<li className="cursor-pointer flex justify-center items-center gap-1 bg-[#134588] hover:bg-[#246bcb] p-2 rounded-md transition-colors"
+					onClick={sendGameInvite}>
+						<BiRocket size={16}/>
 					Send game invite
 				</li>
 				<li
-					className="cursor-pointer bg-gray-950 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					className="cursor-pointer p-2 bg-[#134588] hover:bg-[#246bcb] rounded-mdtransition-colors"
 					onClick={blockUser}
 				>
-					Block this bitch
+					Block user
 				</li>
 				<li
-					className="cursor-pointer bg-gray-950 p-2 rounded-md hover:bg-gray-700 transition-colors"
+					className="cursor-pointer p-2 bg-[#134588] hover:bg-[#246bcb] rounded-md transition-colors"
 					onClick={unblockUser}
 				>
 					Unblock this bitch
