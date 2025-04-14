@@ -15,6 +15,7 @@ exports.manageTournaments = manageTournaments;
 exports.getTournamentById = getTournamentById;
 exports.getTournamentLobbies = getTournamentLobbies;
 exports.leaveTournament = leaveTournament;
+exports.setResults = setResults;
 const types_1 = require("./types");
 require("ws");
 let tournamentLobbies = new Map();
@@ -96,6 +97,8 @@ function manageTournaments(fastify) {
                         lobby.rounds.push({
                             p1: winners[i],
                             p2: winners[i + 1],
+                            p1score: 0,
+                            p2score: 0,
                             result: types_1.Result.PLAYING,
                         });
                     }
@@ -169,19 +172,31 @@ function leaveTournament(fastify) {
     });
 }
 function setRounds(tournamentId) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a;
-        let lobby = tournamentLobbies.get(tournamentId);
-        if (!lobby)
-            return null;
-        if (!lobby.rounds)
-            lobby.rounds = [];
-        for (let i = 0; i < lobby.players.length; i += 2) {
-            (_a = lobby.rounds) === null || _a === void 0 ? void 0 : _a.push({
-                p1: lobby.players[i],
-                p2: lobby.players[i + 1],
-                result: types_1.Result.PLAYING
-            });
-        }
-    });
+    var _a;
+    let lobby = tournamentLobbies.get(tournamentId);
+    if (!lobby)
+        return null;
+    if (!lobby.rounds)
+        lobby.rounds = [];
+    for (let i = 0; i < lobby.players.length; i += 2) {
+        (_a = lobby.rounds) === null || _a === void 0 ? void 0 : _a.push({
+            p1: lobby.players[i],
+            p2: lobby.players[i + 1],
+            p1score: 0,
+            p2score: 0,
+            result: types_1.Result.PLAYING
+        });
+    }
+}
+function setResults(tournamentId, p1, p1score, p2score, result) {
+    var _a;
+    let lobby = tournamentLobbies.get(tournamentId);
+    if (!lobby)
+        return;
+    let round = (_a = lobby.rounds) === null || _a === void 0 ? void 0 : _a.find(round => round.p1.id === p1);
+    if (!round)
+        return;
+    round.p1score = p1score;
+    round.p2score = p2score;
+    round.result = result;
 }
