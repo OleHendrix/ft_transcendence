@@ -5,15 +5,18 @@ import './css/index.css'
 import App from './App.tsx'
 import SignUpModal from './signup/SignUpModal.tsx';
 import LoginModal from './login/LoginModal.tsx';
+import Leaderboard from './Leaderboard.tsx';
+import TournamentSetup from './tournament/TournamentSetup.tsx';
 
 const router = createBrowserRouter([
 	{
 		path: '/',
 		element: <App />,
 		children: [
-		{ index: true, element: <App /> },
 		{ path: '/signup', element: <SignUpModal />},
 		{ path: '/login', element: <LoginModal />},
+		{ path: '/leaderboard', element: <Leaderboard />},
+		{ path: '/tournament-setup', element: <TournamentSetup />},
 		]
 	}
 ]);

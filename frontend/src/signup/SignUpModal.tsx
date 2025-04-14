@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
+import { Link, useNavigate } from 'react-router-dom';
 import { useAccountContext } from "../contexts/AccountContext";
 import { useLoginContext } from "../contexts/LoginContext";
 import { SignUpFormType } from "../types";
@@ -20,6 +21,8 @@ function SignUpModal()
 			'Password does not match': false,
 			'Password matches!': false
 		});
+	
+	const navigate = useNavigate();
 
 	async function checkSubmit(formData: SignUpFormType)
 	{
@@ -34,8 +37,7 @@ function SignUpModal()
 			if (response.data.success)
 			{
 				setNumberOfLoggedInAccounts((count) => count + 1);
-				setShowSignUpModal(false);
-				setShowLoginModal(true);
+				navigate('/login');
 			}
 			else
 				console.log("Failed to add account:", response.data.message);
@@ -106,7 +108,7 @@ function SignUpModal()
 					</div>
 				)} */}
 				<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-					onClick={() => setShowSignUpModal(false)}>
+					onClick={() => navigate('/')}>
 					<IoMdClose size={24} />
 				</button>
 				<h2 className="text-2xl font-bold mb-6 text-center">Create Your Account</h2>
@@ -162,12 +164,9 @@ function SignUpModal()
 					(
 						<motion.div className="flex flex-col text-center text-sm gap-2" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
 							<p>Account already exists</p>
-							<a href="#" className="text-[#ff914d] hover:underline font-bold"
-							onClick={() =>
-							{
-								setShowSignUpModal(false);
-								setShowLoginModal(true)
-							}}>Please login here</a>
+							<Link to="/login"
+								className="text-[#ff914d] hover:underline font-bold"> Please login here
+							</Link>
 						</motion.div>
 					)}
 					<div className="pt-2">
@@ -183,12 +182,9 @@ function SignUpModal()
 					(
 						<motion.div className="text-center text-sm text-gray-400 mt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
 							Already have an account?{" "} 
-							<a href="#" className="text-[#ff914d] hover:underline font-bold" 
-							onClick={() =>
-								{
-								setShowLoginModal(true);
-								setShowSignUpModal(false);
-							}}>Log in</a>
+							<Link to="/login"
+								className="text-[#ff914d] hover:underline font-bold"> Log in
+							</Link>
 						</motion.div>)}
 				</form>
 			</motion.div>

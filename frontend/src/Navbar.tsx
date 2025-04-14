@@ -2,13 +2,15 @@ import logo from "../assets/Logo.png";
 import axios from "axios";
 import Players from "./Players";
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAccountContext } from "./contexts/AccountContext";
 import { PlayerState } from "./types";
 import { PiUserListLight } from "react-icons/pi";
 
 function Navbar()
 {
-	const { setIsPlaying, loggedInAccounts, setShowLeaderboard } = useAccountContext();
+	const { isPlaying, setIsPlaying, loggedInAccounts, setShowLeaderboard } = useAccountContext();
+	const navigate = useNavigate();
 
 	async function toMenu()
 	{
@@ -25,13 +27,17 @@ function Navbar()
 	}
 
 	return (
-		<nav className="sticky top-0 bg-[#313131] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+		<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
 			<div className="absolute left-[6vw] md:left-[4vw]">
 				<motion.button 
 					className="hover:cursor-pointer" 
 					whileHover={{scale: 1.07}} 
 					whileTap={{scale: 0.93}} 
-					onClick={() => setShowLeaderboard(true)}>
+					onClick={() =>
+					{
+						if (isPlaying !== PlayerState.playing)
+							navigate('/leaderboard')
+					}}>
 					<PiUserListLight className="h-10 w-auto"/>
 				</motion.button>
 			</div>

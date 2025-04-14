@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { PlayerType } from './types';
 import logo from "../assets/Logo.png";
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAccountContext } from './contexts/AccountContext';
 import PlayerStats from './user/Playerstats';
@@ -19,6 +20,7 @@ export default function Leaderboard()
 	const { accounts, setShowLeaderboard, showStats, setShowStats } = useAccountContext();
 	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
 	const [accountId, setAccountId] = useState(0);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));
@@ -61,7 +63,7 @@ export default function Leaderboard()
 					
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => setShowLeaderboard(false)}>
+						onClick={() => navigate('/')}>
 						<IoMdClose size={24} />
 					</button>
 
