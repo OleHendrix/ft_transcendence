@@ -462,7 +462,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 
 function PlayerInfo()
 {
-	const { loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts }  = useAccountContext();
+	const { loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts, showStats, setShowStats }  = useAccountContext();
 	const { setShowPlayerStats, indexPlayerStats } = useLoginContext();
 
 	const [editProfile, setEditProfile] = useState(false);
@@ -470,7 +470,6 @@ function PlayerInfo()
 	const [settingUp2FA, setSettingUp2FA] = useState(false);
 	const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
 	const [showCropper, setShowCropper] = useState(false);
-	const [showStats, setShowStats] = useState(false);
 
 	function handleProfileImageUpload(e: React.ChangeEvent<HTMLInputElement>)
 	{
@@ -588,7 +587,7 @@ function PlayerInfo()
 						)}
 					</div>
 					<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA}/>
-					{showStats && <Playerstats setShowStats={setShowStats}/>}
+					{showStats && <Playerstats setShowStats={setShowStats} accountId={loggedInAccounts[indexPlayerStats].id}/>}
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>

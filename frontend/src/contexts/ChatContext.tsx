@@ -14,6 +14,8 @@ interface Message {
 type ChatContextType = {
 	receiverId: number;
 	setReceiverId: Dispatch<SetStateAction<number>>;
+	receiverUsername: string;
+	setReceiverUsername: Dispatch<SetStateAction<string>>;
 	isOpen: boolean;
 	setIsOpen: Dispatch<SetStateAction<boolean>>;
 	messageReceived: boolean;
@@ -36,6 +38,7 @@ const ChatContext = createContext<ChatContextType | null>(null);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
 	const [receiverId, setReceiverId] = useState(-1);
+	const [receiverUsername, setReceiverUsername] = useState('')
 	const [isOpen, setIsOpen] = useState(false);
 	const [messageReceived, setMessageReceived] = useState(false);
 	const [chatSessionId, setChatSessionId] = useState(1);
@@ -49,6 +52,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 		() => ({
 			receiverId,
 			setReceiverId,
+			receiverUsername,
+			setReceiverUsername,
 			isOpen,
 			setIsOpen,
 			messageReceived,
@@ -65,7 +70,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 			setAmIBlocker,
 			isTyping, setIsTyping
 	}),
-		[receiverId, isOpen, messageReceived, chatSessionId, chatMessages, isTyping, setIsTyping, isBlocked, amIBlocker]
+		[receiverId, receiverUsername, isOpen, messageReceived, chatSessionId, chatMessages, isTyping, setIsTyping, isBlocked, amIBlocker]
 	);
 
 	return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

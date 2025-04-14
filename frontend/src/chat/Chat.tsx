@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Player from "../../assets/Player.svg";
 import { BiSolidChat, BiSearch } from "react-icons/bi";
 import { FiPlus, FiCheckCircle } from "react-icons/fi";
-import { MdOutlineCancel } from "react-icons/md";
+import { MdOutlineCancel, MdBlock } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
+import { CgUnblock } from "react-icons/cg";
 import { BiRocket } from "react-icons/bi";
 import axios from 'axios';
 import { useAccountContext } from ".././contexts/AccountContext";
@@ -119,7 +120,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 function ChatHeader()
 {
 	const {accounts, loggedInAccounts} 				= useAccountContext();
-	const {receiverId, setReceiverId} 				= useChatContext();
+	const {receiverId, setReceiverId, setReceiverUsername} 				= useChatContext();
 
 	return (
 		<div className="w-full max-w-full">
@@ -134,7 +135,7 @@ function ChatHeader()
 							className="h-10 w-10 cursor-pointer"
 							whileHover={{ scale: 1.07 }}
 							whileTap={{ scale: 0.93 }}
-							onClick={() => setReceiverId(account.id)}/>
+							onClick={() => {setReceiverId(account.id); setReceiverUsername(account.username)}}/>
 						<p className="text-[10px] opacity-90 w-full text-center truncate">{account.username}</p>
 					</div>
 				))}
@@ -151,7 +152,7 @@ function ChatHeader()
 
 function MessageList( ) {
 	const { loggedInAccounts } = useAccountContext();
-	const { setMessageReceived, chatMessages, setChatMessages, receiverId, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
+	const { setMessageReceived, chatMessages, setChatMessages, receiverId, receiverUsername, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -239,11 +240,10 @@ function MessageList( ) {
 		return (
 			<div className="h-full w-full flex flex-col gap-4 items-center justify-center text-gray-400">
 				<p>You cannot send or receive messages from this user.</p>
-				{amIBlocker && (
-					<button 
-						onClick={unblockUser} 
-						className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold transition hover:bg-red-600"
-					>
+				{amIBlocker &&
+				(
+					<button onClick={unblockUser} className="bg-[#134588] text-white flex items-center gap-1 px-4 py-2 rounded-lg font-bold transition hover:bg-[#246bcb] cursor-pointer">
+						<CgUnblock size={18} />
 						Unblock User
 					</button>
 				)}
@@ -254,6 +254,14 @@ function MessageList( ) {
 	return (
 		<div className="h-full w-full flex flex-col gap-4 items-end overflow-y-auto">
 			<div className="h-full w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
+				{!chatMessages.length && receiverId !== -1 &&
+				(
+					<div className="mt-5 w-full flex flex-col items-center">
+						<p className="text-xs font-light opacity-30">You're chatting with</p>
+						<h1 className="text-base font-light opacity-100">{receiverUsername}</h1>
+						<p className="text-xs font-light opacity-30 mt-2">Send your first message...</p>
+					</div>
+				)}
 				{chatMessages.map((message) => {
 					const isGameInvite = message.content === "::gameInvite::";
 					const msgStatus = message.status;
@@ -398,24 +406,17 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 	}
 
 	return (
-		<div className="absolute bottom-full flex right-0 mb-5 bg-[#222222] text-white p-3 rounded-xl shadow-2xl z-50">
+		<div className="absolute bottom-full flex right-0 mb-5 bg-[#222222] text-gray-100 p-3 rounded-xl shadow-2xl z-50">
 			<ul className="space-y-2 text-sm font-bold">
-				<li className="cursor-pointer flex justify-center items-center gap-1 bg-[#134588] hover:bg-[#246bcb] p-2 rounded-md transition-colors"
+				<li className="cursor-pointer flex items-center gap-1 bg-[#ff914d] hover:bg-[#ab5a28] p-2 rounded-md transition-colors"
 					onClick={sendGameInvite}>
 						<BiRocket size={16}/>
 					Send game invite
 				</li>
-				<li
-					className="cursor-pointer p-2 bg-[#134588] hover:bg-[#246bcb] rounded-mdtransition-colors"
-					onClick={blockUser}
-				>
+				<li className="cursor-pointer flex items-center gap-1 p-2 bg-[#ff914d] hover:bg-[#ab5a28] rounded-md transition-colors"
+					onClick={blockUser}>
+						<MdBlock size={16}/>
 					Block user
-				</li>
-				<li
-					className="cursor-pointer p-2 bg-[#134588] hover:bg-[#246bcb] rounded-md transition-colors"
-					onClick={unblockUser}
-				>
-					Unblock this bitch
 				</li>
 			</ul>
 		</div>
@@ -461,7 +462,6 @@ function MessageInput()
 	{
 		try
 		{
-			console.log("yesssss")
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-istyping`,
 			{
 				senderId: loggedInAccounts[0]?.id,

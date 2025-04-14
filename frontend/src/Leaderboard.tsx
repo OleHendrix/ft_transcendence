@@ -4,6 +4,7 @@ import { PlayerType } from './types';
 import logo from "../assets/Logo.png";
 import axios from 'axios';
 import { useAccountContext } from './contexts/AccountContext';
+import PlayerStats from './user/Playerstats';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
 
@@ -13,9 +14,11 @@ export function toPercentage(n: number, decimals: number): number
 	return (Math.floor(n * factor) / factor);
 }
 
-export default function Leaderboard() {
-	const { accounts, setShowLeaderboard } = useAccountContext();
+export default function Leaderboard()
+{
+	const { accounts, setShowLeaderboard, showStats, setShowStats } = useAccountContext();
 	const [sortedAccounts, setSortedAccounts] = useState<PlayerType[]>([]);
+	const [accountId, setAccountId] = useState(0);
 
 	useEffect(() => {
 		setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));
@@ -90,7 +93,7 @@ export default function Leaderboard() {
 												{index + 1}
 											</div>
 										</td>
-										<td className="text-left">{account.username}</td>
+										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => {setAccountId(account.id);  setShowStats(true)}}>{account.username}</span></td>
 										<td className="w-25">{account.elo}</td>
 										<td className="w-25">{account.wins}</td>
 										<td className="w-25">{account.losses}</td>
@@ -100,6 +103,7 @@ export default function Leaderboard() {
 							</tbody>
 						</table>
 					</div>
+					{showStats && <PlayerStats setShowStats={setShowStats} accountId={accountId} />}
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>

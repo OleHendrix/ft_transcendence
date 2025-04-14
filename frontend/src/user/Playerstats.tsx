@@ -8,16 +8,17 @@ import Player from "../../assets/Player.svg";
 import { MatchHistory, PlayerType } from "../types";
 import { toPercentage } from "../Leaderboard";
 import { format } from 'date-fns';
+import axios from "axios";
 
-function ShowMatchHistory()
+function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 {
-	const { accounts, loggedInAccounts } = useAccountContext();
-	const { indexPlayerStats } = useLoginContext();
+	// const { accounts, loggedInAccounts } = useAccountContext();
+	// const { indexPlayerStats } = useLoginContext();
 
-	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id);
-	if (currentAccount === null)
-		return "";
+	// const selectedAccount = loggedInAccounts?.[indexPlayerStats];
+	// const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id);
+	// if (currentAccount === null)
+	// 	return "";
 	const matchHistory = currentAccount?.matches ?? [];
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
@@ -67,16 +68,16 @@ function ShowMatchHistory()
 	);
 }
 
-function getPercentile(player: PlayerType, stat: keyof PlayerType): string
+function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: PlayerType[]): string
 {
-	function calcWorseThan(player: PlayerType, stat: keyof PlayerType): [number, number]
+	function calcWorseThan(player: PlayerType, stat: keyof PlayerType, accountsList: PlayerType[]): [number, number]
 	{
-		const { accounts } = useAccountContext();
+		// const { accounts } = useAccountContext();
 
 		let worseThan = 0;
 		let total = 0;
 		
-		for (const account of accounts)
+		for (const account of accountsList)
 		{
 			if (account.id === player.id || account[stat] === null)
 				continue;
@@ -89,15 +90,18 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType): string
 
 	if (player[stat] === null)
 		return "Play a match to see ranking";
-	const [worseThan, total] = calcWorseThan(player, stat);
+	const [worseThan, total] = calcWorseThan(player, stat, accounts);
 
 	// if (worseThan === 0)	
 	// 	return "#1!";
 	return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
 }
 
-function ShowStats()
+function ShowStats({currentAccount} : {currentAccount: PlayerType})
 {
+
+	const { accounts } = useAccountContext();
+
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{
 		return (
@@ -107,19 +111,19 @@ function ShowStats()
 				</td>
 				<td className="text-right p-2">
 					<div className="text-3xl font-semibold font-mono" style={{ fontFamily: '"Droid Sans Mono", monospace' }}>{unit === "%" ? toPercentage(player[stat] as number, 0).toString() : player[stat].toString()}{unit}</div>
-					<div className="text-xs italic text-gray-400">{getPercentile(player, stat)}</div>
+					<div className="text-xs italic text-gray-400">{getPercentile(player, stat, accounts)}</div>
 				</td>
 			</tr>
 		);
 	}
 	
-	const { accounts, loggedInAccounts } = useAccountContext();
-	const { indexPlayerStats, showPlayerStats } = useLoginContext();
+	// const { accounts, loggedInAccounts } = useAccountContext();
+	// const { indexPlayerStats, showPlayerStats } = useLoginContext();
 
-	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
-	if (currentAccount === null)
-		return "";
+	// const selectedAccount = loggedInAccounts?.[indexPlayerStats];
+	// const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
+	// if (currentAccount === null)
+	// 	return "";
 
 	return (
 		<div className="w-full overflow-y-auto min-h-full border border-base-content/20 bg-transparent">
@@ -148,16 +152,42 @@ function ShowStats()
 	)
 }
 
-function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetStateAction<boolean>>})
+function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<React.SetStateAction<boolean>>; accountId: number})
 {
 	const { accounts, loggedInAccounts } = useAccountContext();
-	const { indexPlayerStats } = useLoginContext();
+	// const { indexPlayerStats } = useLoginContext();
+	const [ currentAccount, setCurrentAccount ] = useState<PlayerType>();
 
-	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
-	if (currentAccount === null)
-		return "";
-	const playerRank = Number(getPercentile(currentAccount, "elo").split(" ")[3].slice(1, 2));
+
+	useEffect(() =>
+	{
+		async function getPlayer()
+		{
+			try
+			{
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
+					{ params: { accountId: accountId }})
+				if (response.data.success)
+					setCurrentAccount(response.data.user);
+
+			}
+			catch (error: any)
+			{
+				console.log(error.response)
+			}
+		}; getPlayer()
+	}, [])
+
+	// const selectedAccount = loggedInAccounts?.[indexPlayerStats];
+	// const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
+	// if (currentAccount === null)
+	// 	return "";
+
+	let playerRank;
+	if (currentAccount && currentAccount !== undefined)
+		playerRank = Number(getPercentile(currentAccount!, "elo", accounts).split(" ")[3].slice(1, 2));
+	else
+		return ;
 
 	return (
 		<AnimatePresence>
@@ -192,11 +222,11 @@ function PlayerStats({ setShowStats }: {setShowStats: React.Dispatch<React.SetSt
 					<div className="flex-1 w-full overflow-y-auto">
 					<div className="flex flex-col md:flex-row justify-center w-full gap-3">
 						<div className="w-full md:w-2/5">
-							<ShowStats />
+							<ShowStats currentAccount={currentAccount}/>
 						</div>
 
 						<div className="w-full md:w-3/5">
-							<ShowMatchHistory />
+							<ShowMatchHistory currentAccount={currentAccount}/>
 						</div>
 					</div>
 					</div>
