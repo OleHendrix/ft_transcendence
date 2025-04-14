@@ -21,6 +21,7 @@ import initPongServer 	from './pong/pongServer';
 import initMatchMaking 	from "./pong/matchMaking"
 
 import { setupChat } 	from './chat/chat';
+import { createTournament, getTournamentById, getTournamentLobbies, joinTournament, leaveTournament, manageTournaments } from './pong/tournament';
 
 const fastify = Fastify();
 export const prisma = new PrismaClient();
@@ -52,6 +53,14 @@ const start = async () =>
 	await deleteTotp(fastify, prisma);
 
 	await initPongServer(fastify);
+
+	await createTournament(fastify);
+	await joinTournament(fastify);
+	await manageTournaments(fastify);
+	await getTournamentById(fastify);
+	await getTournamentLobbies(fastify);
+	await leaveTournament(fastify);
+	
 	initMatchMaking(fastify);
 
 	fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) =>

@@ -1,8 +1,8 @@
-import { markAsUncloneable } from 'worker_threads';
+// import { markAsUncloneable } from 'worker_threads';
 import { initGame, updateGame, mirrorGame, endGame } from './pongLogic';
 import { PlayerData, Match, Result } from './types';
 import { FastifyInstance } from "fastify";
-import { match } from 'assert';
+// import { match } from 'assert';
 
 let matchTable   = new Map<number, Match>([]);
 let matchIDTable = new Map<number, number>([]);
@@ -37,6 +37,7 @@ export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boole
 		p1:				user1,
 		p2:				user2,
 		isLocalGame:	isLocalGame,
+		tournament:		tournament,
 	}
 	let key = 0;
 	while (matchTable.has(key))
@@ -77,13 +78,13 @@ export default async function initPongServer(fastify: FastifyInstance)
 	// adds a new match between userID1 and userID2
 	fastify.post('/pong/add', async (request, reply) =>
 	{
-		const { user1, user2, isLocalGame } = request.body as { user1?: PlayerData, user2?: PlayerData, isLocalGame?: boolean };
-		if (user1 === undefined || user2 === undefined || isLocalGame === undefined)
+		const { user1, user2, isLocalGame, tournament } = request.body as { user1?: PlayerData, user2?: PlayerData, isLocalGame?: boolean, tournament?: number };
+		if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournament === undefined)
 		{
 			reply.status(400);
 			return;
 		}
-		addGame(user1, user2, isLocalGame);
+		addGame(user1, user2, isLocalGame, tournament);
 		reply.status(201);
 	});
 

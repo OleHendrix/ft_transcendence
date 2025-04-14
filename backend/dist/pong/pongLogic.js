@@ -271,5 +271,7 @@ function endGame(match, result) {
             where: { id: p2 },
             data: { winRate: calcWinRate(player2.wins, player2.matchesPlayed) }
         });
+        if (match.tournament !== -1) {
+        }
     });
 }

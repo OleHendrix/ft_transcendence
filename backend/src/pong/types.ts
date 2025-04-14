@@ -2,6 +2,7 @@
 // |               WARNING: is a duplicate of frontend/types.ts               |
 // +--------------------------------------------------------------------------+
 
+
 export interface PlayerData
 {
 	id:			number;
@@ -126,6 +127,7 @@ export interface Match
 	p1:				PlayerData;
 	p2:				PlayerData;
 	isLocalGame:	boolean;
+	tournament:		number;
 };
 
 export interface MatchHistory
@@ -140,4 +142,23 @@ export interface MatchHistory
 	p2Elo:		number;
 	p1Diff:		number;
 	p2Diff:		number;
+};
+
+interface Round
+{
+	p1:			PlayerData;
+	p2:			PlayerData;
+	p1score:	number;
+	p2score:	number;
+	result:		Result;
+}
+
+import type { WebSocket } from 'ws';
+
+export interface TournamentData
+{
+	players:	PlayerData[];
+	maxPlayers:	number;
+	rounds:		Round[] | null;
+	sockets:	Set<WebSocket>;
 };

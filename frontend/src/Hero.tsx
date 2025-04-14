@@ -9,6 +9,7 @@ import { useAccountContext } from "./contexts/AccountContext";
 import "./css/ponganimation.css";
 import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
+import { useTournamentContext } from './contexts/TournamentContext';
 
 function SimplePong()
 {
@@ -77,12 +78,13 @@ function endQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 function Buttons()
 {
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
+	const { setShowTournamentSetup } = useTournamentContext();
 	const hoverScale = 1.03;
 	const tapScale = 0.97;
 
 	async function AddGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame });
+		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournament: -1 });
 		if (response.status >= 400)
 		{
 			console.log("Failed to create match");
@@ -141,9 +143,10 @@ function Buttons()
 			<div className="flex flex-row">
 			<motion.button 
 				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl
-				${loggedInAccounts.length < 3 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
+				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length > 2 ? { scale: hoverScale } : {})}
-				whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}>
+				whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}
+					onClick={() => setShowTournamentSetup(true)}>
 				<p>Tournament</p>
 				<TbTournament />
 			</motion.button>

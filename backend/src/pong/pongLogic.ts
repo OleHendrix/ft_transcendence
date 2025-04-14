@@ -342,4 +342,9 @@ export async function endGame(match: Match, result: Result)
 		where: { id: p2 },
 		data:  { winRate: calcWinRate(player2.wins, player2.matchesPlayed) }
 	});
+
+	if (match.tournament !== -1)
+	{
+		
+	}
 }

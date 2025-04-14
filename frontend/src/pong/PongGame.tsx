@@ -154,7 +154,7 @@ function PongGame()
 
 		console.log(isLocal);
 		if (isLocal === true && user2.id !== -1)
-			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true });
+			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true, tournament: -1 });
 		else
 			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying)
 	}
