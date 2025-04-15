@@ -14,7 +14,7 @@ exports.initGame = initGame;
 exports.mirrorGame = mirrorGame;
 exports.calculateNewElo = calculateNewElo;
 exports.endGame = endGame;
-const types_1 = require("./types");
+const types_1 = require("../types/types");
 const server_1 = require("../server");
 const s = ({
     BOUNCE: { x: -1.03, y: -0.85 },

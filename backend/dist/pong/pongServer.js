@@ -13,7 +13,7 @@ exports.addGame = addGame;
 exports.default = initPongServer;
 // import { markAsUncloneable } from 'worker_threads';
 const pongLogic_1 = require("./pongLogic");
-const types_1 = require("./types");
+const types_1 = require("../types/types");
 // import { match } from 'assert';
 let matchTable = new Map([]);
 let matchIDTable = new Map([]);

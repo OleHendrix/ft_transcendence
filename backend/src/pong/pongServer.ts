@@ -1,6 +1,6 @@
 // import { markAsUncloneable } from 'worker_threads';
 import { initGame, updateGame, mirrorGame, endGame } from './pongLogic';
-import { PlayerData, Match, Result } from './types';
+import { PlayerData, Match, Result } from '../types/types';
 import { FastifyInstance } from "fastify";
 // import { match } from 'assert';
 
