@@ -86,6 +86,7 @@ export default function Leaderboard()
 								<tr className="text-m md:text-lg font-light bg-[#303030]/90 text-lightgrey">
 									<th className="text-m text-left">#</th>
 									<th className="text-left">Name</th>
+									<th className="text-left">Status</th>
 									<th>ELO</th>
 									<th>Wins</th>
 									<th>Losses</th>
@@ -109,6 +110,7 @@ export default function Leaderboard()
 											</div>
 										</td>
 										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => navigate(`./${account.username}`) }>{account.username}</span></td>
+										<td className='text-left'>{account.online ? 'Online' : 'Offline'}</td>
 										<td className="w-25">{account.elo}</td>
 										<td className="w-25">{account.wins}</td>
 										<td className="w-25">{account.losses}</td>
