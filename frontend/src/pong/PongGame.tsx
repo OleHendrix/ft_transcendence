@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
 import { PlayerState, PongState, Result, Opponent, PlayerData } from '../types';
+import { useNavigate } from 'react-router-dom';
+import logo from '../../assets/Logo.png'
 import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
 import { useLoginContext } from '../contexts/LoginContext';
@@ -19,6 +21,7 @@ function PongGame()
 {
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
+	const navigate = useNavigate();
 
 	const [pong, setPong] = useState<PongState>
 	({
@@ -180,10 +183,32 @@ function PongGame()
 		}
 	}, [pong.p2.lastBounce]);
 
+	async function toMenu()
+	{
+		setIsPlaying(PlayerState.idle)
+		try
+		{
+			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
+			await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: loggedInAccounts[0].id });
+		}
+		catch (error)
+		{
+			console.log(error);
+		}
+		navigate('/');
+	}
+
 	const bounceStrength = 1.2 * -pong.ball.dir.x;
 	return (
 		<>
-			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
+			<div className='w-screen h-screen flex flex-col'>
+			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center justify-center shadow-xl text-lg font-medium z-10">
+				<motion.button whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
+					<img src={logo} alt="Logo" className="h-16 w-auto hover:cursor-pointer" />
+				</motion.button>
+			</nav>
+
+			<div className={`w-screen min-h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
 				{pong.result === Result.PLAYING && (
 					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10">
 						{formatTime(pong.timer)}
@@ -270,6 +295,7 @@ function PongGame()
 					</motion.div>
 				</motion.div>
 			</AnimatePresence>}
+			</div>
 		</>
 	)
 }

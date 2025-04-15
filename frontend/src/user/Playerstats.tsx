@@ -196,7 +196,7 @@ function PlayerStats()
 							</div>
 						</div>
 					</div>
-					<div className="flex-1 w-full overflow-y-auto">
+					<div className="flex-1 w-full">
 					<div className="flex flex-col md:flex-row justify-center w-full gap-3">
 						<div className="w-full md:w-2/5">
 							<ShowStats currentAccount={selectedAccount}/>

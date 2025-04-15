@@ -21,6 +21,7 @@ function MainContent()
 
 	return (
 		<>
+				{isPlaying !== PlayerState.playing && <Navbar />}
 			<ChatProvider>
 				{isPlaying !== PlayerState.playing && !showTournamentWaitingRoom && <Hero />}
 				{isPlaying === PlayerState.idle && <Chat/>}
@@ -42,7 +43,6 @@ function App()
 			<AccountProvider>
 			<LoginProvider>
 				<TournamentProvider>
-					<Navbar />
 					<MainContent />
 					{/* <Modals /> */}
 					<Outlet />
