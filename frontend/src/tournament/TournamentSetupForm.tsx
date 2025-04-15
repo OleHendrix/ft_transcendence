@@ -1,48 +1,31 @@
-// components/tournament/TournamentSetupForm.tsx
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAccountContext } from '../contexts/AccountContext';
 import { IoMdClose } from 'react-icons/io';
-import axios from 'axios';
+import Axios from 'axios';
 import { useTournamentContext } from '../contexts/TournamentContext';
 
 
 export default function TournamentSetupForm() {
-	const { setShowTournamentSetup, setShowTournamentLobbyList, setShowTournamentWaitingRoom, setTournamentId } = useTournamentContext();
 	const { loggedInAccounts } = useAccountContext();
+	const { setTournamentId } = useTournamentContext();
 	const navigate = useNavigate();
 
 	async function createTournament( maxPlayers: number )
 	{
-		const host = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
-		
-		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/create-tournament?hostId=${host.id}&hostUsername=${host.username}&maxPlayers=${maxPlayers}`);
-		socket.onopen = () => {
-			console.log("WebSocket connection established for tournament host");
-		};
-
-		socket.onmessage = (event) => {
-			try {
-				const data = JSON.parse(event.data);
-				if (data.tournamentId) {
-					console.log("Tournament created with ID:", data.tournamentId);
-					setTournamentId(data.tournamentId);
-					navigate('/tournament/waiting-room')
-					// setShowTournamentWaitingRoom(true);
-					// setShowTournamentSetup(false);
-				}
-			} catch (err) {
-				console.error("Failed to parse tournament creation response", err);
-			}
-		};
-	
-		socket.onerror = (error) => {
-			console.error("WebSocket error:", error);
-		};
-	
-		socket.onclose = () => {
-			console.log("WebSocket closed");
-		};
+		try {
+			const host = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
+			
+			const response = await Axios.post(`http://${window.location.hostname}:5001/api/create-tournament`, {
+				hostId: host.id,
+				hostUsername: host.username,
+				maxPlayers,
+			});
+			setTournamentId(response.data.tournamentId);
+			navigate('/tournament/waiting-room');
+		} catch (error) {
+			console.log(error);
+		}
 	};
 	return (
 		<AnimatePresence>
@@ -99,12 +82,7 @@ export default function TournamentSetupForm() {
 
 					<motion.button
 						className="h-10 px-4 py-0 rounded-3xl bg-[#134588] text-white text-sm font-medium"
-						onClick={() => {
-							// setShowTournamentLobbyList(true); 
-							// setShowTournamentSetup(false)
-							navigate('/tournament/lobby-list');
-						}}
-					>
+						onClick={() => navigate('/tournament/lobby-list') }>
 						Find a lobby
 					</motion.button>
 

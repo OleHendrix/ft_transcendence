@@ -1,25 +1,21 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { IoMdClose } from 'react-icons/io';
-import { useTournamentContext } from '../contexts/TournamentContext';
-import axios from 'axios';
-import { useAccountContext } from '../contexts/AccountContext';
-import { PlayerData } from '../types';
+import { useEffect, useState } 		from 'react';
+import { useNavigate } 				from 'react-router-dom';
+import { motion, AnimatePresence } 	from 'framer-motion';
+import { IoMdClose } 				from 'react-icons/io';
+import { useTournamentContext } 	from '../contexts/TournamentContext';
+import axios 						from 'axios';
 
 interface TournamentLobby {
-	tournamentId: number;
-	hostUsername: string;
+	tournamentId: 	number;
+	hostUsername: 	string;
 	currentPlayers: number;
-	maxPlayers: number;
+	maxPlayers: 	number;
 }
 
 export default function TournamentLobbyList() {
-	const { setShowTournamentLobbyList, setShowTournamentWaitingRoom, setTournamentId } = useTournamentContext();
-	const { setTournamentData, setPlayers } = useTournamentContext(); 
-	const { loggedInAccounts } = useAccountContext();
-	const [lobbies, setLobbies] = useState<TournamentLobby[]>([]);
-	const navigate = useNavigate();
+	const { setTournamentId } 		= useTournamentContext();
+	const [ lobbies, setLobbies ] 	= useState<TournamentLobby[]>([]);
+	const navigate 					= useNavigate();
 
 	useEffect(() => {
 		fetchLobbies();
@@ -36,38 +32,8 @@ export default function TournamentLobbyList() {
 
 	async function joinTournament(tournamentId: number)
 	{
-		try {
-			const player = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
-			
-			const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
-			setTournamentId(tournamentId);
-			navigate('/tournament/waiting-room');
-			// setShowTournamentWaitingRoom(true);
-			// setShowTournamentLobbyList(false);
-
-			socket.onmessage = (event) => {
-				const data = JSON.parse(event.data);
-			
-				if (data.type === "TOURNAMENT_UPDATE") {
-					setTournamentData(data.tournament);
-					setPlayers(data.tournament.players);
-				}
-			};
-
-			socket.onopen = () => {
-				console.log(`WebSocket for playerId ${ player.id } connection established for tournament ${ tournamentId }`);
-			};
-			
-			socket.onerror = (error) => {
-				console.error("WebSocket error:", error);
-			};
-		
-			socket.onclose = () => {
-				console.log("WebSocket closed");
-			};
-		} catch (error) {
-			console.log(error);
-		}
+		setTournamentId(tournamentId);
+		navigate('/tournament/waiting-room');
 	}
 	return (
 		<AnimatePresence>

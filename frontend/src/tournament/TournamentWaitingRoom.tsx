@@ -1,41 +1,56 @@
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { IoMdClose } from 'react-icons/io';
-import axios from 'axios';
-import { useTournamentContext } from '../contexts/TournamentContext';
-import { useAccountContext } from '../contexts/AccountContext';
+import { useEffect, useState } 		from 'react';
+import { motion, AnimatePresence } 	from 'framer-motion';
+import { useNavigate } 				from 'react-router-dom';
+import { IoMdClose } 				from 'react-icons/io';
+import axios 						from 'axios';
+import { useTournamentContext } 	from '../contexts/TournamentContext';
+import { useAccountContext } 		from '../contexts/AccountContext';
 
 export default function TournamentWaitingRoom() {
-	const { loggedInAccounts } = useAccountContext();
-	const { tournamentId, setShowTournamentWaitingRoom } = useTournamentContext();
-	const [ tournamentData, setTournamentData ] = useState<any>(null);
-	const [ players, setPlayers ] = useState<any[]>([]);
-	const navigate = useNavigate();
+	const { loggedInAccounts } 						= useAccountContext();
+	const { tournamentId } 							= useTournamentContext();
+	const [ tournamentData, setTournamentData ] 	= useState<any>(null);
+	const [ players, setPlayers ] 					= useState<any[]>([]);
+	const navigate 									= useNavigate();
 
 	useEffect(() => {
-		async function fetchTournamentData() {
-			
-			if (tournamentId === null) return;
+		if (tournamentId === null) return;
+	
+		const player = loggedInAccounts[0];
+	
+		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
+	
+		socket.onopen = () => {
+			console.log("WebSocket connected");
+		};
+	
+		socket.onmessage = (event) => {
 			try {
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-tournament/${tournamentId}`);
-				if (response.data) {
-					console.log(response.data.players);
-					setTournamentData(response.data);
-					setPlayers(response.data.players);
+				const data = JSON.parse(event.data);
+				if (data.type === "TOURNAMENT_UPDATE") {
+					setTournamentData(data.tournament);
+					setPlayers(data.tournament.players);
 				}
-			} catch (error) {
-				console.error("Error fetching tournament data:", error);
+			} catch (err) {
+				console.error("Failed to parse WebSocket message", err);
 			}
-		}
-
-		fetchTournamentData();
-	}, [tournamentId]); //make this update on broadcast 
-
+		};
+	
+		socket.onerror = (err) => {
+			console.error("WebSocket error:", err);
+		};
+	
+		socket.onclose = () => {
+			console.log("WebSocket tournament waiting room closed");
+		};
+	
+		return () => {
+			socket.close();
+		};
+	}, [tournamentId]);
 
 	const handleClose = async () => {
 		try {
-
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/leave-tournament`, {
 				playerId: loggedInAccounts[0].id,
 				tournamentId,
@@ -43,7 +58,7 @@ export default function TournamentWaitingRoom() {
 		} catch (error) {
 			console.log(error);
 		}
-		navigate(-1);
+		navigate('/');
 	};
 	return (
 		<AnimatePresence>

@@ -6,7 +6,7 @@ import App from './App.tsx'
 import SignUpModal from './signup/SignUpModal.tsx';
 import LoginModal from './login/LoginModal.tsx';
 import Leaderboard from './Leaderboard.tsx';
-import TournamentSetup from './tournament/TournamentSetup.tsx';
+import TournamentSetupForm from './tournament/TournamentSetupForm.tsx';
 import TournamentWaitingRoom from './tournament/TournamentWaitingRoom.tsx';
 import TournamentLobbyList from './tournament/TournamentLobbyList.tsx';
 import PongGame from './pong/PongGame.tsx';
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
 		{ path: 'tournament',
 			children:
 			[
-				{ path: 'setup', element: <TournamentSetup />},
+				{ path: 'setup', element: <TournamentSetupForm />},
 				{ path: 'lobby-list', element: <TournamentLobbyList />},
 				{ path: 'waiting-room', element: <TournamentWaitingRoom />}
 			]

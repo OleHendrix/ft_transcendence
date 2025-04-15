@@ -157,8 +157,10 @@ import type { WebSocket } from 'ws';
 
 export interface TournamentData
 {
-	players:	PlayerData[];
-	maxPlayers:	number;
-	rounds:		Round[] | null;
-	sockets:	Set<WebSocket>;
+	tournamentId:	number;
+	hostUsername: 	string;
+	players:		PlayerData[];
+	maxPlayers:		number;
+	rounds:			Round[] | null;
+	sockets:		Set<WebSocket>;
 };
