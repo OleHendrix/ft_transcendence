@@ -24,8 +24,9 @@ model Account {
   winRate         Float?
   tournamentWins  Int             @default(0)
   elo             Int             @default(400)
-  matches         MatchHistory[]  @relation("matches")
 
+  Friends
+  matches         		MatchHistory[]  @relation("matches")
   Blocks                Block[]          @relation("Blocks")
   BlockedBy             Block[]          @relation("BlockedBy")
   sentMessages          Message[]        @relation("SentMessages")     // This represents the sender

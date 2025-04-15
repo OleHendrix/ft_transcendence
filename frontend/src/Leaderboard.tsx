@@ -113,11 +113,11 @@ export default function Leaderboard()
 										</td>
 										
 										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => navigate(`./${account.username}`) }>{account.username}</span></td>
+										<td className='text-left'>
 										<div className='flex items-center justify-center'>
-
-											{account.online ? <Lottie className="w-8 items-center" animationData={OnlineIcon} loop={true} /> : <div></div>}
-
+											{account.online ? <Lottie className="w-6 items-center" animationData={OnlineIcon} loop={true} /> : <div></div>}
 										</div>
+										</td>
 										<td className="w-25">{account.elo}</td>
 										<td className="w-25">{account.wins}</td>
 										<td className="w-25">{account.losses}</td>

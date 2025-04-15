@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Player from "../../assets/Player.svg";
 import { BiSolidChat, BiSearch } from "react-icons/bi";
 import { FiPlus, FiCheckCircle } from "react-icons/fi";
@@ -99,13 +100,9 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 {
 	return (
 	<div
-		className="fixed inset-0 backdrop-blur-sm z-40"
-		onClick={(e: any) =>
-		{
-			if (!(e.target as HTMLElement).closest('.chat'))
-				setIsOpen(false);
-		}}>
-		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between p-6 pt-10 h-[calc(100vh-6vw)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-black/90 shadow-2xl rounded-2xl z-50">
+		className="fixed inset-0 backdrop-blur-sm z-20"
+		onClick={() => setIsOpen(false)}>
+		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between p-6 pt-10 h-[calc(100vh-6vw)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-black/90 shadow-2xl rounded-2xl z-50" onClick={(e) => e.stopPropagation()}>
 			<button className="absolute top-2 right-2 text-gray-400 hover:text-white hover:cursor-pointer" onClick={() => setIsOpen(false)}>
 				<IoMdClose size={24} />
 			</button>
@@ -154,6 +151,7 @@ function MessageList( ) {
 	const { loggedInAccounts } = useAccountContext();
 	const { setMessageReceived, chatMessages, setChatMessages, receiverId, receiverUsername, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (messagesEndRef.current) {
@@ -269,7 +267,7 @@ function MessageList( ) {
 
 					return (
 						<div key={message.id} className={`chat ${isSender ? "chat-end" : "chat-start"}`}>
-							<div className="chat-header font-bold">
+							<div className="chat-header font-bold hover:underline" onClick={() => navigate(`/playerstats/${message.senderUsername}`)}>
 								{message.senderUsername}
 								<time className="text-xs opacity-50">
 									{format(new Date(message.timestamp), "HH:mm")}
@@ -349,6 +347,8 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 {
 	const { loggedInAccounts } = useAccountContext();
 	const { receiverId, setMessageReceived, setIsBlocked } = useChatContext();
+
+
 	const sendGameInvite = async () => 
 	{
 		try {

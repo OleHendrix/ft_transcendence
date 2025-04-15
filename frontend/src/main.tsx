@@ -23,6 +23,7 @@ const router = createBrowserRouter([
 		children: [
 		{ path: 'signup', element: <SignUpModal />},
 		{ path: 'login', element: <LoginModal />},
+		{ path: 'playerstats/:username', element: <PlayerStats />},
 		{ path: 'leaderboard', element: <Leaderboard />,
 			children:
 			[
