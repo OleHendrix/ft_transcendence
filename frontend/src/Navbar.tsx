@@ -1,17 +1,22 @@
 import logo from "../assets/Logo.png";
 import axios from "axios";
 import Players from "./Players";
-import Logo42 from "../assets/Logo42.svg"
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAccountContext } from "./contexts/AccountContext";
 import { PlayerState } from "./types";
-import { useState } from "react";
+import { PiUserListLight } from "react-icons/pi";
 
 function Navbar()
 {
-	const { setIsPlaying, loggedInAccounts, setShowLeaderboard } = useAccountContext();
+	const { isPlaying, setIsPlaying, loggedInAccounts, setShowLeaderboard } = useAccountContext();
+	const navigate = useNavigate();
 
 	async function toMenu()
 	{
+		if (isPlaying !== PlayerState.playing)
+			return;
+		navigate('/');
 		setIsPlaying(PlayerState.idle)
 		try
 		{
@@ -25,24 +30,31 @@ function Navbar()
 	}
 
 	return (
-		<>
-			<nav className="bg-[#313131] text-white h-[8vh] p-5 px-[6vw] flex justify-between items-center shadow-xl text-lg font-medium">
-				<div className="flex items-center">
-					<button onClick={() => toMenu()}>
-						<img src={logo} alt="Logo" className="h-16 w-auto" />
-					</button>
-				</div>
-				<div className="flex items-center">
-					<button onClick={() => setShowLeaderboard(true)}>
-						<p className="text-2xl">Leaderboard</p>
-					</button>
-				</div>
-				{/* <div className="flex items-center">
-					<img src={Logo42} className="h-18 w-auto" />
-				</div> */}
+		<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+			<div className="absolute left-[6vw] md:left-[4vw]">
+				<motion.button 
+					className="hover:cursor-pointer" 
+					whileHover={{scale: 1.07}} 
+					whileTap={{scale: 0.93}} 
+					onClick={() =>
+					{
+						if (isPlaying !== PlayerState.playing)
+							navigate('/leaderboard')
+					}}>
+					<PiUserListLight className="h-10 w-auto"/>
+				</motion.button>
+			</div>
+
+			<div className="flex-grow flex justify-center">
+				<button onClick={() => toMenu()}>
+					<img src={logo} alt="Logo" className="h-16 w-auto" />
+				</button>
+			</div>
+			
+			<div className="absolute right-[6vw] md:right-[4vw] hidden md:block">
 				<Players />
-			</nav>
-		</>
+			</div>
+		</nav>
 	);
 }
 

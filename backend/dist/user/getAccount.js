@@ -9,20 +9,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = deleteAccount;
-function deleteAccount(fastify, prisma) {
+exports.default = getAccount;
+function getAccount(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/delete-account', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username } = request.body;
-            // console.log(username);
-            try {
-                const deleted = yield prisma.account.delete({ where: { username } });
-                console.log(deleted);
-                return reply.send({ success: true });
+        fastify.get('/api/get-account', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { username } = request.query;
+            const user = yield prisma.account.findUnique({
+                where: {
+                    username
+                },
+                include: {
+                    matches: true
+                }
+            });
+            if (user) {
+                reply.send({ success: true, user });
             }
-            catch (error) {
-                return reply.status(500).send({ error: 'Account deletion failed' });
-            }
+            else
+                reply.status(404).send({ success: false, error: "Error in fetching account" });
         }));
     });
 }

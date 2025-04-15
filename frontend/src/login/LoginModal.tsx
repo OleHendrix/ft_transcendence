@@ -1,5 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { IoMdClose } from "react-icons/io";
 import { PlayerType, LoginFormType, LoginValidationType } from "../types"
 import { useAccountContext } from "../contexts/AccountContext";
@@ -17,7 +18,7 @@ interface CheckLoginProps
 
 async function check2FA({ formData, token, setLoggedInAccounts, setValidation }  : CheckLoginProps)
 {
-	const { username }= formData;
+	const { username } = formData;
 	try
 	{
 		const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-totp`,
@@ -75,6 +76,7 @@ async function checkLogin( { formData, token, setLoggedInAccounts, setValidation
 	}
 	catch (error: any)
 	{
+		console.log(error.response.data.error);
 		setValidation(prev => ({...prev, [error.response.data.error]: true}))
 		return false;
 	}
@@ -98,6 +100,8 @@ function LoginModal()
 			'2FA Code incorrect': false
 		});
 
+	const navigate = useNavigate();
+
 	useEffect(() =>
 	{
 		setValidation(prev => (
@@ -113,9 +117,9 @@ function LoginModal()
 
 	return(
 	<div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-		<div className="bg-[#2a2a2a] text-white p-8 rounded-lg w-full max-w-md relative shadow-xl">
+		<div className="bg-[#2a2a2a] text-white p-8 rounded-lg w-md h-auto max-h-[80vh] overflow-y-auto relative shadow-xl">
 		<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer" 
-			onClick={() => setShowLoginModal(false)}>
+			onClick={() => navigate('/')}>
 			<IoMdClose size={24} />
 		</button>
 
@@ -128,12 +132,12 @@ function LoginModal()
 				if (show2FA)
 				{
 					const success = await check2FA({ formData, token, setLoggedInAccounts, setValidation, setShow2FA});
-					if (success) setShowLoginModal(false);
+					if (success) navigate('/');
 				}
 				else
 				{
 					const success = await checkLogin({ formData, token, setLoggedInAccounts, setValidation, setShow2FA });
-					if (success) setShowLoginModal(false); 
+					if (success) navigate('/'); 
 				}
 			}} 
 		>

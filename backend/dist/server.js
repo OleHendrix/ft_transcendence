@@ -24,6 +24,7 @@ const deleteTotp_1 = __importDefault(require("./auth/deleteTotp"));
 const addAccount_1 = __importDefault(require("./user/addAccount"));
 const deleteAccount_1 = __importDefault(require("./user/deleteAccount"));
 const getAccounts_1 = __importDefault(require("./user/getAccounts"));
+const getAccount_1 = __importDefault(require("./user/getAccount"));
 const checkValidation_1 = __importDefault(require("./user/checkValidation"));
 const login_1 = __importDefault(require("./user/login"));
 const logout_1 = __importDefault(require("./user/logout"));
@@ -31,6 +32,7 @@ const updateAccount_1 = __importDefault(require("./user/updateAccount"));
 const pongServer_1 = __importDefault(require("./pong/pongServer"));
 const matchMaking_1 = __importDefault(require("./pong/matchMaking"));
 const chat_1 = require("./chat/chat");
+const tournament_1 = require("./pong/tournament");
 const fastify = (0, fastify_1.default)();
 exports.prisma = new client_1.PrismaClient();
 fastify.register(cors_1.default);
@@ -44,6 +46,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, addAccount_1.default)(fastify, exports.prisma);
     yield (0, deleteAccount_1.default)(fastify, exports.prisma);
     yield (0, getAccounts_1.default)(fastify, exports.prisma);
+    yield (0, getAccount_1.default)(fastify, exports.prisma);
     yield (0, checkValidation_1.default)(fastify, exports.prisma);
     yield (0, login_1.default)(fastify, exports.prisma);
     yield (0, logout_1.default)(fastify, exports.prisma);
@@ -52,6 +55,12 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, verifyTotp_1.default)(fastify, exports.prisma);
     yield (0, deleteTotp_1.default)(fastify, exports.prisma);
     yield (0, pongServer_1.default)(fastify);
+    yield (0, tournament_1.createTournament)(fastify);
+    yield (0, tournament_1.joinTournament)(fastify);
+    yield (0, tournament_1.manageTournaments)(fastify);
+    yield (0, tournament_1.getTournamentById)(fastify);
+    yield (0, tournament_1.getTournamentLobbies)(fastify);
+    yield (0, tournament_1.leaveTournament)(fastify);
     (0, matchMaking_1.default)(fastify);
     fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {
         if (err) {

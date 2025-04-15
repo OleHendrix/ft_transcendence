@@ -17,13 +17,14 @@ model Account {
   admin         Boolean    @default(false)
   online        Boolean    @default(false)
 
-  matchesPlayed Int             @default(0)
-  wins          Int             @default(0)
-  draws         Int             @default(0)
-  losses        Int             @default(0)
-  winRate       Float?
-  elo           Int             @default(400)
-  matches       MatchHistory[]  @relation("matches")
+  matchesPlayed   Int             @default(0)
+  wins            Int             @default(0)
+  draws           Int             @default(0)
+  losses          Int             @default(0)
+  winRate         Float?
+  tournamentWins  Int             @default(0)
+  elo             Int             @default(400)
+  matches         MatchHistory[]  @relation("matches")
 
   Blocks                Block[]          @relation("Blocks")
   BlockedBy             Block[]          @relation("BlockedBy")
