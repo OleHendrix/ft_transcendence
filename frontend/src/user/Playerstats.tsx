@@ -1,6 +1,7 @@
 import { useAccountContext } from "../contexts/AccountContext";
 import { useLoginContext } from "../contexts/LoginContext";
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose, IoIosStats } from "react-icons/io";
 import { RiGamepadLine } from "react-icons/ri";
@@ -13,6 +14,8 @@ import axios from "axios";
 function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 {
 	const matchHistory = currentAccount?.matches ?? [];
+	console.log(currentAccount);
+	console.log(matchHistory);
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
 	return (
@@ -131,10 +134,12 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 	)
 }
 
-function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<React.SetStateAction<boolean>>; accountId: number})
+function PlayerStats()
 {
 	const { accounts } = useAccountContext();
-	const [ currentAccount, setCurrentAccount ] = useState<PlayerType>();
+	const [ selectedAccount, setSelectedAccount ] = useState<PlayerType>();
+	const { username } = useParams();
+	const navigate = useNavigate();
 
 
 	useEffect(() =>
@@ -144,10 +149,9 @@ function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<
 			try
 			{
 				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
-					{ params: { accountId: accountId }})
+					{ params: { username: username }})
 				if (response.data.success)
-					setCurrentAccount(response.data.user);
-
+					setSelectedAccount(response.data.user);
 			}
 			catch (error: any)
 			{
@@ -157,8 +161,8 @@ function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<
 	}, [])
 
 	let playerRank;
-	if (currentAccount && currentAccount !== undefined)
-		playerRank = Number(getPercentile(currentAccount!, "elo", accounts).split(" ")[3].slice(1, 2));
+	if (selectedAccount && selectedAccount !== undefined)
+		playerRank = Number(getPercentile(selectedAccount!, "elo", accounts).split(" ")[3].slice(1, 2));
 	else
 		return ;
 
@@ -178,12 +182,12 @@ function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<
 
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => setShowStats(false)}>
+						onClick={() => navigate(-1)}>
 						<IoMdClose size={24} />
 					</button>
 
 					<div className="flex w-full flex-col items-center gap-2">
-						<h2 className="text-2xl font-bold text-center">{currentAccount?.username}</h2>
+						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
 						<img src={Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
 						<div className="flex flex-col p-2 items-center text-white">
 							<div className="flex flex-col justify-center items-center">
@@ -195,11 +199,11 @@ function PlayerStats({ setShowStats, accountId }: {setShowStats: React.Dispatch<
 					<div className="flex-1 w-full overflow-y-auto">
 					<div className="flex flex-col md:flex-row justify-center w-full gap-3">
 						<div className="w-full md:w-2/5">
-							<ShowStats currentAccount={currentAccount}/>
+							<ShowStats currentAccount={selectedAccount}/>
 						</div>
 
 						<div className="w-full md:w-3/5">
-							<ShowMatchHistory currentAccount={currentAccount}/>
+							<ShowMatchHistory currentAccount={selectedAccount}/>
 						</div>
 					</div>
 					</div>

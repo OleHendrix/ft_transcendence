@@ -1,5 +1,6 @@
 // components/tournament/TournamentSetupForm.tsx
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAccountContext } from '../contexts/AccountContext';
 import { IoMdClose } from 'react-icons/io';
 import axios from 'axios';
@@ -9,6 +10,7 @@ import { useTournamentContext } from '../contexts/TournamentContext';
 export default function TournamentSetupForm() {
 	const { setShowTournamentSetup, setShowTournamentLobbyList, setShowTournamentWaitingRoom, setTournamentId } = useTournamentContext();
 	const { loggedInAccounts } = useAccountContext();
+	const navigate = useNavigate();
 
 	async function createTournament( maxPlayers: number )
 	{
@@ -25,8 +27,9 @@ export default function TournamentSetupForm() {
 				if (data.tournamentId) {
 					console.log("Tournament created with ID:", data.tournamentId);
 					setTournamentId(data.tournamentId);
+					navigate('/tournament/waiting-room')
 					setShowTournamentWaitingRoom(true);
-					setShowTournamentSetup(false);
+					// setShowTournamentSetup(false);
 				}
 			} catch (err) {
 				console.error("Failed to parse tournament creation response", err);
@@ -59,7 +62,7 @@ export default function TournamentSetupForm() {
 					{/* close button */ }
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => setShowTournamentSetup(false)}
+						onClick={() => navigate('/')}
 					>
 						<IoMdClose size={24} />
 					</button>
@@ -97,8 +100,9 @@ export default function TournamentSetupForm() {
 					<motion.button
 						className="h-10 px-4 py-0 rounded-3xl bg-[#134588] text-white text-sm font-medium"
 						onClick={() => {
-							setShowTournamentLobbyList(true); 
-							setShowTournamentSetup(false)
+							// setShowTournamentLobbyList(true); 
+							// setShowTournamentSetup(false)
+							navigate('/tournament/lobby-list');
 						}}
 					>
 						Find a lobby

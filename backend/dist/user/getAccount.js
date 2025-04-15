@@ -13,9 +13,15 @@ exports.default = getAccount;
 function getAccount(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.get('/api/get-account', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { accountId } = request.query;
-            const accountIdNum = Number(accountId);
-            const user = yield prisma.account.findUnique({ where: { id: accountIdNum } });
+            const { username } = request.query;
+            const user = yield prisma.account.findUnique({
+                where: {
+                    username
+                },
+                include: {
+                    matches: true
+                }
+            });
             if (user) {
                 reply.send({ success: true, user });
             }

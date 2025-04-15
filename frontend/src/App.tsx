@@ -1,11 +1,11 @@
 import './css/index.css'
+import { Outlet } from 'react-router-dom';
 import Navbar from "./Navbar";
 import Hero from "./Hero";
 import Modals from "./Modals";
 import PongGame from "./pong/PongGame";
 import Chat from "./chat/Chat";
 import Leaderboard from "./Leaderboard";
-import TournamentSetup from "./tournament/TournamentSetup"
 import { PlayerState } from "./types"
 import { ChatProvider } from "./contexts/ChatContext";
 import { LoginProvider } from "./contexts/LoginContext";
@@ -21,15 +21,15 @@ function MainContent()
 
 	return (
 		<>
-			{isPlaying !== PlayerState.playing && <Hero />}
 			<ChatProvider>
+				{isPlaying !== PlayerState.playing && !showTournamentWaitingRoom && <Hero />}
 				{isPlaying === PlayerState.idle && <Chat/>}
 			</ChatProvider>
-			{isPlaying === PlayerState.playing  && <PongGame />}
-			{isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
+			{/* {isPlaying === PlayerState.playing  && <PongGame />} */}
+			{/* {isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
 			{isPlaying !== PlayerState.playing && showTournamentSetup && <TournamentSetup/> }
 			{isPlaying !== PlayerState.playing && showTournamentLobbyList && <TournamentLobbyList/> }
-			{isPlaying !== PlayerState.playing && showTournamentWaitingRoom && <TournamentWaitingRoom/> }
+			{isPlaying !== PlayerState.playing && showTournamentWaitingRoom && <TournamentWaitingRoom/> } */}
 		</>
 	)
 }
@@ -44,7 +44,8 @@ function App()
 				<TournamentProvider>
 					<Navbar />
 					<MainContent />
-					<Modals />
+					{/* <Modals /> */}
+					<Outlet />
 				</TournamentProvider>
 				</LoginProvider>
 			</AccountProvider>

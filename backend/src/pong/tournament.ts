@@ -48,6 +48,20 @@ export async function createTournament(fastify: FastifyInstance)
 	});
 }
 
+function broadcastTournamentUpdate(tournamentId: number, updatedData: TournamentData) {
+	console.log(`broadcasting: ${JSON.stringify(updatedData)} to:`, tournamentId);
+	let tournament = tournamentLobbies.get(tournamentId);
+	if (!tournament) return;
+
+	tournament.sockets.forEach(socket => {
+		socket.send(JSON.stringify({
+			type: "TOURNAMENT_UPDATE",
+			tournament: updatedData,
+		}));
+	});
+
+}
+
 export async function joinTournament(fastify: FastifyInstance)
 {
 	fastify.register(async function (fastify)
@@ -75,11 +89,41 @@ export async function joinTournament(fastify: FastifyInstance)
 			tournament.players.push(parsedPlayer);
 			tournament.sockets.add(connection);
 
+			broadcastTournamentUpdate(Number(tournamentId), tournament);
+
 			connection.on("close", () => {
 				console.log(`Tournament: ${tournamentId} player: ${ parsedPlayer.id } disconnected`);
 			});
 		})
 	});
+}
+
+export async function leaveTournament(fastify: FastifyInstance)
+{
+	fastify.post('/api/leave-tournament', async (request, reply) => {
+		const { playerId, tournamentId } = request.body as { playerId: number, tournamentId: number };
+		console.log(`player ${ playerId} leaving tournament ${tournamentId}`);
+
+		let tournament = tournamentLobbies.get(tournamentId);
+		if (!tournament)
+			return reply.status(400).send({ error: "Invalid tournament ID" });
+
+		for (let socket of tournament.sockets) {
+			if (socket.playerId = playerId) {
+				console.log(`player ${playerId} left tournament lobby ${tournamentId}`);
+				socket.close();
+				tournament.sockets.delete(socket);
+			}
+		}
+
+		tournament.players = tournament.players.filter(player => player.id !== playerId);
+
+		if (tournament.players.length === 0) {
+			console.log(`tournamentId ${tournamentId} empty. deleting`);
+			tournamentLobbies.delete(tournamentId);
+		}
+		broadcastTournamentUpdate(tournamentId, tournament);
+	})
 }
 
 export async function manageTournaments(fastify: FastifyInstance)
@@ -167,32 +211,6 @@ export async function getTournamentLobbies(fastify: FastifyInstance)
 	})
 }
 
-export async function leaveTournament(fastify: FastifyInstance)
-{
-	fastify.post('/api/leave-tournament', async (request, reply) => {
-		const { playerId, tournamentId } = request.body as { playerId: number, tournamentId: number };
-		console.log(`player ${ playerId} leaving tournament ${tournamentId}`);
-
-		let tournament = tournamentLobbies.get(tournamentId);
-		if (!tournament)
-			return reply.status(400).send({ error: "Invalid tournament ID" });
-
-		for (let socket of tournament.sockets) {
-			if (socket.playerId = playerId) {
-				console.log(`player ${playerId} left tournament lobby ${tournamentId}`);
-				socket.close();
-				tournament.sockets.delete(socket);
-			}
-		}
-
-		tournament.players = tournament.players.filter(player => player.id !== playerId);
-
-		if (tournament.players.length === 0) {
-			console.log(`tournamentId ${tournamentId} empty. deleting`);
-			tournamentLobbies.delete(tournamentId);
-		}
-	})
-}
 
 function setRounds(tournamentId: number)
 {

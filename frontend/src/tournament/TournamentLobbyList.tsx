@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from 'react-icons/io';
 import { useTournamentContext } from '../contexts/TournamentContext';
@@ -15,8 +16,10 @@ interface TournamentLobby {
 
 export default function TournamentLobbyList() {
 	const { setShowTournamentLobbyList, setShowTournamentWaitingRoom, setTournamentId } = useTournamentContext();
+	const { setTournamentData, setPlayers } = useTournamentContext(); 
 	const { loggedInAccounts } = useAccountContext();
 	const [lobbies, setLobbies] = useState<TournamentLobby[]>([]);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		fetchLobbies();
@@ -38,8 +41,18 @@ export default function TournamentLobbyList() {
 			
 			const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
 			setTournamentId(tournamentId);
+			navigate('/tournament/waiting-room');
 			setShowTournamentWaitingRoom(true);
-			setShowTournamentLobbyList(false);
+			// setShowTournamentLobbyList(false);
+
+			socket.onmessage = (event) => {
+				const data = JSON.parse(event.data);
+			
+				if (data.type === "TOURNAMENT_UPDATE") {
+					setTournamentData(data.tournament);
+					setPlayers(data.tournament.players);
+				}
+			};
 
 			socket.onopen = () => {
 				console.log(`WebSocket for playerId ${ player.id } connection established for tournament ${ tournamentId }`);
@@ -74,7 +87,7 @@ export default function TournamentLobbyList() {
 					{/* Close button */}
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => setShowTournamentLobbyList(false)}
+						onClick={() => navigate(-1)}
 					>
 						<IoMdClose size={24} />
 					</button>

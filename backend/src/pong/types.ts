@@ -33,6 +33,7 @@ export interface PlayerType
 	elo:		number;
 	totpSecret:	boolean;
 	admin: boolean;
+	matches:		MatchHistory[];
 }
 
 export interface SignUpFormType

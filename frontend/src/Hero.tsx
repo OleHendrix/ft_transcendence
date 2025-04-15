@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import Players from "./Players";
 import { RiGamepadLine } from "react-icons/ri";
@@ -30,6 +31,7 @@ let queueStartTime = new Map<number, number>();
 export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) => void)
 {
 	socket = new WebSocket(`ws://${window.location.hostname}:5001/matchmake`);
+	const navigate = useNavigate();
 
 	if (socket === null)
 		return;
@@ -48,6 +50,7 @@ export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) =
 		{
 			console.log("Match found! Redirecting...");
 			setIsPlaying(PlayerState.playing);
+			navigate('/pong-game');
 		}
 	});
 	queueStartTime.set(user.player.id, Date.now());
@@ -77,8 +80,9 @@ function endQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 
 function Buttons()
 {
-	const { loggedInAccounts, setIsPlaying } = useAccountContext();
+	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
 	const { setShowTournamentSetup } = useTournamentContext();
+	const navigate = useNavigate();
 	const hoverScale = 1.03;
 	const tapScale = 0.97;
 
@@ -91,6 +95,7 @@ function Buttons()
 			return;
 		}
 		setIsPlaying(PlayerState.playing);
+		navigate('/pong-game');
 	}
 
 	return(
@@ -146,7 +151,7 @@ function Buttons()
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length > 2 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}
-					onClick={() => setShowTournamentSetup(true)}>
+					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/setup')}}>
 				<p>Tournament</p>
 				<TbTournament />
 			</motion.button>
@@ -177,8 +182,8 @@ function Hero()
 		<>
 			<div className={`w-full flex flex-col lg:flex-row min-h-[calc(100vh-8vh)] justify-between items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>
 				<div className="w-full lg:w-1/2 flex justify-center flex-col p-6 pl-[6vw] md:pl-[4vw] space-y-12">
-					<h1 className="text-6xl font-semibold text-center md:text-left text-brand-orange">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
-					<p className="text-3xl text-center md:text-left">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
+					<h1 className="text-5xl md:text-6xl font-semibold text-center md:text-left text-brand-orange">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
+					<p className="text-2xl md:text-3xl text-center md:text-left">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
 					<Buttons />
 					<div className="md:hidden">
     					<Players />

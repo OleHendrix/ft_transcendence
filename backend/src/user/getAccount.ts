@@ -5,9 +5,20 @@ export default async function getAccount(fastify: FastifyInstance, prisma: Prism
 {
 	fastify.get('/api/get-account', async (request, reply) =>
 	{
-		const { accountId } = request.query as { accountId: string };
-		const accountIdNum = Number(accountId);
-		const user = await prisma.account.findUnique({ where: { id: accountIdNum }});
+		const { username } = request.query as { username: string };
+		const user = await prisma.account.findUnique(
+		{ 
+			where:
+			{
+				username
+			},
+			include:
+			{
+				matches: true
+			}
+		});
+
+
 		if (user)
 		{
 			reply.send({ success: true, user});

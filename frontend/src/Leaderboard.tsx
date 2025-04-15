@@ -2,11 +2,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { PlayerType } from './types';
 import logo from "../assets/Logo.png";
+import { useParams, useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
 import { useAccountContext } from './contexts/AccountContext';
 import PlayerStats from './user/Playerstats';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
+import Lottie from "lottie-react";
+import OnlineIcon from '../assets/Online.json';
 
 export function toPercentage(n: number, decimals: number): number
 {
@@ -16,13 +19,27 @@ export function toPercentage(n: number, decimals: number): number
 
 export default function Leaderboard()
 {
-	const { accounts, setShowLeaderboard, showStats, setShowStats } = useAccountContext();
+	const [ accounts, setAccounts ] = useState<PlayerType[]>([]);
 	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
-	const [accountId, setAccountId] = useState(0);
+	const navigate = useNavigate();
 
-	useEffect(() => {
-		setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));
-	}, []);
+	useEffect(() =>
+	{
+		async function fetchAccounts()
+		{
+			try
+			{
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
+				setAccounts(response.data.accounts);
+			}
+			catch (error: any)
+			{
+				console.log(error.response.data);
+			}
+		} fetchAccounts();
+	}, [])
+
+	useEffect(() => {setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));}, [accounts]);
 
 	function getBorderColour(position: number): string
 	{
@@ -61,7 +78,7 @@ export default function Leaderboard()
 					
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => setShowLeaderboard(false)}>
+						onClick={() => navigate('/')}>
 						<IoMdClose size={24} />
 					</button>
 
@@ -71,6 +88,7 @@ export default function Leaderboard()
 								<tr className="text-m md:text-lg font-light bg-[#303030]/90 text-lightgrey">
 									<th className="text-m text-left">#</th>
 									<th className="text-left">Name</th>
+									<th className="">Status</th>
 									<th>ELO</th>
 									<th>Wins</th>
 									<th>Losses</th>
@@ -93,7 +111,13 @@ export default function Leaderboard()
 												{index + 1}
 											</div>
 										</td>
-										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => {setAccountId(account.id);  setShowStats(true)}}>{account.username}</span></td>
+										
+										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => navigate(`./${account.username}`) }>{account.username}</span></td>
+										<div className='w-full flex items-center justify-center'>
+
+											{account.online ? <Lottie className="w-10 items-center" animationData={OnlineIcon} loop={true} /> : <div></div>}
+
+										</div>
 										<td className="w-25">{account.elo}</td>
 										<td className="w-25">{account.wins}</td>
 										<td className="w-25">{account.losses}</td>
@@ -103,7 +127,7 @@ export default function Leaderboard()
 							</tbody>
 						</table>
 					</div>
-					{showStats && <PlayerStats setShowStats={setShowStats} accountId={accountId} />}
+					<Outlet />
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>

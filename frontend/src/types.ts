@@ -38,6 +38,7 @@ export interface PlayerType
 {
 	id:				number;
 	admin:			boolean;
+	online:			boolean;
 	username:		string;
 	email:			string;
 	matchesPlayed:	number;

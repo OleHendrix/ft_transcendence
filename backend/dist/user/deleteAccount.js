@@ -14,8 +14,10 @@ function deleteAccount(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/delete-account', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { username } = request.body;
+            // console.log(username);
             try {
                 const deleted = yield prisma.account.delete({ where: { username } });
+                console.log(deleted);
                 return reply.send({ success: true });
             }
             catch (error) {

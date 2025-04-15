@@ -11,10 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createTournament = createTournament;
 exports.joinTournament = joinTournament;
+exports.leaveTournament = leaveTournament;
 exports.manageTournaments = manageTournaments;
 exports.getTournamentById = getTournamentById;
 exports.getTournamentLobbies = getTournamentLobbies;
-exports.leaveTournament = leaveTournament;
 exports.setResults = setResults;
 const types_1 = require("./types");
 require("ws");
@@ -47,6 +47,18 @@ function createTournament(fastify) {
         });
     });
 }
+function broadcastTournamentUpdate(tournamentId, updatedData) {
+    console.log(`broadcasting: ${JSON.stringify(updatedData)} to:`, tournamentId);
+    let tournament = tournamentLobbies.get(tournamentId);
+    if (!tournament)
+        return;
+    tournament.sockets.forEach(socket => {
+        socket.send(JSON.stringify({
+            type: "TOURNAMENT_UPDATE",
+            tournament: updatedData,
+        }));
+    });
+}
 function joinTournament(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.register(function (fastify) {
@@ -65,12 +77,37 @@ function joinTournament(fastify) {
                     connection.playerId = Number(playerId);
                     tournament.players.push(parsedPlayer);
                     tournament.sockets.add(connection);
+                    broadcastTournamentUpdate(Number(tournamentId), tournament);
                     connection.on("close", () => {
                         console.log(`Tournament: ${tournamentId} player: ${parsedPlayer.id} disconnected`);
                     });
                 });
             });
         });
+    });
+}
+function leaveTournament(fastify) {
+    return __awaiter(this, void 0, void 0, function* () {
+        fastify.post('/api/leave-tournament', (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const { playerId, tournamentId } = request.body;
+            console.log(`player ${playerId} leaving tournament ${tournamentId}`);
+            let tournament = tournamentLobbies.get(tournamentId);
+            if (!tournament)
+                return reply.status(400).send({ error: "Invalid tournament ID" });
+            for (let socket of tournament.sockets) {
+                if (socket.playerId = playerId) {
+                    console.log(`player ${playerId} left tournament lobby ${tournamentId}`);
+                    socket.close();
+                    tournament.sockets.delete(socket);
+                }
+            }
+            tournament.players = tournament.players.filter(player => player.id !== playerId);
+            if (tournament.players.length === 0) {
+                console.log(`tournamentId ${tournamentId} empty. deleting`);
+                tournamentLobbies.delete(tournamentId);
+            }
+            broadcastTournamentUpdate(tournamentId, tournament);
+        }));
     });
 }
 function manageTournaments(fastify) {
@@ -145,29 +182,6 @@ function getTournamentLobbies(fastify) {
                 });
             });
             reply.send(lobbySummaries);
-        }));
-    });
-}
-function leaveTournament(fastify) {
-    return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/leave-tournament', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { playerId, tournamentId } = request.body;
-            console.log(`player ${playerId} leaving tournament ${tournamentId}`);
-            let tournament = tournamentLobbies.get(tournamentId);
-            if (!tournament)
-                return reply.status(400).send({ error: "Invalid tournament ID" });
-            for (let socket of tournament.sockets) {
-                if (socket.playerId = playerId) {
-                    console.log(`player ${playerId} left tournament lobby ${tournamentId}`);
-                    socket.close();
-                    tournament.sockets.delete(socket);
-                }
-            }
-            tournament.players = tournament.players.filter(player => player.id !== playerId);
-            if (tournament.players.length === 0) {
-                console.log(`tournamentId ${tournamentId} empty. deleting`);
-                tournamentLobbies.delete(tournamentId);
-            }
         }));
     });
 }
