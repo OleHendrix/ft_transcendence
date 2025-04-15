@@ -21,7 +21,7 @@ function MainContent()
 
 	return (
 		<>
-			{isPlaying !== PlayerState.playing && <Hero />}
+			{isPlaying !== PlayerState.playing && !showTournamentWaitingRoom  && <Hero />}
 			<ChatProvider>
 				{isPlaying === PlayerState.idle && <Chat/>}
 			</ChatProvider>
