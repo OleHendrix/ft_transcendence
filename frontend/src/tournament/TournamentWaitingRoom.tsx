@@ -43,12 +43,13 @@ export default function TournamentWaitingRoom() {
 		} catch (error) {
 			console.log(error);
 		}
+		setShowTournamentWaitingRoom(false);
 		navigate(-1);
 	};
 	return (
 		<AnimatePresence>
 			<motion.div
-				className="absolute top-[8vh] w-screen h-[calc(100vh-8vh)] backdrop-blur-sm flex items-center justify-center bg-[#1a1a1a] z-50"
+				className="w-screen h-[calc(100vh-8vh)] backdrop-blur-sm flex items-center justify-center bg-[#1a1a1a] z-50"
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}

@@ -42,7 +42,7 @@ export default function TournamentLobbyList() {
 			const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
 			setTournamentId(tournamentId);
 			navigate('/tournament/waiting-room');
-			// setShowTournamentWaitingRoom(true);
+			setShowTournamentWaitingRoom(true);
 			// setShowTournamentLobbyList(false);
 
 			socket.onmessage = (event) => {

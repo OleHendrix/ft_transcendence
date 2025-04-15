@@ -28,7 +28,7 @@ export default function TournamentSetupForm() {
 					console.log("Tournament created with ID:", data.tournamentId);
 					setTournamentId(data.tournamentId);
 					navigate('/tournament/waiting-room')
-					// setShowTournamentWaitingRoom(true);
+					setShowTournamentWaitingRoom(true);
 					// setShowTournamentSetup(false);
 				}
 			} catch (err) {

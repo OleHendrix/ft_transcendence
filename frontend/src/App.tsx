@@ -6,7 +6,6 @@ import Modals from "./Modals";
 import PongGame from "./pong/PongGame";
 import Chat from "./chat/Chat";
 import Leaderboard from "./Leaderboard";
-import TournamentSetup from "./tournament/TournamentSetup"
 import { PlayerState } from "./types"
 import { ChatProvider } from "./contexts/ChatContext";
 import { LoginProvider } from "./contexts/LoginContext";
@@ -23,7 +22,7 @@ function MainContent()
 	return (
 		<>
 			<ChatProvider>
-				{isPlaying !== PlayerState.playing && <Hero />}
+				{isPlaying !== PlayerState.playing && !showTournamentWaitingRoom && <Hero />}
 				{isPlaying === PlayerState.idle && <Chat/>}
 			</ChatProvider>
 			{/* {isPlaying === PlayerState.playing  && <PongGame />} */}

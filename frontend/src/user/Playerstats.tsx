@@ -14,6 +14,8 @@ import axios from "axios";
 function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 {
 	const matchHistory = currentAccount?.matches ?? [];
+	console.log(currentAccount);
+	console.log(matchHistory);
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
 	return (
