@@ -29,7 +29,7 @@ function getMatch(userID: number | undefined): Match | null
 	return matchTable.get(key) as Match;
 }
 
-export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
+export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean, tournament: number)
 {
 	let newMatch: Match = 
 	{

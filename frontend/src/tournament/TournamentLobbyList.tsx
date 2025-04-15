@@ -16,6 +16,7 @@ interface TournamentLobby {
 
 export default function TournamentLobbyList() {
 	const { setShowTournamentLobbyList, setShowTournamentWaitingRoom, setTournamentId } = useTournamentContext();
+	const { setTournamentData, setPlayers } = useTournamentContext(); 
 	const { loggedInAccounts } = useAccountContext();
 	const [lobbies, setLobbies] = useState<TournamentLobby[]>([]);
 	const navigate = useNavigate();
@@ -43,6 +44,15 @@ export default function TournamentLobbyList() {
 			navigate('/tournament/waiting-room');
 			// setShowTournamentWaitingRoom(true);
 			// setShowTournamentLobbyList(false);
+
+			socket.onmessage = (event) => {
+				const data = JSON.parse(event.data);
+			
+				if (data.type === "TOURNAMENT_UPDATE") {
+					setTournamentData(data.tournament);
+					setPlayers(data.tournament.players);
+				}
+			};
 
 			socket.onopen = () => {
 				console.log(`WebSocket for playerId ${ player.id } connection established for tournament ${ tournamentId }`);
