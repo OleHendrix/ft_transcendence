@@ -6,6 +6,7 @@ import { useAccountContext } from '../contexts/AccountContext';
 import { useLoginContext } from '../contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RiRobot2Line } from "react-icons/ri";
+import { useNavigate } from 'react-router-dom';
 
 function formatTime(ms: number): string
 {
@@ -19,6 +20,7 @@ function PongGame()
 {
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
+	const navigate = useNavigate();
 
 	const [pong, setPong] = useState<PongState>
 	({
@@ -111,6 +113,7 @@ function PongGame()
 
 	async function leaveMatch(userID: number)
 	{
+		navigate("/");
 		setIsPlaying(PlayerState.idle);
 		await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
 	}
@@ -156,7 +159,7 @@ function PongGame()
 		if (isLocal === true && user2.id !== -1)
 			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true, tournament: -1 });
 		else
-			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying)
+			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying, navigate)
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);

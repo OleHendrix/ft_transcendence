@@ -12,6 +12,7 @@ import PongGame from './pong/PongGame.tsx';
 import PlayerInfo from './user/PlayerInfo.tsx';
 import PlayerStats from './user/Playerstats.tsx';
 import TournamentSetupForm from './tournament/TournamentSetupForm.tsx';
+import { Queue } from './Hero.tsx';
 
 const router = createBrowserRouter([
 	{
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
 				{ path: 'stats', element: <PlayerStats />}
 			]
 		},
+		{ path: '/queue', element: <Queue />},
 		{ path: '/pong-game', element: <PongGame />},
 		{ path: 'tournament',
 			children:
