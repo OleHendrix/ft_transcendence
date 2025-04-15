@@ -6,6 +6,14 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 {
 	fastify.post('/api/auth/verify-totp', async (req, reply) =>
 	{
+		try
+		{
+
+		}
+		catch (err)
+		{
+			reply.code(401).send({ message: 'Unauthorized' });
+		}
 		const { username, token } = req.body as { username: string; token: string; };
 		console.log("checking 2fa from:", username, "token:", token);
 		const account = await prisma.account.findUnique({ where: { username } });
@@ -31,7 +39,7 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 				where: { username },
 				data:
 				{
-					twofa: true
+					twofaEnabled: true
 				}
 		});
 		console.log("authorized:", username);

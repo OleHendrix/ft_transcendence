@@ -11,7 +11,7 @@ CREATE TABLE "new_Account" (
     "losses" INTEGER NOT NULL DEFAULT 0,
     "elo" INTEGER NOT NULL DEFAULT 400,
     "totpSecret" TEXT,
-    "twofa" BOOLEAN NOT NULL DEFAULT false,
+    "twofaEnabled" BOOLEAN NOT NULL DEFAULT false,
     "admin" BOOLEAN NOT NULL DEFAULT false,
     "online" BOOLEAN NOT NULL DEFAULT false
 );

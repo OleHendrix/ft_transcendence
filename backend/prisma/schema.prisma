@@ -13,7 +13,7 @@ model Account {
   username      String     @unique
   password      String
   totpSecret    String?
-  twofa         Boolean    @default(false)
+  twofaEnabled  Boolean    @default(false)
   admin         Boolean    @default(false)
   online        Boolean    @default(false)
 

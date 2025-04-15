@@ -21,12 +21,15 @@ import initMatchMaking 	from "./pong/matchMaking"
 
 import { setupChat } 	from './chat/chat';
 
+import authenticatePlugin from './auth/authenticate';
+
 const fastify = Fastify();
 export const prisma = new PrismaClient();
 
 fastify.register(fastifyCors);
-fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
+fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
+fastify.register(authenticatePlugin);
 
 setupChat(fastify, prisma);
 

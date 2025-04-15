@@ -57,7 +57,7 @@ async function checkLogin( { formData, token, setLoggedInAccounts, setValidation
 		if (response.data.success)
 		{
 			const user = response.data.user;
-			if (user.twofa)
+			if (user.twofaEnabled)
 			{
 				setShow2FA(true);
 				return false;

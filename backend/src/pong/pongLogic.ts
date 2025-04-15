@@ -1,4 +1,4 @@
-import { PongState, Match, Statics, Paddle, Ball, PlayerData, Result, MatchHistory } from "./types";
+import { PongState, Match, Statics, Paddle, Ball, PlayerData, Result, MatchHistory } from "../types/types";
 import { prisma } from '../server';
 import { Prisma } from "@prisma/client/default";
 

@@ -34,7 +34,7 @@ function verifyTotp(fastify, prisma) {
             const updatedAccount = yield prisma.account.update({
                 where: { username },
                 data: {
-                    twofa: true
+                    twofaEnabled: true
                 }
             });
             console.log("authorized:", username);

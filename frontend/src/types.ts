@@ -46,7 +46,7 @@ export interface PlayerType
 	losses:			number;
 	winRate:		number;
 	elo:			number;
-	twofa:			boolean;
+	twofaEnabled:			boolean;
 	matches:		MatchHistory[];
 }
 

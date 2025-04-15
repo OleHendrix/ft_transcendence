@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import { addGame } from "./pongServer";
-import { Opponent, QueueData } from "./types"
+import { Opponent, QueueData } from "../types/types"
 import { Socket } from "dgram";
 
 const queue = new Map<WebSocket, QueueData>();

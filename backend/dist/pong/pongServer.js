@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addGame = addGame;
 exports.default = initPongServer;
 const pongLogic_1 = require("./pongLogic");
-const types_1 = require("./types");
+const types_1 = require("../types/types");
 let matchTable = new Map([]);
 let matchIDTable = new Map([]);
 function addGame(user1, user2, isLocalGame) {

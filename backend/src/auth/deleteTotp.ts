@@ -17,7 +17,7 @@ export default async function deleteTotp(fastify: FastifyInstance, prisma: Prism
 			data:
 			{
 				totpSecret: null,
-				twofa: false
+				twofaEnabled: false
 			}
 		});
 

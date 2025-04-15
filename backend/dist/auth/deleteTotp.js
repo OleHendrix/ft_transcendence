@@ -21,7 +21,7 @@ function deleteTotp(fastify, prisma) {
                 where: { username },
                 data: {
                     totpSecret: null,
-                    twofa: false
+                    twofaEnabled: false
                 }
             });
             return reply.send({ success: true, user: updatedAccount });

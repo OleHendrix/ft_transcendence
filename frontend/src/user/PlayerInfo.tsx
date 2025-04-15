@@ -106,7 +106,7 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 				updatedloggedInAccounts[indexPlayerStats] =
 				{
 					...updatedloggedInAccounts[indexPlayerStats],
-					twofa: response.data.user.twofa
+					twofaEnabled: response.data.user.twofaEnabled
 				};
 				setLoggedInAccounts(updatedloggedInAccounts);
 				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
@@ -250,7 +250,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 				updatedloggedInAccounts[indexPlayerStats] =
 				{
 					...updatedloggedInAccounts[indexPlayerStats],
-					twofa: response.data.user.twofa
+					twofaEnabled: response.data.user.twofaEnabled
 				};
 				setLoggedInAccounts(updatedloggedInAccounts);
 				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
@@ -428,8 +428,8 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA}:
 			{!settingUp2FA && 
 			(
 					<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
-						<p>{loggedInAccounts[indexPlayerStats]?.twofa ? 'Yes' : 'No'}</p>
-						{ editProfile && <EditIcon onClick={() => {!loggedInAccounts[indexPlayerStats].twofa ? setSettingUp2FA(true) : setConfirmDisable2Fa(true)}} keyName="edit-2fa"/>}
+						<p>{loggedInAccounts[indexPlayerStats]?.twofaEnabled ? 'Yes' : 'No'}</p>
+						{ editProfile && <EditIcon onClick={() => {!loggedInAccounts[indexPlayerStats].twofaEnabled ? setSettingUp2FA(true) : setConfirmDisable2Fa(true)}} keyName="edit-2fa"/>}
 					</div>
 			)}
 			{settingUp2FA && editProfile && <Enable2FA setSettingUp2FA={setSettingUp2FA}/>}

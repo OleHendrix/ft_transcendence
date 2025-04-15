@@ -1,5 +1,5 @@
 import { initGame, updateGame, mirrorGame, endGame } from './pongLogic';
-import { PlayerData, Match, Result } from './types';
+import { PlayerData, Match, Result } from '../types/types';
 import { FastifyInstance } from "fastify";
 
 let matchTable   = new Map<number, Match>([]);

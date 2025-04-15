@@ -26,12 +26,20 @@ function login(fastify, prisma) {
                 return res.status(401).send({ error: 'Incorrect password' });
             if (user.online)
                 res.status(402).send({ error: 'Already logged in' });
+            if (user.twofaEnabled) {
+                const tempToken = fastify.jwt.sign({
+                    sub: user.id,
+                    username: user.username,
+                    email: user.email,
+                }, { expiresIn: '5m' });
+                return res.send({ token: tempToken, twofaRequired: true });
+            }
             yield prisma.account.update({
                 where: { username },
                 data: { online: true }
             });
             const token = fastify.jwt.sign({ username: user.username, email: user.email }, { expiresIn: '1h' });
-            res.send({ success: true, token, user });
+            return res.send({ success: true, token, user });
         }));
     });
 }

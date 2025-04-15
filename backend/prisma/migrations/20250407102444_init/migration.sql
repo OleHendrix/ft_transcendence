@@ -19,11 +19,11 @@ CREATE TABLE "new_Account" (
     "winRate" REAL,
     "elo" INTEGER NOT NULL DEFAULT 400,
     "totpSecret" TEXT,
-    "twofa" BOOLEAN NOT NULL DEFAULT false,
+    "twofaEnabled" BOOLEAN NOT NULL DEFAULT false,
     "admin" BOOLEAN NOT NULL DEFAULT false,
     "online" BOOLEAN NOT NULL DEFAULT false
 );
-INSERT INTO "new_Account" ("admin", "draws", "elo", "email", "id", "losses", "matchesPlayed", "online", "password", "totpSecret", "twofa", "username", "winRate", "wins") SELECT "admin", "draws", "elo", "email", "id", "losses", "matchesPlayed", "online", "password", "totpSecret", "twofa", "username", "winRate", "wins" FROM "Account";
+INSERT INTO "new_Account" ("admin", "draws", "elo", "email", "id", "losses", "matchesPlayed", "online", "password", "totpSecret", "twofaEnabled", "username", "winRate", "wins") SELECT "admin", "draws", "elo", "email", "id", "losses", "matchesPlayed", "online", "password", "totpSecret", "twofaEnabled", "username", "winRate", "wins" FROM "Account";
 DROP TABLE "Account";
 ALTER TABLE "new_Account" RENAME TO "Account";
 CREATE UNIQUE INDEX "Account_email_key" ON "Account"("email");
