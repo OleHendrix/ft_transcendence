@@ -1,7 +1,7 @@
-import { tournamentLobbies } from "./tournament";
-import { PlayerData } from "../types/types";
-import { broadcastTournamentUpdate } from "./broadcastTournamentUpdates";
-import type { WebSocket } from 'ws';
+import { tournamentLobbies } 			from "./tournament";
+import { PlayerData } 					from "../types/types";
+import { broadcastTournamentUpdate } 	from "./broadcastTournamentUpdates";
+import type { WebSocket } 				from 'ws';
 
 declare module 'ws' {
 	interface WebSocket {
@@ -39,11 +39,15 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	tournament.players.push(player);
 	tournament.sockets.add(connection);
   
-	broadcastTournamentUpdate(tournamentId);
+	broadcastTournamentUpdate(tournamentId, "PLAYER_UPDATE");
+	if (tournament.players.length >= tournament.maxPlayers){
+		broadcastTournamentUpdate(tournamentId, "START_SIGNAL");
+	}
   
 	connection.on("close", () => {
 		tournament.players = tournament.players.filter(p => p.id !== playerId);
 		tournament.sockets.delete(connection);
-		broadcastTournamentUpdate(tournamentId);
+		console.log("ON CLOSE PLAYERUPDATE");
+		broadcastTournamentUpdate(tournamentId, "PLAYER_UPDATE");
 	});
 }

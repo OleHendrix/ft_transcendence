@@ -1,5 +1,5 @@
-import { tournamentLobbies } from "./tournament";
-import { FastifyInstance } from "fastify/fastify";
+import { tournamentLobbies } 	from "./tournament";
+import { FastifyInstance } 		from "fastify/fastify";
 
 export async function getTournamentLobbies(fastify: FastifyInstance)
 {

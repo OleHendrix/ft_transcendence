@@ -1,5 +1,5 @@
-import { FastifyInstance } from "fastify/fastify";
-import { tournamentLobbies } from "./tournament";
+import { FastifyInstance } 		from "fastify/fastify";
+import { tournamentLobbies } 	from "./tournament";
 
 export async function getTournamentById(fastify: FastifyInstance) {
 	fastify.get('/api/get-tournament/:id', async (request, reply) => {

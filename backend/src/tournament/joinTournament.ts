@@ -1,4 +1,4 @@
-import { FastifyInstance } from "fastify/fastify";
+import { FastifyInstance } 		from "fastify/fastify";
 import { handleJoinTournament } from "./handleJoinTournament";
 
 

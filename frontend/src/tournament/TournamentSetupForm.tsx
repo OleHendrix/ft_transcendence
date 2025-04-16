@@ -1,15 +1,15 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAccountContext } from '../contexts/AccountContext';
-import { IoMdClose } from 'react-icons/io';
-import Axios from 'axios';
-import { useTournamentContext } from '../contexts/TournamentContext';
+import { motion, AnimatePresence } 	from 'framer-motion';
+import { Link, useNavigate } 		from 'react-router-dom';
+import { useAccountContext } 		from '../contexts/AccountContext';
+import { IoMdClose } 				from 'react-icons/io';
+import Axios 						from 'axios';
+import { useTournamentContext } 	from '../contexts/TournamentContext';
 
 
 export default function TournamentSetupForm() {
-	const { loggedInAccounts } = useAccountContext();
-	const { setTournamentId } = useTournamentContext();
-	const navigate = useNavigate();
+	const { loggedInAccounts } 		= useAccountContext();
+	const { setTournamentId } 		= useTournamentContext();
+	const navigate					= useNavigate();
 
 	async function createTournament( maxPlayers: number )
 	{

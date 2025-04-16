@@ -250,7 +250,7 @@ function PongGame()
 					/>
 				</div>
 			</div>
-			{pong.result !== Result.PLAYING &&
+			{/* {pong.result !== Result.PLAYING &&
 			<AnimatePresence>
 				<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 					<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-full max-w-sm relative shadow-xl flex-grow" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
@@ -269,7 +269,7 @@ function PongGame()
 						</div>
 					</motion.div>
 				</motion.div>
-			</AnimatePresence>}
+			</AnimatePresence>} */}
 		</>
 	)
 }

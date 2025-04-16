@@ -1,4 +1,3 @@
-import { useEffect, useState } 		from 'react';
 import { motion, AnimatePresence } 	from 'framer-motion';
 import { useNavigate } 				from 'react-router-dom';
 import { IoMdClose } 				from 'react-icons/io';
@@ -6,48 +5,11 @@ import axios 						from 'axios';
 import { useTournamentContext } 	from '../contexts/TournamentContext';
 import { useAccountContext } 		from '../contexts/AccountContext';
 
-export default function TournamentWaitingRoom() {
-	const { loggedInAccounts } 						= useAccountContext();
-	const { tournamentId } 							= useTournamentContext();
-	const [ tournamentData, setTournamentData ] 	= useState<any>(null);
-	const [ players, setPlayers ] 					= useState<any[]>([]);
-	const navigate 									= useNavigate();
 
-	useEffect(() => {
-		if (tournamentId === null) return;
-	
-		const player = loggedInAccounts[0];
-	
-		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
-	
-		socket.onopen = () => {
-			console.log("WebSocket connected");
-		};
-	
-		socket.onmessage = (event) => {
-			try {
-				const data = JSON.parse(event.data);
-				if (data.type === "TOURNAMENT_UPDATE") {
-					setTournamentData(data.tournament);
-					setPlayers(data.tournament.players);
-				}
-			} catch (err) {
-				console.error("Failed to parse WebSocket message", err);
-			}
-		};
-	
-		socket.onerror = (err) => {
-			console.error("WebSocket error:", err);
-		};
-	
-		socket.onclose = () => {
-			console.log("WebSocket tournament waiting room closed");
-		};
-	
-		return () => {
-			socket.close();
-		};
-	}, [tournamentId]);
+export default function TournamentWaitingRoom() {
+	const { loggedInAccounts } 									= useAccountContext();
+	const { tournamentId, tournamentData, players } 			= useTournamentContext();
+	const navigate 												= useNavigate();
 
 	const handleClose = async () => {
 		try {

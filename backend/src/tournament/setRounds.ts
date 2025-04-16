@@ -1,11 +1,10 @@
-import { tournamentLobbies } from "./tournament";
-import { Result } from "../types/types"
+import { tournamentLobbies } 	from "./tournament";
+import { Result } 				from "../types/types"
 
 export function setRounds(tournamentId: number)
 {
 	let lobby = tournamentLobbies.get(tournamentId);
-	if (!lobby)
-		return null;
+	if (!lobby) return null;
 
 	if (!lobby.rounds) lobby.rounds = [];
 

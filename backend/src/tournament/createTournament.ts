@@ -1,7 +1,7 @@
-import { FastifyInstance } from "fastify/fastify";
-import { PlayerData } from "../types/types";
-import { tournamentLobbies } from "./tournament";
-import { WebSocket } from 'ws';
+import { FastifyInstance } 		from "fastify/fastify";
+import { PlayerData } 			from "../types/types";
+import { tournamentLobbies } 	from "./tournament";
+import { WebSocket } 			from 'ws';
 
 export async function createTournament(fastify: FastifyInstance)
 {

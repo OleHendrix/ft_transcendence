@@ -1,5 +1,5 @@
-import { Result } from "../types/types";
-import { tournamentLobbies } from "./tournament";
+import { Result } 				from "../types/types";
+import { tournamentLobbies } 	from "./tournament";
 
 export function setResults(tournamentId: number, p1: number, p1score: number, p2score: number, result: Result)
 {

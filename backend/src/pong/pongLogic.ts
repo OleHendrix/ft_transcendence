@@ -1,6 +1,6 @@
 import { PongState, Match, Statics, Paddle, Ball, PlayerData, Result, MatchHistory } from "../types/types";
 import { prisma } from '../server';
-import { Prisma } from "@prisma/client/default";
+import { setResults } from "../tournament/setResults";
 
 const s: Statics =
 ({
@@ -345,6 +345,6 @@ export async function endGame(match: Match, result: Result)
 
 	if (match.tournament !== -1)
 	{
-		
+		setResults(match.tournament, p1, match.state.p1Score, match.state.p2Score, result);
 	}
 }

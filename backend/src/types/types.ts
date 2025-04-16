@@ -144,7 +144,7 @@ export interface MatchHistory
 	p2Diff:		number;
 };
 
-interface Round
+export interface Round
 {
 	p1:			PlayerData;
 	p2:			PlayerData;

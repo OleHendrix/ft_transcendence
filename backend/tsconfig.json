@@ -113,6 +113,6 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "src/**/*.ts",
+    "src/**/*.ts", "../frontend/src/tournament/tournamentSocket.ts",
   ]
 }
