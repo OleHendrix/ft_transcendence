@@ -15,6 +15,23 @@ const getOrCreateChatSession_1 = require("./chatUtils/getOrCreateChatSession");
 const getBlockedUserIds_1 = require("./chatUtils/getBlockedUserIds");
 function getMessages(server, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
+        // server.get("/api/get-chatsession", async (request, reply) =>
+        // {
+        // 	const { senderId, receiverId } = request.query as { senderId: string; receiverId: string };
+        // 	const senderIdNum = parseInt(senderId);
+        // 	const receiverIdNum = parseInt(receiverId);
+        // 	try
+        // 	{
+        // 		const chatSession = await getOrCreateChatSession(senderIdNum, receiverIdNum);
+        // 		if (chatSession)
+        // 			reply.send({ success: true, chatSessionId: chatSession.id})
+        // 	}
+        // 	catch (error: any)
+        // 	{
+        // 		console.log(error.response)
+        // 		reply.status(500).send({ success: false, error: "Error getting chatSession" })
+        // 	}
+        // })
         server.get("/api/get-messages", (request, reply) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { senderId, receiverId } = request.query;

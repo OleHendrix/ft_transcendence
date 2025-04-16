@@ -1,6 +1,6 @@
 import { useAccountContext } from "../contexts/AccountContext";
-import { useLoginContext } from "../contexts/LoginContext";
-import { useState, useEffect, useMemo } from "react";
+import { useChatContext } from "../contexts/ChatContext";
+import { useState, useEffect, useMemo, use } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose, IoIosStats } from "react-icons/io";
@@ -8,6 +8,7 @@ import { RiGamepadLine } from "react-icons/ri";
 import Player from "../../assets/Player.svg";
 import { MatchHistory, PlayerType } from "../types";
 import { HiUserAdd } from "react-icons/hi";
+import { FaUserCheck } from "react-icons/fa";
 import { toPercentage } from "../Leaderboard";
 import { format } from 'date-fns';
 import Lottie from "lottie-react";
@@ -139,29 +140,62 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 
 function PlayerStats()
 {
-	const { accounts } = useAccountContext();
+	const { accounts, loggedInAccounts } = useAccountContext();
+	const { setIsOpen, setReceiverId } = useChatContext();
 	const [ selectedAccount, setSelectedAccount ] = useState<PlayerType>();
+	const [ friendStatus, setFriendStatus ] = useState(false);
 	const { username } = useParams();
 	const navigate = useNavigate();
 
-
 	useEffect(() =>
 	{
-		async function getPlayer()
+		async function getAccount()
 		{
 			try
 			{
 				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
-					{ params: { username: username }})
+					{
+						params:
+						{ 
+							requestedUser: loggedInAccounts[0].id,
+							username: username,
+						}
+					})
 				if (response.data.success)
+				{
 					setSelectedAccount(response.data.user);
+					setFriendStatus(response.data.friendshipStatus);
+				}
 			}
 			catch (error: any)
 			{
 				console.log(error.response)
 			}
-		}; getPlayer()
+		}; getAccount()
 	}, [])
+
+	async function sendFriendRequest()
+	{
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-friendship`,
+				{
+					requesterId: loggedInAccounts[0].id,
+					receiverId: selectedAccount?.id
+				})
+				if (response.data.success)
+				{
+					navigate('/');
+					setIsOpen(true);
+					if (selectedAccount)
+						setReceiverId(selectedAccount.id);
+				}
+		}
+		catch (error: any)
+		{
+			console.log(error.response)
+		}
+	}
 
 	let playerRank;
 	if (selectedAccount && selectedAccount !== undefined)
@@ -185,12 +219,6 @@ function PlayerStats()
 					animate={{ scale: 1, y: 0 }}
 					exit={{ scale: 0.9, y: 20 }}
 					transition={{ type: "spring", stiffness: 300, damping: 25 }}>
-
-					<button
-						className="absolute top-4 left-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => navigate(-1)}>
-						<IoMdClose size={24} />
-					</button>
 					
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
@@ -202,9 +230,19 @@ function PlayerStats()
 						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
 						  <div className="relative">
 							<img src={Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
-								<motion.div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors" whileHover={ {scale: 1.10}}>
+							{!friendStatus  && loggedInAccounts[0].username !== username &&
+							(
+								<motion.div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors" whileHover={ {scale: 1.10}}
+									onClick={() => sendFriendRequest()}>
 									<HiUserAdd size={16} className="text-[#ff914d]" />
 								</motion.div>
+							)}
+							{friendStatus && loggedInAccounts[0].username !== username &&
+							(
+								<div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full">
+									<FaUserCheck size={16} className="text-green-800" />
+								</div>
+							)}
 						  </div>
 						{selectedAccount?.online &&
 						(

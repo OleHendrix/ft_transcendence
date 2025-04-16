@@ -22,10 +22,8 @@ function MainContent()
 	return (
 		<>
 				{isPlaying !== PlayerState.playing && <Navbar />}
-			<ChatProvider>
 				{isPlaying !== PlayerState.playing && !showTournamentWaitingRoom && <Hero />}
 				{isPlaying === PlayerState.idle && <Chat/>}
-			</ChatProvider>
 			{/* {isPlaying === PlayerState.playing  && <PongGame />} */}
 			{/* {isPlaying !== PlayerState.playing && showLeaderboard  && <Leaderboard />}
 			{isPlaying !== PlayerState.playing && showTournamentSetup && <TournamentSetup/> }
@@ -43,9 +41,12 @@ function App()
 			<AccountProvider>
 			<LoginProvider>
 				<TournamentProvider>
+					<ChatProvider>
+
 					<MainContent />
 					{/* <Modals /> */}
 					<Outlet />
+					</ChatProvider>
 				</TournamentProvider>
 				</LoginProvider>
 			</AccountProvider>

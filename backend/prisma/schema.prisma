@@ -25,8 +25,11 @@ model Account {
   tournamentWins  Int             @default(0)
   elo             Int             @default(400)
 
-  Friends
   matches         		MatchHistory[]  @relation("matches")
+//   Friended				Account[]		 @relation("friends")
+//   FriendedBy			Account[]		 @relation("friends")
+  sentFriendRequests     Friendship[] @relation("Requester")
+  receivedFriendRequests Friendship[] @relation("Receiver")
   Blocks                Block[]          @relation("Blocks")
   BlockedBy             Block[]          @relation("BlockedBy")
   sentMessages          Message[]        @relation("SentMessages")     // This represents the sender
@@ -58,6 +61,17 @@ model ChatSession {
 
   account1   Account  @relation("account1ChatSessions", fields: [account1Id], references: [id])
   account2   Account  @relation("account2ChatSessions", fields: [account2Id], references: [id])
+}
+
+model Friendship {
+	id				Int @id @default(autoincrement())
+	requesterId		Int
+	receiverId		Int
+	accepted 		Boolean @default(false)
+	createdAt   	DateTime @default(now())
+
+	requester		Account  @relation("Requester", fields: [requesterId], references: [id])
+ 	receiver  		Account  @relation("Receiver", fields: [receiverId], references: [id])
 }
 
 model Block {
