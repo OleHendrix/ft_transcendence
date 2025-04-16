@@ -31,6 +31,7 @@ function login(fastify, prisma) {
                     sub: user.id,
                     username: user.username,
                     email: user.email,
+                    twofa: false,
                 }, { expiresIn: '5m' });
                 return res.send({ token: tempToken, twofaRequired: true });
             }
@@ -38,7 +39,11 @@ function login(fastify, prisma) {
                 where: { username },
                 data: { online: true }
             });
-            const token = fastify.jwt.sign({ username: user.username, email: user.email }, { expiresIn: '1h' });
+            const token = fastify.jwt.sign({
+                sub: user.id,
+                username: user.username,
+                email: user.email,
+            }, { expiresIn: '1h' });
             return res.send({ success: true, token, user });
         }));
     });

@@ -11,10 +11,10 @@ declare module 'fastify'
 	{
 		user:
 		{
-			sub: string;
+			sub:      number;
 			username: string;
-			iat: number;
-			exp: number;
+			iat:      number;
+			exp:      number;
 		};
 	}
 };

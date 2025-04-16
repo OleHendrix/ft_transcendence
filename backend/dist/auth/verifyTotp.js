@@ -17,28 +17,36 @@ const speakeasy_1 = __importDefault(require("speakeasy"));
 function verifyTotp(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/auth/verify-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username, token } = req.body;
-            console.log("checking 2fa from:", username, "token:", token);
-            const account = yield prisma.account.findUnique({ where: { username } });
-            if (!account || !account.totpSecret)
-                return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
-            console.log("found user with totp:", username);
-            const isValid = speakeasy_1.default.totp.verify({
-                secret: account.totpSecret,
-                encoding: 'base32',
-                token,
-                window: 1,
-            });
-            if (!isValid)
-                return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
-            const updatedAccount = yield prisma.account.update({
-                where: { username },
-                data: {
-                    twofaEnabled: true
-                }
-            });
-            console.log("authorized:", username);
-            return { success: true, user: updatedAccount };
+            const { token: totpToken, jwt: tempJwt } = req.body;
+            try {
+                const decoded = fastify.jwt.verify(tempJwt);
+                const userId = decoded.sub;
+                const account = yield prisma.account.findUnique({ where: { id: userId } });
+                if (!account || !account.totpSecret)
+                    return reply.code(400).send({ success: false, message: 'Totp not setup' });
+                const isValid = speakeasy_1.default.totp.verify({
+                    secret: account.totpSecret,
+                    encoding: 'base32',
+                    token: totpToken,
+                    window: 1,
+                });
+                if (!isValid)
+                    return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
+                yield prisma.account.update({
+                    where: { id: userId },
+                    data: { online: true, twofaEnabled: true },
+                });
+                const finalToken = fastify.jwt.sign({
+                    sub: account.id,
+                    username: account.username,
+                    email: account.email,
+                    twofa: true,
+                }, { expiresIn: '1h' });
+                return reply.send({ success: true, token: finalToken, user: account });
+            }
+            catch (err) {
+                reply.code(401).send({ message: 'Unauthorized' });
+            }
         }));
     });
 }

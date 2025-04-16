@@ -6,43 +6,48 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 {
 	fastify.post('/api/auth/verify-totp', async (req, reply) =>
 	{
+		const { token: totpToken, jwt: tempJwt } = req.body as { token: string, jwt: string };
 		try
 		{
+			const decoded = fastify.jwt.verify(tempJwt) as { sub: number };
+			const userId = decoded.sub;
 
+			const account = await prisma.account.findUnique({ where: { id: userId } });
+			if (!account || !account.totpSecret)
+				return reply.code(400).send({ success: false, message: 'Totp not setup' });
+
+			const isValid = speakeasy.totp.verify(
+				{
+					secret: account.totpSecret,
+					encoding: 'base32',
+					token: totpToken,
+					window: 1,
+				}
+			);
+	
+			if (!isValid)
+				return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
+
+			await prisma.account.update({
+				where: { id: userId },
+				data:  { online: true,  twofaEnabled: true },
+			});
+
+			const finalToken = fastify.jwt.sign(
+				{
+					sub: account.id,
+					username: account.username,
+					email: account.email,
+					twofa: true,
+				},
+				{ expiresIn: '1h' }
+			);
+
+			return reply.send({ success: true, token: finalToken, user: account });
 		}
 		catch (err)
 		{
 			reply.code(401).send({ message: 'Unauthorized' });
 		}
-		const { username, token } = req.body as { username: string; token: string; };
-		console.log("checking 2fa from:", username, "token:", token);
-		const account = await prisma.account.findUnique({ where: { username } });
-
-		if (!account || !account.totpSecret)
-			return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
-
-		console.log("found user with totp:", username);
-		const isValid = speakeasy.totp.verify(
-			{
-				secret: account.totpSecret,
-				encoding: 'base32',
-				token,
-				window: 1,
-			}
-		);
-
-		if (!isValid)
-			return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
-
-		const updatedAccount = await prisma.account.update(
-		{
-				where: { username },
-				data:
-				{
-					twofaEnabled: true
-				}
-		});
-		console.log("authorized:", username);
-		return { success: true, user: updatedAccount };
 	});
 }
