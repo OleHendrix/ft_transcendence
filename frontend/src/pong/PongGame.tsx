@@ -7,18 +7,12 @@ import { useLoginContext } from '../contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RiRobot2Line } from "react-icons/ri";
 import { useNavigate } from 'react-router-dom';
-
-function formatTime(ms: number): string
-{
-	const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-	const minutes = Math.floor(totalSeconds / 60);
-	const seconds = totalSeconds % 60;
-	return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
+import logo from "../../assets/Logo.png";
+import { toMenu } from '../Navbar';
 
 function PongGame()
 {
-	const { loggedInAccounts, setIsPlaying } = useAccountContext();
+	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 	const navigate = useNavigate();
 
@@ -183,15 +177,38 @@ function PongGame()
 		}
 	}, [pong.p2.lastBounce]);
 
+	function PongNavBar()
+	{
+		function formatTime(ms: number): string
+		{
+			const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+			const minutes = Math.floor(totalSeconds / 60);
+			const seconds = totalSeconds % 60;
+			return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+		}
+
+		return (
+			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+				<div className="absolute left-[6vw] md:left-[4vw]">
+					<button onClick={() => toMenu(isPlaying, setIsPlaying, loggedInAccounts[0], navigate)}>
+						<img src={logo} alt="Logo" className="h-16 w-auto" />
+					</button>
+				</div>
+
+				{pong.result === Result.PLAYING && (
+				<div className="flex-grow flex justify-center text-white text-2xl font-bold">
+						{formatTime(pong.timer)}
+				</div>
+				)}
+			</nav>
+		);
+	}
+
 	const bounceStrength = 1.2 * -pong.ball.dir.x;
 	return (
 		<>
+			<PongNavBar />
 			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
-				{pong.result === Result.PLAYING && (
-					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10">
-						{formatTime(pong.timer)}
-					</div>
-				)}
 				<div className="relative w-full h-full">
 					<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 						<div className="h-full w-1/2 flex justify-center items-center">

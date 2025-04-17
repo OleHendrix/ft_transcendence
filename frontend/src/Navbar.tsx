@@ -4,30 +4,31 @@ import Players from "./Players";
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAccountContext } from "./contexts/AccountContext";
-import { PlayerState } from "./types";
+import { PlayerState, PlayerType } from "./types";
 import { PiUserListLight } from "react-icons/pi";
+
+export async function toMenu(isPlaying: PlayerState, setIsPlaying: React.Dispatch<React.SetStateAction<PlayerState>>, player: PlayerType, navigate: ReturnType<typeof useNavigate>)
+{
+	if (isPlaying !== PlayerState.playing)
+		return;
+	navigate('/');
+	setIsPlaying(PlayerState.idle)
+	try
+	{
+		await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: player.id });
+		await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: player.id });
+	}
+	catch (error)
+	{
+		console.log(error);
+	}
+	console.log("to menu")
+}
 
 function Navbar()
 {
-	const { isPlaying, setIsPlaying, loggedInAccounts, setShowLeaderboard } = useAccountContext();
+	const { isPlaying, setIsPlaying, loggedInAccounts } = useAccountContext();
 	const navigate = useNavigate();
-
-	async function toMenu()
-	{
-		if (isPlaying !== PlayerState.playing)
-			return;
-		navigate('/');
-		setIsPlaying(PlayerState.idle)
-		try
-		{
-			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
-			await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: loggedInAccounts[0].id });
-		}
-		catch (error)
-		{
-			console.log(error);
-		}
-	}
 
 	return (
 		<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
@@ -46,7 +47,7 @@ function Navbar()
 			</div>
 
 			<div className="flex-grow flex justify-center">
-				<button onClick={() => toMenu()}>
+				<button onClick={() => toMenu(isPlaying, setIsPlaying, loggedInAccounts[0], navigate)}>
 					<img src={logo} alt="Logo" className="h-16 w-auto" />
 				</button>
 			</div>

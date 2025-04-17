@@ -35,7 +35,7 @@ function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 					{SMH.map((match, index) => (
 						<tr
 							key={match.id}
-							className={`${"font-medium "} ${match.winner === "Draw"
+							className={`${"h-18 font-medium "} ${match.winner === "Draw"
 								? "bg-[linear-gradient(to_bottom_right,_#40404050_0%,_#47474790_30%,_#40404070_70%,_#33333337_100%)]"
 								: match.winner === currentAccount?.username 
 								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
@@ -95,7 +95,7 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{
 		return (
-			<tr className={`whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
+			<tr className={`h-18 whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
 				<td className="text-left text-xl font-medium pl-2 pr-6">
 					{startStr}
 				</td>
