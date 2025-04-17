@@ -14,5 +14,3 @@ function PlayerInfoProtection({ children }: { children: ReactNode })
 }
 
 export default PlayerInfoProtection
-
-k
