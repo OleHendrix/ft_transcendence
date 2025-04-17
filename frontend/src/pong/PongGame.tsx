@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
 import { PlayerState, PongState, Result, Opponent, PlayerData } from '../types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useNavigationType } from 'react-router-dom';
 import logo from '../../assets/Logo.png'
 import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
@@ -23,6 +23,14 @@ function PongGame()
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
 	const navigate = useNavigate();
+	const navigationType = useNavigationType();
+
+	useEffect(() => {
+		if (navigationType === "POP") {
+			leaveMatch(loggedInAccounts[0].id)
+		}
+	}, [location, navigationType]);
+
 
 	const [pong, setPong] = useState<PongState>
 	({
@@ -113,11 +121,11 @@ function PongGame()
 		};
 	}, []);
 
-	async function leaveMatch(userID: number)
+	function leaveMatch(userID: number)
 	{
 		navigate("/");
 		setIsPlaying(PlayerState.idle);
-		await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
+		axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
 	}
 
 	function ParseResult()

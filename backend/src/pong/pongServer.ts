@@ -112,7 +112,12 @@ export default async function initPongServer(fastify: FastifyInstance)
 			reply.status(404);
 			return;
 		}
-		endGame(match, match.p1.id === userID ? Result.P2WON : Result.P1WON);
+		const result = match.isLocalGame === true 
+			? Result.DRAW 
+			: match.p1.id === userID
+			? Result.P2WON
+			: Result.P1WON;
+		endGame(match, result);
 		reply.status(200);
 	});
 

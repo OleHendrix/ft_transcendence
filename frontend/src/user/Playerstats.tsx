@@ -23,7 +23,7 @@ function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
 	return (
-		<div className="border border-base-content/20 bg-transparent md:h-[465px] md:overflow-y-auto">
+		<div className="border border-base-content/20 bg-transparent md:h-[486px] md:overflow-y-auto">
 			<table className="w-full table overflow-y-auto whitespace-nowrap">
 				<thead className="md:sticky md:top-0 z-10 bg-black shadow-2xl">
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
@@ -39,8 +39,8 @@ function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 					{SMH.map((match, index) => (
 						<tr
 							key={match.id}
-							className={`${"font-medium "} ${match.winner === "draw"
-								? "bg-[#303030]/80"
+							className={`${"h-18 font-medium "} ${match.winner === "Draw"
+								? "bg-[linear-gradient(to_bottom_right,_#40404050_0%,_#47474790_30%,_#40404070_70%,_#33333337_100%)]"
 								: match.winner === currentAccount?.username 
 								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
 								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}>
@@ -99,7 +99,7 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{
 		return (
-			<tr className={`whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
+			<tr className={`h-18 whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
 				<td className="text-left text-xl font-medium pl-2 pr-6">
 					{startStr}
 				</td>

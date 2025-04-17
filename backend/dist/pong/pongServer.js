@@ -99,7 +99,12 @@ function initPongServer(fastify) {
                 reply.status(404);
                 return;
             }
-            (0, pongLogic_1.endGame)(match, match.p1.id === userID ? types_1.Result.P2WON : types_1.Result.P1WON);
+            const result = match.isLocalGame === true
+                ? types_1.Result.DRAW
+                : match.p1.id === userID
+                    ? types_1.Result.P2WON
+                    : types_1.Result.P1WON;
+            (0, pongLogic_1.endGame)(match, result);
             reply.status(200);
         }));
         fastify.post('/pong/delete', (request, reply) => __awaiter(this, void 0, void 0, function* () {
