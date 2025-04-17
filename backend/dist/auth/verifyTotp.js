@@ -40,7 +40,7 @@ function verifyTotp(fastify, prisma) {
                     sub: account.id,
                     username: account.username,
                     email: account.email,
-                    twofa: true,
+                    twofaEnabled: true,
                 }, { expiresIn: '1h' });
                 return reply.send({ success: true, token: finalToken, user: account });
             }

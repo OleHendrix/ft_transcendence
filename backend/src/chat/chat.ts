@@ -6,6 +6,7 @@ import createWebsocket from "./createWebsocket";
 import getIsBlocked from "./getIsBlocked";
 import getMessages from "./getMessages";
 import sendMessage from "./sendMessage";
+import sendFriendship from "./sendFriendship";
 import setMsgStatus from "./setMsgStatus";
 import unblockUser from "./unblockUser";
 
@@ -16,6 +17,7 @@ export async function setupChat(fastify: FastifyInstance, prisma: PrismaClient) 
 	await getIsBlocked(fastify, prisma);
 	await getMessages(fastify, prisma);
 	await sendMessage(fastify, prisma);
+	await sendFriendship(fastify, prisma);
 	await setMsgStatus(fastify, prisma);
 	await unblockUser(fastify, prisma);
 }

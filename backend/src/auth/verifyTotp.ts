@@ -38,7 +38,7 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 					sub: account.id,
 					username: account.username,
 					email: account.email,
-					twofa: true,
+					twofaEnabled: true,
 				},
 				{ expiresIn: '1h' }
 			);

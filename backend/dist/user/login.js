@@ -20,10 +20,10 @@ function login(fastify, prisma) {
             const { username, password } = req.body;
             const user = yield prisma.account.findUnique({ where: { username } });
             if (!user)
-                return res.status(400).send({ error: 'User not found' });
+                return res.status(400).send({ error: 'Username not found' });
             const validPassword = yield bcrypt_1.default.compare(password, user.password);
             if (!validPassword)
-                return res.status(401).send({ error: 'Incorrect password' });
+                return res.status(401).send({ error: 'Password incorrect' });
             if (user.online)
                 res.status(402).send({ error: 'Already logged in' });
             if (user.twofaEnabled) {
@@ -31,7 +31,7 @@ function login(fastify, prisma) {
                     sub: user.id,
                     username: user.username,
                     email: user.email,
-                    twofa: false,
+                    twofaEnabled: false,
                 }, { expiresIn: '5m' });
                 return res.send({ token: tempToken, twofaRequired: true });
             }

@@ -11,6 +11,7 @@ import deleteTotp		from './auth/deleteTotp';
 import addAccount		from './user/addAccount';
 import deleteAccount	from './user/deleteAccount';
 import getAccounts		from './user/getAccounts';
+import getAccount		from './user/getAccount';
 import checkValidation  from './user/checkValidation';
 import login			from './user/login';
 import logout			from './user/logout'
@@ -20,6 +21,7 @@ import initPongServer 	from './pong/pongServer';
 import initMatchMaking 	from "./pong/matchMaking"
 
 import { setupChat } 	from './chat/chat';
+import { createTournament, getTournamentById, getTournamentLobbies, joinTournament, leaveTournament, manageTournaments } from './pong/tournament';
 
 import authenticatePlugin from './auth/authenticate';
 
@@ -43,6 +45,7 @@ const start = async () =>
 	await addAccount(fastify, prisma);
 	await deleteAccount(fastify, prisma);
 	await getAccounts(fastify, prisma);
+	await getAccount(fastify, prisma);
 	await checkValidation(fastify, prisma);
 	await login(fastify, prisma);
 	await logout(fastify, prisma);
@@ -53,6 +56,14 @@ const start = async () =>
 	await deleteTotp(fastify, prisma);
 
 	await initPongServer(fastify);
+
+	await createTournament(fastify);
+	await joinTournament(fastify);
+	await manageTournaments(fastify);
+	await getTournamentById(fastify);
+	await getTournamentLobbies(fastify);
+	await leaveTournament(fastify);
+	
 	initMatchMaking(fastify);
 
 	fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) =>

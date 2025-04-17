@@ -1,21 +1,27 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Player from "../../assets/Player.svg";
-import { BiSolidChat, BiSearch } from "react-icons/bi";
+import { BiSolidChat } from "react-icons/bi";
+import { FaUserFriends } from "react-icons/fa";
 import { FiPlus } from "react-icons/fi";
+import { MdBlock } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
+import { CgUnblock } from "react-icons/cg";
+import { BiRocket } from "react-icons/bi";
+import { GameInvite, DefaultMessage, FriendRequest, IsTypingBubble, EmptyChatBanner } from "./ChatUtils";
 import axios from 'axios';
 import { useAccountContext } from ".././contexts/AccountContext";
 import { useChatContext } from ".././contexts/ChatContext";
-import { format } from 'date-fns';
+import "../css/TypingLoader.css";
 
 function Chat()
 {
 	const {loggedInAccounts} 													= useAccountContext();
 	const {receiverId, chatSessionId, isOpen, messageReceived} 					= useChatContext();
-	const {setChatMessages, setChatSessionId, setMessageReceived, setIsOpen}	= useChatContext();
-
+	
+	const {setChatMessages, setChatSessionId, setMessageReceived, setIsOpen, isTyping, setIsTyping}	= useChatContext();
 	useEffect(() =>
 	{
 		async function getMessages()
@@ -55,10 +61,17 @@ function Chat()
 		console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
 		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/chat?chatSessionId=${chatSessionId}`);
 
-		socket.onmessage = function(message)
+		socket.onmessage = function(event)
 		{
-			console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
-			setMessageReceived(true);
+			const message = JSON.parse(event.data)
+			if (message.isTyping && message.isTyping !== loggedInAccounts[0].username && !isTyping)
+				setIsTyping(message.isTyping);
+			else
+			{
+				console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
+				setMessageReceived(true);
+				setIsTyping('');
+			}
 		};
 		
 		return () => {
@@ -68,7 +81,7 @@ function Chat()
 	}, [chatSessionId]);
 
 	return(
-		<div className="absolute left-[2vw] bottom-[2vw] hover:cursor-pointer">
+		<div className="fixed left-[2vw] bottom-[2vw] hover:cursor-pointer z-10">
 		{!isOpen &&
 		(
 			<motion.div whileHover={{ scale: 1.17 }} whileTap={{ scale: 0.89 }}>
@@ -88,19 +101,15 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 {
 	return (
 	<div
-		className="fixed inset-0 backdrop-blur-sm z-40"
-		onClick={(e) =>
-		{
-			if (!(e.target as HTMLElement).closest('.chat'))
-				setIsOpen(false);
-		}}>
-		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col items-start p-6 pt-10 h-[700px] w-[800px] bg-black/90 shadow-2xl rounded-2xl z-50">
-			<button className="absolute top-2 right-2 text-gray-400 hover:text-white" onClick={() => setIsOpen(false)}>
+		className="fixed inset-0 backdrop-blur-sm z-20"
+		onClick={() => setIsOpen(false)}>
+		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between p-6 pt-10 h-[calc(100vh-6vw)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-black/90 shadow-2xl rounded-2xl z-50" onClick={(e) => e.stopPropagation()}>
+			<button className="absolute top-2 right-2 text-gray-400 hover:text-white hover:cursor-pointer" onClick={() => setIsOpen(false)}>
 				<IoMdClose size={24} />
 			</button>
 
 			<ChatHeader />
-			<MessageList />
+			<MessageList/>
 		</div>
 	</div>
 );
@@ -108,94 +117,94 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 
 function ChatHeader()
 {
-	const {accounts, loggedInAccounts} 	= useAccountContext();
-	const {setReceiverId} 				= useChatContext();
+	const {accounts, loggedInAccounts} 				= useAccountContext();
+	const {receiverId, setReceiverId, setReceiverUsername} 				= useChatContext();
 
 	return (
-		<div className="flex justify-end space-x-2 w-full flex-wrap mb-2">
+		<div className="w-full max-w-full">
+		<div className="flex justify-end space-x-2 mb-2 overflow-x-scroll overscroll-x-contain whitespace-nowrap">
 			{accounts
 				.filter((account) => 
 					account.username !== loggedInAccounts[0]?.username && !account.admin )
 				.map((account, index) => (
-					<div key={index} className="flex items-center flex-col space-y-0.5 w-12">
+					<div key={index} className={`flex items-center flex-col space-y-0.5 w-12 flex-shrink-0 ${receiverId !== account.id ? 'opacity-40' : 'opacity-100'}`}>
 						<motion.img
 							src={Player}
-							className="h-10 w-auto cursor-pointer"
+							className="h-10 w-10 cursor-pointer"
 							whileHover={{ scale: 1.07 }}
 							whileTap={{ scale: 0.93 }}
-							onClick={() => setReceiverId(account.id)}/>
-						<p className="text-[10px] opacity-50 w-full text-center truncate">{account.username}</p>
+							onClick={() => {setReceiverId(account.id); setReceiverUsername(account.username)}}/>
+						<p className="text-[10px] opacity-90 w-full text-center truncate">{account.username}</p>
 					</div>
 				))}
-			<div className="flex items-center flex-col space-y-0.5 w-12">
+			<div className={`flex items-center flex-col space-y-0.5 w-12 ${receiverId !== -1 ? 'opacity-20' : 'opacity-100'}`}>
 				<motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }} onClick={() => setReceiverId(-1)}>
 					<RiGroup2Line className="h-10 w-auto cursor-pointer text-[#ff914d] hover:text-[#ab5a28] transition-colors" />
 				</motion.div>
 				<p className="text-[10px] text-[#ff914d] opacity-90 font-bold w-full text-center truncate">Group</p>
 			</div>
 		</div>
+		</div>
 	);
 }
 
-function MessageList() {
+function MessageList( )
+{
 	const { loggedInAccounts } = useAccountContext();
-	const { setMessageReceived, chatMessages, setChatMessages, receiverId, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker} = useChatContext();
+	const { setMessageReceived, chatMessages, setChatMessages, receiverId, receiverUsername, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const navigate = useNavigate();
 
-	useEffect(() => {
-		if (messagesEndRef.current) {
+	useEffect(() =>
+	{
+		if (messagesEndRef.current)
 			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-		}
-	}, [chatMessages]);
+	}, [chatMessages, isTyping]);
 
-	const handleGameInviteResponse = async (messageId: number, newStatus: number) => {
-		try {
-			console.log(`Updating message ${messageId} status to ${newStatus}`);
-	
-			await axios.post(`http://${window.location.hostname}:5001/api/change-msg-status`, {
-				senderId: loggedInAccounts[0]?.id,
-				receiverId,
-				status: newStatus,
-				messageId,
-			});
+	useEffect(() =>
+	{
+		async function typeStatus()
+		{
+			const startTime = Date.now();
+			const elapsedTime = Date.now() - startTime;
+			const remainingTime = Math.max(0, 3000 - elapsedTime);
+			await new Promise(resolve => setTimeout(resolve, remainingTime));
+			setIsTyping('');
+		}; typeStatus()
+	}, [isTyping])
 
-			setChatMessages((prevMessages) => // update localstorage 
-				prevMessages.map((msg) =>
-					msg.id === messageId ? { ...msg, status: newStatus } : msg
-				)
-			);
-	
-			console.log(`Game invite ${newStatus === 2 ? "accepted" : "declined"} for message ${messageId}`);
-		} catch (error) {
-			console.log("Error occurred when changing msg status:", error);
-		}
-	};
-
-	useEffect(() => {
-		const checkIfBlocked = async () => {
-			try {
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/is-blocked`, {
-					params: {
+	useEffect(() =>
+	{
+		async function checkIfBlocked()
+		{
+			try
+			{
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/is-blocked`, 
+				{
+					params:
+					{
 						senderId: loggedInAccounts[0]?.id,
 						receiverId,
 					},
 				});
-	
 				setIsBlocked(response.data.blocked);
-				setAmIBlocker(response.data.amIBlocker); // Store whether the user is the blocker
-			} catch (error) {
+				setAmIBlocker(response.data.amIBlocker); 
+			}
+			catch (error)
+			{
 				console.error("Error checking block status:", error);
 			}
-		};
-	
-		if (receiverId) {
+		}; checkIfBlocked();
+		if (receiverId)
 			checkIfBlocked();
-		}
 	}, [receiverId, messageReceived, isBlocked]);
 
-	const unblockUser = async () => {
-		try {
-			const unblock = await axios.post(`http://${window.location.hostname}:5001/api/unblock-user`, {
+	async function unblockUser()
+	{
+		try
+		{
+			const unblock = await axios.post(`http://${window.location.hostname}:5001/api/unblock-user`, 
+			{
 				receiverId,
 				senderId: loggedInAccounts[0]?.id
 			})
@@ -205,95 +214,50 @@ function MessageList() {
 				setIsBlocked(false);
 				setMessageReceived(true);
 			}
-		} catch (error) {
+		}
+		catch (error)
+		{
 			console.log("unBlockuser:ERROR:", error);
 		}
 	}
 
-	if (isBlocked) {
+	if (isBlocked)
+	{
 		return (
 			<div className="h-full w-full flex flex-col gap-4 items-center justify-center text-gray-400">
 				<p>You cannot send or receive messages from this user.</p>
-				{amIBlocker && (
-					<button 
-						onClick={unblockUser} 
-						className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold transition hover:bg-red-600"
-					>
+				{amIBlocker &&
+				(
+					<button onClick={unblockUser} className="bg-[#134588] text-white flex items-center gap-1 px-4 py-2 rounded-lg font-bold transition hover:bg-[#246bcb] cursor-pointer">
+						<CgUnblock size={18} />
 						Unblock User
 					</button>
 				)}
 			</div>
 		);
 	}
-	
+
+
 	return (
 		<div className="h-full w-full flex flex-col gap-4 items-end overflow-y-auto">
-			<div className="h-[35vw] w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
-				{chatMessages.map((message) => {
-					const isGameInvite = message.content === "::gameInvite::";
-					const msgStatus = message.status;
-					const isSender = loggedInAccounts[0]?.id === message.senderId;
-
-					return (
-						<div key={message.id} className={`chat ${isSender ? "chat-end" : "chat-start"}`}>
-							<div className="chat-header font-bold">
-								{message.senderUsername}
-								<time className="text-xs opacity-50">
-									{format(new Date(message.timestamp), "HH:mm")}
-								</time>
-							</div>
-
-							{isGameInvite ? (
-								<div
-									className={`chat-bubble px-4 py-2 rounded-lg font-bold flex flex-col items-center ${
-										isSender ? "bg-[#ff914d] text-white" : "bg-[#134588] text-white"
-									}`}
-								>
-									<p className="mb-2">
-										🎮 {isSender ? "You sent a game invite!" : `${message.senderUsername} invited you to play a game!`}
-									</p>
-									{isSender && msgStatus === 1 && (
-										<div className="flex gap-2">
-											<button
-												onClick={() => handleGameInviteResponse(message.id, 4)}
-												className="bg-red-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-green-600"
-											>
-												Cancel
-											</button>
-										</div>
-									)}
-
-									{!isSender && msgStatus === 1 && (
-										<div className="flex gap-2">
-											<button
-												onClick={() => handleGameInviteResponse(message.id, 2)}
-												className="bg-green-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-green-600"
-											>
-												Accept
-											</button>
-											<button
-												onClick={() => handleGameInviteResponse(message.id, 3)}
-												className="bg-red-500 text-white px-2 py-0.5 rounded-lg font-bold transition hover:bg-red-600"
-											>
-												Decline
-											</button>
-										</div>
-									)}
-									{msgStatus === 2 && <p className="text-green-400 mt-2">✔️ {isSender ? "Your invite was accepted!" : "You accepted the game invite"}</p>}
-									{msgStatus === 3 && <p className="text-red-400 mt-2">❌ {isSender ? "Your invite was declined" : "You declined the game invite"}</p>}
-									{msgStatus === 4 && <p className="text-red-400 mt-2"> {"The invite was cancelled"}</p>}
-								</div>
-							) : (
-								<div className={`chat-bubble ${isSender ? "bg-[#ff914d]" : "bg-[#134588]"}`}>
-									{message.content}
-								</div>
-							)}
-						</div>
-					);
-				})}
-				<div ref={messagesEndRef} />
-			</div>
-			<MessageInput isBlocked={isBlocked} />
+		<div className="h-full w-full flex p-2 flex-col mt-5 bg-white/10 rounded-2xl overflow-y-auto">
+			{!chatMessages.length && receiverId !== -1 && <EmptyChatBanner receiverUsername={receiverUsername} />}
+			{chatMessages.map((message) =>
+			{
+				const isGameInvite = message.content === "::gameInvite::";
+				const isFriendRequest = message.content === "::friendRequest::";
+				const isSender = loggedInAccounts[0]?.id === message.senderId;
+				if (isGameInvite)
+					return <GameInvite message={message} isSender={isSender} />;
+				else if (isFriendRequest)
+					return <FriendRequest message={message} isSender={isSender} />;
+				else
+					return <DefaultMessage message={message} isSender={isSender} />;
+			})}
+			{isTyping && <IsTypingBubble isTyping={isTyping} />}
+			<div ref={messagesEndRef} />
+		</div>
+		<MessageInput isBlocked={isBlocked} />
 		</div>
 	);
 }
@@ -302,6 +266,8 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 {
 	const { loggedInAccounts } = useAccountContext();
 	const { receiverId, setMessageReceived, setIsBlocked } = useChatContext();
+
+
 	const sendGameInvite = async () => 
 	{
 		try {
@@ -319,6 +285,25 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 			}
 		} catch (error) {
 			console.log("SendGameInvite:ERROR:", error);
+		}
+		setMessageMenu(false);
+	}
+
+	async function sendFriendRequest()
+	{
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-friendship`,
+				{
+					requesterId: loggedInAccounts[0].id,
+					receiverId: receiverId
+				})
+				if (response.data.success)
+					setMessageReceived(true);
+		}
+		catch (error: any)
+		{
+			console.log(error.response)
 		}
 		setMessageMenu(false);
 	}
@@ -359,25 +344,22 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 	}
 
 	return (
-		<div className="absolute bottom-full right-5 mb-5 bg-black text-white p-3 rounded-xl shadow-lg w-64 z-50">
-			<ul className="mt-2 space-y-2">
-				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
-					onClick={sendGameInvite}
-				>
+		<div className="absolute bottom-full flex right-0 mb-5 bg-[#222222] text-gray-100 p-3 rounded-xl shadow-2xl z-50">
+			<ul className="space-y-2 text-sm font-bold">
+				<li className="cursor-pointer flex items-center gap-1 bg-[#ff914d] hover:bg-[#ab5a28] p-2 rounded-md transition-colors"
+					onClick={sendGameInvite}>
+						<BiRocket size={16}/>
 					Send game invite
 				</li>
-				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
-					onClick={blockUser}
-				>
-					Block this bitch
+				<li className="cursor-pointer flex items-center gap-1 bg-[#ff914d] hover:bg-[#ab5a28] p-2 rounded-md transition-colors"
+					onClick={sendFriendRequest}>
+						<FaUserFriends size={16}/>
+					Send friend request
 				</li>
-				<li
-					className="cursor-pointer bg-gray-900 p-2 rounded-md hover:bg-gray-700 transition-colors"
-					onClick={unblockUser}
-				>
-					Unblock this bitch
+				<li className="cursor-pointer flex items-center gap-1 p-2 bg-[#ff914d] hover:bg-[#ab5a28] rounded-md transition-colors"
+					onClick={blockUser}>
+						<MdBlock size={16}/>
+					Block user
 				</li>
 			</ul>
 		</div>
@@ -419,12 +401,29 @@ function MessageInput()
 		}
 	};
 
+	async function sendIsTyping()
+	{
+		try
+		{
+			await axios.post(`http://${window.location.hostname}:5001/api/send-istyping`,
+			{
+				senderId: loggedInAccounts[0]?.id,
+				receiverId: receiverId
+			})
+		}
+		catch (error: any)
+		{
+			console.error("Error in send isTyping", error)
+		}
+	}
+
 	return (
 		<div className="relative w-full">
 			<input
 				className="w-full bg-white/10 p-3 rounded-2xl pr-12"
 				placeholder="Type your message..."
 				onKeyDown={handleKeyDown}
+				onChange={sendIsTyping}
 			/>
 			<motion.div
 				whileHover={{ scale: 1.17 }}

@@ -1,11 +1,35 @@
+// import { markAsUncloneable } from 'worker_threads';
 import { initGame, updateGame, mirrorGame, endGame } from './pongLogic';
 import { PlayerData, Match, Result } from '../types/types';
 import { FastifyInstance } from "fastify";
+// import { match } from 'assert';
 
 let matchTable   = new Map<number, Match>([]);
 let matchIDTable = new Map<number, number>([]);
 
-export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
+function getMatch(userID: number | undefined): Match | null
+{
+	// console.log("\n-----------------\n>>> GET MATCH <<<\n-----------------");
+	if (userID === undefined)
+	{
+		console.log(">>> UID is undefined");
+		return null;
+	}
+	if (matchIDTable.has(userID) === false)
+	{
+		console.log(">>> cannot find UID in MID table:", matchIDTable);
+		return null;
+	}
+	const key = matchIDTable.get(userID) as number;
+	if (matchTable.has(key) === false)
+	{
+		console.log(">>> cannot find MID in match table:", matchTable);
+		return null;
+	}
+	return matchTable.get(key) as Match;
+}
+
+export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean, tournament: number)
 {
 	let newMatch: Match = 
 	{
@@ -13,6 +37,7 @@ export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boole
 		p1:				user1,
 		p2:				user2,
 		isLocalGame:	isLocalGame,
+		tournament:		tournament
 	}
 	let key = 0;
 	while (matchTable.has(key))
@@ -34,25 +59,13 @@ export default async function initPongServer(fastify: FastifyInstance)
 			connection.on("message", (message) =>
 			{
 				const { userID, keysPressed } = JSON.parse(message.toString());
-				
-				if (userID === undefined || keysPressed === undefined)
-				{
-					console.log("Undefined input:", userID, keysPressed);
-					connection.send(400);
-					return;
-				}
-				if (matchIDTable.has(userID) === false)
+				const match = getMatch(userID);
+
+				if (match === null)
 				{
 					connection.send(400);
 					return;
 				}
-				const key = matchIDTable.get(userID) as number;
-				if (matchTable.has(key) === false)
-				{
-					connection.send(400);
-					return;
-				}
-				let match = matchTable.get(key) as Match;
 				updateGame(match, userID, keysPressed);
 				if (match.isLocalGame === false && userID === match.p2.id)
 					connection.send(JSON.stringify(mirrorGame(match.state)));
@@ -65,66 +78,48 @@ export default async function initPongServer(fastify: FastifyInstance)
 	// adds a new match between userID1 and userID2
 	fastify.post('/pong/add', async (request, reply) =>
 	{
-		const { user1, user2, isLocalGame } = request.body as { user1?: PlayerData, user2?: PlayerData, isLocalGame?: boolean };
-		if (user1 === undefined || user2 === undefined || isLocalGame === undefined)
+		const { user1, user2, isLocalGame, tournament } = request.body as { user1?: PlayerData, user2?: PlayerData, isLocalGame?: boolean, tournament?: number };
+		if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournament === undefined)
 		{
 			reply.status(400);
 			return;
 		}
-		addGame(user1, user2, isLocalGame);
+		addGame(user1, user2, isLocalGame, tournament);
 		reply.status(201);
 	});
 
 	fastify.post('/pong/is-local', async (request, reply) =>
 	{
 		const { userID } = request.body as { userID: number };
-		if (userID === undefined)
+		const match = getMatch(userID);
+		
+		if (match === null)
 		{
-			reply.status(204).send(false);
+			reply.status(200).send(false);
 			return;
 		}
-		if (matchIDTable.has(userID) === false)
-		{
-			reply.status(204).send(false);
-			return;
-		}
-		const key = matchIDTable.get(userID) as number;
-		if (matchTable.has(key) === false)
-		{
-			reply.status(204).send(false);
-			return;
-		}
-		const match = matchTable.get(key) as Match;
 		reply.status(200).send(match.isLocalGame);
 	});
 
 	fastify.post('/pong/end-game', async (request, reply) =>
 	{
 		const { userID } = request.body as { userID: number };
-		if (userID === undefined)
+		console.log("--- ending match with UID:", userID);
+		const match = getMatch(userID);
+
+		if (match === null)
 		{
-			reply.status(204);
+			reply.status(404);
 			return;
 		}
-		if (matchIDTable.has(userID) === false)
-		{
-			reply.status(204);
-			return;
-		}
-		const key = matchIDTable.get(userID) as number;
-		if (matchTable.has(key) === false)
-		{
-			reply.status(204);
-			return;
-		}
-		const match = matchTable.get(key) as Match;
-		endGame(match, match.p1.id !== userID ? Result.P1WON : Result.P2WON);
+		endGame(match, match.p1.id === userID ? Result.P2WON : Result.P1WON);
 		reply.status(200);
 	});
 
 	fastify.post('/pong/delete', async (request, reply) =>
 	{
 		const { userID } = request.body as { userID: number };
+		console.log("--- deleting match with UID:", userID);
 		if (userID === undefined)
 		{
 			reply.status(204);
@@ -144,6 +139,7 @@ export default async function initPongServer(fastify: FastifyInstance)
 		const match = matchTable.get(key) as Match;
 		if (match.isLocalGame === true)
 		{
+			console
 			matchIDTable.delete(match.p1.id);
 			matchIDTable.delete(match.p2.id);
 		}

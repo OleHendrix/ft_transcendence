@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
 import { PlayerState, PongState, Result, Opponent, PlayerData } from '../types';
+import { useNavigate } from 'react-router-dom';
+import logo from '../../assets/Logo.png'
 import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
 import { useLoginContext } from '../contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RiRobot2Line } from "react-icons/ri";
+import { IoArrowUndoOutline } from "react-icons/io5";
+
 
 function formatTime(ms: number): string
 {
@@ -19,6 +22,7 @@ function PongGame()
 {
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { indexPlayerStats } = useLoginContext();
+	const navigate = useNavigate();
 
 	const [pong, setPong] = useState<PongState>
 	({
@@ -39,7 +43,7 @@ function PongGame()
 	const socketRef = useRef<WebSocket | null>(null);
 	const keysPressed = useRef<{ [key: string]: boolean }>({});
 
-	// init websocket I/O
+	// websocket in
 	useEffect(() =>
 	{
 		const socket = new WebSocket(`ws://${window.location.hostname}:5001/pong`);
@@ -58,13 +62,20 @@ function PongGame()
 			}
 		});
 
+		const handleUnload = () =>
+		{
+			axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
+			socket.close();
+		};
+		window.addEventListener("beforeunload", handleUnload);
+
 		return () =>
 		{
-			socket.close();
+			window.removeEventListener("beforeunload", handleUnload);
 		};
 	}, []);
 
-	// game loop
+	// game loop / websocket out
 	useEffect(() =>
 	{
 		const sendData = () =>
@@ -80,7 +91,10 @@ function PongGame()
 		};
 		const interval = setInterval(sendData, 1000 / 60);
 
-		return () => clearInterval(interval);
+		return () => 
+		{
+			clearInterval(interval);
+		}
 	}, []);
 
 	// init player I/O
@@ -101,6 +115,7 @@ function PongGame()
 
 	async function leaveMatch(userID: number)
 	{
+		navigate("/");
 		setIsPlaying(PlayerState.idle);
 		await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
 	}
@@ -139,11 +154,14 @@ function PongGame()
 
 	async function rematch(user1: PlayerData, user2: PlayerData, setIsPlaying: React.Dispatch<React.SetStateAction<PlayerState>>)
 	{
-		const isLocal = await axios.post(`http://${window.location.hostname}:5001/pong/is-local`, { user1, user2 });
-		if (isLocal && user2.id !== -1)
-			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true });
+		const response = await axios.post(`http://${window.location.hostname}:5001/pong/is-local`, { userID: user1.id });
+		const isLocal: boolean = response.data;
+
+		console.log(isLocal);
+		if (isLocal === true && user2.id !== -1)
+			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true, tournament: -1 });
 		else
-			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying)
+			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying, navigate)
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
@@ -167,15 +185,44 @@ function PongGame()
 		}
 	}, [pong.p2.lastBounce]);
 
+	async function toMenu()
+	{
+		setIsPlaying(PlayerState.idle)
+		try
+		{
+			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
+			await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: loggedInAccounts[0].id });
+		}
+		catch (error)
+		{
+			console.log(error);
+		}
+		navigate('/');
+	}
+
 	const bounceStrength = 1.2 * -pong.ball.dir.x;
 	return (
 		<>
-			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
-				{pong.result === Result.PLAYING && (
-					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10">
+			<div className='w-screen h-screen flex flex-col'>
+			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+				<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
+					<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-20 hover:opacity-70" />
+				</motion.button>
+				<div className='absolute left-[24%] text-2xl opacity-50'>
+					{pong?.p1Data.username}
+				</div>
+				{pong.result === Result.PLAYING &&
+				(
+					<div className="absolute left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10 opacity-50">
 						{formatTime(pong.timer)}
 					</div>
 				)}
+				<div className='absolute right-[25%] text-2xl opacity-50'>
+					{pong?.p2Data.username}
+				</div>
+			</nav>
+
+			<div className={`w-screen min-h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
 				<div className="relative w-full h-full">
 					<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 						<div className="h-full w-1/2 flex justify-center items-center">
@@ -257,6 +304,7 @@ function PongGame()
 					</motion.div>
 				</motion.div>
 			</AnimatePresence>}
+			</div>
 		</>
 	)
 }

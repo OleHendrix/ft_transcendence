@@ -38,6 +38,7 @@ export interface PlayerType
 {
 	id:				number;
 	admin:			boolean;
+	online:			boolean;
 	username:		string;
 	email:			string;
 	matchesPlayed:	number;
@@ -48,6 +49,18 @@ export interface PlayerType
 	elo:			number;
 	twofaEnabled:			boolean;
 	matches:		MatchHistory[];
+}
+
+export interface Message
+{
+	id: number;
+	content: string;
+	timestamp: string;
+	receiverId: number;
+	chatSessionId: number;
+	senderUsername: string;
+	senderId: number;
+	status: number;
 }
 
 export interface SignUpFormType

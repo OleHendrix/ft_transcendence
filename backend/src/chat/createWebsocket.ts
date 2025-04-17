@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { PrismaClient } from "@prisma/client";
+import { getOrCreateChatSession } from "./chatUtils/getOrCreateChatSession";
 import WebSocket 			from 'ws';
 
 const activeChats	= new Map<number, Set<WebSocket>>();
@@ -37,6 +38,27 @@ export default async function createWebsocket(server: FastifyInstance, prisma: P
 			});
 		})
 	});
+
+	server.post('/api/send-istyping', async (request, reply) =>
+		{
+			const { senderId, receiverId } = request.body as { senderId: number; receiverId: number}
+			const chatSession = await getOrCreateChatSession(senderId, receiverId);
+			const activeChatSockets = activeChats.get(chatSession.id);
+			const user = await prisma.account.findUnique({ where: {id: senderId}})
+	
+			if (activeChatSockets)
+			{
+				activeChatSockets.forEach(socket =>
+				{
+					if (socket.readyState === WebSocket.OPEN)
+					{
+						socket.send(JSON.stringify({ isTyping: user?.username }));
+						return reply.send({ success: true });
+					}
+				})
+			}
+			reply.status(404).send({ success: false, error: "Failed to send isTyping notification" });
+		});
 }
 
 export async function notifyClients(newMessage: any)

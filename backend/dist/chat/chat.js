@@ -18,6 +18,7 @@ const createWebsocket_1 = __importDefault(require("./createWebsocket"));
 const getIsBlocked_1 = __importDefault(require("./getIsBlocked"));
 const getMessages_1 = __importDefault(require("./getMessages"));
 const sendMessage_1 = __importDefault(require("./sendMessage"));
+const sendFriendship_1 = __importDefault(require("./sendFriendship"));
 const setMsgStatus_1 = __importDefault(require("./setMsgStatus"));
 const unblockUser_1 = __importDefault(require("./unblockUser"));
 function setupChat(fastify, prisma) {
@@ -27,6 +28,7 @@ function setupChat(fastify, prisma) {
         yield (0, getIsBlocked_1.default)(fastify, prisma);
         yield (0, getMessages_1.default)(fastify, prisma);
         yield (0, sendMessage_1.default)(fastify, prisma);
+        yield (0, sendFriendship_1.default)(fastify, prisma);
         yield (0, setMsgStatus_1.default)(fastify, prisma);
         yield (0, unblockUser_1.default)(fastify, prisma);
     });

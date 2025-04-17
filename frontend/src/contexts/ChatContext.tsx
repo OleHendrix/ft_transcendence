@@ -1,19 +1,12 @@
 import { createContext, ReactNode, useMemo, useState, useContext, SetStateAction, Dispatch } from "react";
+import { Message } from '../types';
 
-interface Message {
-	id: number;
-	content: string;
-	timestamp: string;
-	receiverId: number;
-	chatSessionId: number;
-	senderUsername: string;
-	senderId: number;
-	status: number;
-}
 
 type ChatContextType = {
 	receiverId: number;
 	setReceiverId: Dispatch<SetStateAction<number>>;
+	receiverUsername: string;
+	setReceiverUsername: Dispatch<SetStateAction<string>>;
 	isOpen: boolean;
 	setIsOpen: Dispatch<SetStateAction<boolean>>;
 	messageReceived: boolean;
@@ -28,12 +21,15 @@ type ChatContextType = {
 	setIsBlocked: Dispatch<SetStateAction<boolean>>;
 	amIBlocker: boolean;
 	setAmIBlocker: Dispatch<SetStateAction<boolean>>;
+	isTyping:			string;
+	setIsTyping:		Dispatch<SetStateAction<string>>;
 };
 
 const ChatContext = createContext<ChatContextType | null>(null);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
 	const [receiverId, setReceiverId] = useState(-1);
+	const [receiverUsername, setReceiverUsername] = useState('')
 	const [isOpen, setIsOpen] = useState(false);
 	const [messageReceived, setMessageReceived] = useState(false);
 	const [chatSessionId, setChatSessionId] = useState(1);
@@ -41,11 +37,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 	const [messageMenu, setMessageMenu] = useState(false);
 	const [isBlocked, setIsBlocked] = useState(false);
 	const [amIBlocker, setAmIBlocker] = useState(false);
+	const [isTyping, setIsTyping]				= useState('');
 
 	const value = useMemo(
 		() => ({
 			receiverId,
 			setReceiverId,
+			receiverUsername,
+			setReceiverUsername,
 			isOpen,
 			setIsOpen,
 			messageReceived,
@@ -60,8 +59,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 			setIsBlocked,
 			amIBlocker,
 			setAmIBlocker,
-		}),
-		[receiverId, isOpen, messageReceived, chatSessionId, chatMessages, isBlocked, amIBlocker]
+			isTyping, setIsTyping
+	}),
+		[receiverId, receiverUsername, isOpen, messageReceived, chatSessionId, chatMessages, isTyping, setIsTyping, isBlocked, amIBlocker]
 	);
 
 	return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

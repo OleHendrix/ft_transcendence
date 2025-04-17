@@ -1,68 +1,81 @@
 import { useAccountContext } from "../contexts/AccountContext";
-import { useLoginContext } from "../contexts/LoginContext";
-import { useState, useEffect } from "react";
+import { useChatContext } from "../contexts/ChatContext";
+import { useState, useEffect, useMemo, use } from "react";
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { IoMdClose } from "react-icons/io";
+import { IoMdClose, IoIosStats } from "react-icons/io";
+import { RiGamepadLine } from "react-icons/ri";
 import Player from "../../assets/Player.svg";
 import { MatchHistory, PlayerType } from "../types";
+import { HiUserAdd } from "react-icons/hi";
+import { FaUserCheck } from "react-icons/fa";
 import { toPercentage } from "../Leaderboard";
+import { format } from 'date-fns';
+import Lottie from "lottie-react";
+import OnlineIcon from '../../assets/Online.json';
+import axios from "axios";
 
-function ShowMatchHistory()
+function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 {
-	const { accounts, loggedInAccounts } = useAccountContext();
-	const { indexPlayerStats } = useLoginContext();
-
-	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id);
-	if (currentAccount === null)
-		return "";
 	const matchHistory = currentAccount?.matches ?? [];
+	console.log(currentAccount);
+	console.log(matchHistory);
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
-	console.log(matchHistory);
-	console.log("Accounts:", accounts);
-	console.log("LoggedIn:", loggedInAccounts);
 	return (
-		<div className="w-full h-117 overflow-y-auto border border-base-content/5 bg-transparent">
-			<div className="overflow-x-auto">
-				<table className="table text-center whitespace-nowrap">
-					<thead>
-						<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
-							<th className=" text-center" colSpan={6}>Match History</th>
+		<div className="border border-base-content/20 bg-transparent md:h-[465px] md:overflow-y-auto">
+			<table className="w-full table overflow-y-auto whitespace-nowrap">
+				<thead className="md:sticky md:top-0 z-10 bg-black shadow-2xl">
+					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
+						<th className="text-center" colSpan={6}>
+						<div className="flex w-full items-center justify-center gap-1">
+							Match History
+							<RiGamepadLine />
+						</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{SMH.map((match, index) => (
+						<tr
+							key={match.id}
+							className={`${"font-medium "} ${match.winner === "draw"
+								? "bg-[#303030]/80"
+								: match.winner === currentAccount?.username 
+								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
+								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}>
+							<td className="w-2/5 text-left pr-2">
+								<div className="text-2xl">                     {SMH[index].p1} </div>
+								<div className="text-xs italic text-gray-400"> {`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`} </div>
+							</td>
+
+							<td className="w-1/5 text-center">
+								<div className="flex flex-col justify-center w-full">
+									<span className="text-2xl font-bold">{match.p1score}-{match.p2score}</span>
+									<span className="text-xs italic text-gray-400">{format(new Date(match.time), "MM-dd HH:mm")}</span>
+								</div>
+							</td>
+								
+							<td className="w-2/5 text-right pl-2">
+								<div className="text-2xl">                     {SMH[index].p2} </div>
+								<div className="text-xs italic text-gray-400"> {`${SMH[index].p2Elo} (${SMH[index].p2Diff >= 0 ? `+${SMH[index].p2Diff}` : SMH[index].p2Diff})`} </div>
+							</td>
 						</tr>
-					</thead>
-					<tbody>
-						{SMH.map((match, index) => (
-							<tr
-								key={match.id}
-								// TODO: add support for ties
-								className={`${"font-medium "} ${match.winner === currentAccount?.username
-									? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
-									: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}
-								style={{ height: '69px' }}
-							>
-								<td className="text-left text-2xl pl-3">     		   		{SMH[index].p1}</td>
-								<td className="italic text-gray-300 text-xs pr-4">			{`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`}</td>
-								<td className="text-center text-2xl font-bold flex-grow">	{SMH[index].p1score}-{SMH[index].p2score}</td>
-								<td className="italic text-gray-300 text-xs pl-4">			{`${SMH[index].p2Elo} (${SMH[index].p2Diff >= 0 ? `+${SMH[index].p2Diff}` : SMH[index].p2Diff})`}</td>
-								<td className="text-right text-2xl pr-3">     				{SMH[index].p2}</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+					))}
+				</tbody>
+			</table>
 		</div>
 	);
 }
 
-function ShowStats()
+function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: PlayerType[]): string
 {
-	function calcWorseThan(player: PlayerType, stat: keyof PlayerType): [number, number]
+	function calcWorseThan(player: PlayerType, stat: keyof PlayerType, accountsList: PlayerType[]): [number, number]
 	{
 		let worseThan = 0;
 		let total = 0;
 		
-		for (const account of accounts)
+		for (const account of accountsList)
 		{
 			if (account.id === player.id || account[stat] === null)
 				continue;
@@ -73,76 +86,43 @@ function ShowStats()
 		return [worseThan, total];
 	}
 
-	function getPercentile(player: PlayerType, stat: keyof PlayerType): string
-	{
-		if (player[stat] === null)
-			return "Play a match to see ranking";
-		const [worseThan, total] = calcWorseThan(player, stat);
+	if (player[stat] === null)
+		return "Play a match to see ranking";
+	const [worseThan, total] = calcWorseThan(player, stat, accounts);
+	return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
+}
 
-		if (worseThan === 0)
-			return "Number #1!";
-		return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
-	}
-
-	function redYellowGradient(val: number, range: number)
-	{
-		if (Number.isNaN(val))
-			return "#777700";
-
-		const midpoint = (100 - range) / 2;
-		const normalized = (val - midpoint) / range;
-	
-		const r = Math.max(0, Math.min(255, 255 - normalized * 255));
-		const g = Math.max(0, Math.min(255, normalized * 255));
-	
-		const toHex = (v: number) => Math.round(v).toString(16).padStart(2, '0');
-		const str = `#${toHex(r)}${toHex(g)}00`;
-		console.log(str);
-		return str;
-	}
-
-	function GetGradientStyle(val: number, max: number): React.CSSProperties
-	{
-		console.log(val);
-		const percentage = val === null ? 50 :  Math.max(0, Math.min(((val / max) * 100), 100));
-		const colour = redYellowGradient(percentage, 20);
-	
-		return {
-			background: `linear-gradient(to right, ${colour}40 0%, ${colour}35 ${Math.max(percentage - 3, 1)}%, ${colour}10 ${Math.min(percentage + 3, 99)}%, ${colour}08 100%)`
-		};
-	}
+function ShowStats({currentAccount} : {currentAccount: PlayerType})
+{
+	const { accounts } = useAccountContext();
 
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{
 		return (
 			<tr className={`whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
-				<td className="text-left text-2xl font-medium pl-2 pr-12" style={{ height: '45px' }}>
+				<td className="text-left text-xl font-medium pl-2 pr-6">
 					{startStr}
 				</td>
 				<td className="text-right p-2">
 					<div className="text-3xl font-semibold font-mono" style={{ fontFamily: '"Droid Sans Mono", monospace' }}>{unit === "%" ? toPercentage(player[stat] as number, 0).toString() : player[stat].toString()}{unit}</div>
-					<div className="text-xs italic text-gray-400">{getPercentile(player, stat)}</div>
+					<div className="text-xs italic text-gray-400">{getPercentile(player, stat, accounts)}</div>
 				</td>
 			</tr>
 		);
 	}
-	
-
-	const { accounts, loggedInAccounts } = useAccountContext();
-	const { indexPlayerStats, showPlayerStats } = useLoginContext();
-
-	const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-	const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
-	if (currentAccount === null)
-		return "";
 
 	return (
-		<div className="w-full overflow-y-auto border border-base-content/5 bg-transparent">
+		<div className="w-full border border-base-content/20 bg-transparent">
 			<link href="https://fonts.googleapis.com/css2?family=Droid+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet"></link>
-			<table className="table w-full">
-				<thead>
+			<table className="table w-full table-auto">
+				<thead className="bg-black">
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
-						<th className="text-center" colSpan={6}>Stats</th>
+						<th className="text-center" colSpan={6}>
+						<div className="flex w-full items-center justify-center gap-1">
+							Stats
+							<IoIosStats />
+						</div>
+						</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -161,73 +141,138 @@ function ShowStats()
 function PlayerStats()
 {
 	const { accounts, loggedInAccounts } = useAccountContext();
-	const { indexPlayerStats } = useLoginContext();
-	const [ showStats, setShowStats ] = useState(false);
+	const { setIsOpen, setReceiverId } = useChatContext();
+	const [ selectedAccount, setSelectedAccount ] = useState<PlayerType>();
+	const [ friendStatus, setFriendStatus ] = useState(false);
+	const { username } = useParams();
+	const navigate = useNavigate();
 
-	function StatWindow()
+	useEffect(() =>
 	{
-		const [profileImage, setProfileImage] = useState(Player);
+		async function getAccount()
+		{
+			try
+			{
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
+					{
+						params:
+						{ 
+							requestedUser: loggedInAccounts[0].id,
+							username: username,
+						}
+					})
+				if (response.data.success)
+				{
+					setSelectedAccount(response.data.user);
+					setFriendStatus(response.data.friendshipStatus);
+				}
+			}
+			catch (error: any)
+			{
+				console.log(error.response)
+			}
+		}; getAccount()
+	}, [])
 
-		const selectedAccount = loggedInAccounts?.[indexPlayerStats];
-		const currentAccount = accounts.find(acc => acc.id === selectedAccount?.id) as PlayerType | null;
-		if (currentAccount === null)
-			return "";
-
-		return (
-			<AnimatePresence>
-				<motion.div
-					className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					exit={{ opacity: 0 }}
-				>
-					<motion.div
-						className="flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-8 gap-8 rounded-xl relative shadow-2xl"
-						initial={{ scale: 0.9, y: 20 }}
-						animate={{ scale: 1, y: 0 }}
-						exit={{ scale: 0.9, y: 20 }}
-						transition={{ type: "spring", stiffness: 300, damping: 25 }}
-					>
-						<button
-							className="absolute top-4 right-4 text-gray-400 hover:text-white hover:bg-neutral-700 p-1 rounded transition"
-							onClick={() => setShowStats(false)}
-						>
-							<IoMdClose size={24} />
-						</button>
-
-						<header className="relative flex items-center justify-center gap-x-2 text-4xl mb-4 border-b border-neutral-700 pb-4">
-							{currentAccount?.username}
-							<img
-								src={profileImage}
-								className="h-11 w-11 rounded-full object-cover shadow-md hover:scale-105 transition-transform duration-300"
-							/>
-						</header>
-
-						<main className="flex h-[120] gap-x-4 text-2xl text-center">
-							<div className="flex flex-col h-full w-auto">
-								<ShowStats />
-							</div>
-								
-							<div className="flex flex-col h-full w-auto">
-								<ShowMatchHistory />
-							</div>
-						</main>
-					</motion.div>
-				</motion.div>
-			</AnimatePresence>
-		);
+	async function sendFriendRequest()
+	{
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-friendship`,
+				{
+					requesterId: loggedInAccounts[0].id,
+					receiverId: selectedAccount?.id
+				})
+				if (response.data.success)
+				{
+					navigate('/');
+					setIsOpen(true);
+					if (selectedAccount)
+						setReceiverId(selectedAccount.id);
+				}
+		}
+		catch (error: any)
+		{
+			console.log(error.response)
+		}
 	}
 
+	let playerRank;
+	if (selectedAccount && selectedAccount !== undefined)
+		playerRank = Number(getPercentile(selectedAccount!, "elo", accounts).split(" ")[3].slice(1, 2));
+	else
+		return ;
+
 	return (
-		<>
-			<motion.button className="pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
-				whileHover={{ scale: 1.03 }}
-				whileTap={{ scale: 0.97 }}
-				onClick={() => { setShowStats(true) }}>Show stats
-			</motion.button>
-			{showStats && <StatWindow />}
-		</>
-	)
+		<AnimatePresence>
+			<motion.div
+				className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0 }}>
+				<motion.div
+					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-4 md:p-8 gap-4 md:gap-8 
+                     w-full max-w-xl md:max-w-3xl mx-2 md:mx-8 lg:mx-16 
+                     h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto md:overflow-hidden 
+                     rounded-xl relative shadow-xl"
+					initial={{ scale: 0.9, y: 20 }}
+					animate={{ scale: 1, y: 0 }}
+					exit={{ scale: 0.9, y: 20 }}
+					transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+					
+					<button
+						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
+						onClick={() => navigate(-1)}>
+						<IoMdClose size={24} />
+					</button>
+
+					<div className="flex w-full flex-col items-center gap-2">
+						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
+						  <div className="relative">
+							<img src={Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+							{!friendStatus  && loggedInAccounts[0].username !== username &&
+							(
+								<motion.div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors" whileHover={ {scale: 1.10}}
+									onClick={() => sendFriendRequest()}>
+									<HiUserAdd size={16} className="text-[#ff914d]" />
+								</motion.div>
+							)}
+							{friendStatus && loggedInAccounts[0].username !== username &&
+							(
+								<div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full">
+									<FaUserCheck size={16} className="text-green-800" />
+								</div>
+							)}
+						  </div>
+						{selectedAccount?.online &&
+						(
+							<div className="flex justify-center items-center">
+								<h1>Online</h1>
+								<Lottie className="w-6" animationData={OnlineIcon} loop={true} />
+							</div>
+						)}
+						<div className="flex flex-col p-2 items-center text-white">
+							<div className="flex flex-col justify-center items-center">
+								<p className="font-light text-s">Rank:</p>
+								<h2 className="font-semibold text-3xl font-mono" style={{ fontFamily: '"Droid Sans Mono", monospace' }}>{"#" + playerRank}</h2>
+							</div>
+						</div>
+					</div>
+					<div className="flex-1 w-full">
+					<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
+						<div className="w-full md:w-2/5 flex-shrink-0">
+							<ShowStats currentAccount={selectedAccount}/>
+						</div>
+
+						<div className="w-full md:w-3/5 flex-grow">
+							<ShowMatchHistory currentAccount={selectedAccount}/>
+						</div>
+					</div>
+					</div>
+				</motion.div>
+			</motion.div>
+		</AnimatePresence>
+	);
 }
 
 export default PlayerStats

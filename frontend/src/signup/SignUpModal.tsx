@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
+import { Link, useNavigate } from 'react-router-dom';
 import { useAccountContext } from "../contexts/AccountContext";
-import { useLoginContext } from "../contexts/LoginContext";
 import { SignUpFormType } from "../types";
 import axios from "axios";
 
 function SignUpModal()
 {
 	const { loggedInAccounts, setNumberOfLoggedInAccounts } = useAccountContext();
-	const { setShowSignUpModal, setShowLoginModal } = useLoginContext();
 	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
 	const [validation, setValidation] = useState(
@@ -20,6 +19,8 @@ function SignUpModal()
 			'Password does not match': false,
 			'Password matches!': false
 		});
+	
+	const navigate = useNavigate();
 
 	async function checkSubmit(formData: SignUpFormType)
 	{
@@ -34,8 +35,7 @@ function SignUpModal()
 			if (response.data.success)
 			{
 				setNumberOfLoggedInAccounts((count) => count + 1);
-				setShowSignUpModal(false);
-				setShowLoginModal(true);
+				navigate('/login');
 			}
 			else
 				console.log("Failed to add account:", response.data.message);
@@ -93,13 +93,12 @@ function SignUpModal()
 			'Password matches!': (formData.password && formData.confirmPassword && formData.password === formData.confirmPassword) ? true : false
 		}));
 		setEmptyForm(Object.values(formData).some(field => field === ""));
-		console.log(validation);
 	}, [formData]);
 
 	return(
 	<AnimatePresence>
 		<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-			<motion.div className="bg-[#2a2a2a] text-white p-8 rounded-lg w-full max-w-md relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+			<motion.div className="bg-[#2a2a2a] text-white p-8 rounded-lg w-md h-auto max-h-[80vh] overflow-y-auto relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 				{/* {isLoading &&
 				(
 					<div className="absolute inset-0 bg-[#2a2a2a] bg-opacity-95 rounded-lg flex flex-col items-center justify-center z-10">
@@ -107,7 +106,7 @@ function SignUpModal()
 					</div>
 				)} */}
 				<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-					onClick={() => setShowSignUpModal(false)}>
+					onClick={() => navigate('/')}>
 					<IoMdClose size={24} />
 				</button>
 				<h2 className="text-2xl font-bold mb-6 text-center">Create Your Account</h2>
@@ -163,12 +162,9 @@ function SignUpModal()
 					(
 						<motion.div className="flex flex-col text-center text-sm gap-2" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
 							<p>Account already exists</p>
-							<a href="#" className="text-[#ff914d] hover:underline font-bold"
-							onClick={() =>
-							{
-								setShowSignUpModal(false);
-								setShowLoginModal(true)
-							}}>Please login here</a>
+							<Link to="/login"
+								className="text-[#ff914d] hover:underline font-bold"> Please login here
+							</Link>
 						</motion.div>
 					)}
 					<div className="pt-2">
@@ -184,12 +180,9 @@ function SignUpModal()
 					(
 						<motion.div className="text-center text-sm text-gray-400 mt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
 							Already have an account?{" "} 
-							<a href="#" className="text-[#ff914d] hover:underline font-bold" 
-							onClick={() =>
-								{
-								setShowLoginModal(true);
-								setShowSignUpModal(false);
-							}}>Log in</a>
+							<Link to="/login"
+								className="text-[#ff914d] hover:underline font-bold"> Log in
+							</Link>
 						</motion.div>)}
 				</form>
 			</motion.div>

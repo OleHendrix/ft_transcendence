@@ -17,14 +17,17 @@ model Account {
   admin         Boolean    @default(false)
   online        Boolean    @default(false)
 
-  matchesPlayed Int             @default(0)
-  wins          Int             @default(0)
-  draws         Int             @default(0)
-  losses        Int             @default(0)
-  winRate       Float?
-  elo           Int             @default(400)
-  matches       MatchHistory[]  @relation("matches")
+  matchesPlayed   Int             @default(0)
+  wins            Int             @default(0)
+  draws           Int             @default(0)
+  losses          Int             @default(0)
+  winRate         Float?
+  tournamentWins  Int             @default(0)
+  elo             Int             @default(400)
 
+  matches         		MatchHistory[]  @relation("matches")
+  sentFriendRequests     Friendship[] @relation("Requester")
+  receivedFriendRequests Friendship[] @relation("Receiver")
   Blocks                Block[]          @relation("Blocks")
   BlockedBy             Block[]          @relation("BlockedBy")
   sentMessages          Message[]        @relation("SentMessages")     // This represents the sender
@@ -58,6 +61,17 @@ model ChatSession {
   account2   Account  @relation("account2ChatSessions", fields: [account2Id], references: [id])
 }
 
+model Friendship {
+	id				Int @id @default(autoincrement())
+	requesterId		Int
+	receiverId		Int
+	accepted 		Boolean @default(false)
+	createdAt   	DateTime @default(now())
+
+	requester		Account  @relation("Requester", fields: [requesterId], references: [id])
+ 	receiver  		Account  @relation("Receiver", fields: [receiverId], references: [id])
+}
+
 model Block {
   id          Int      @id @default(autoincrement())
   blockerId   Int
@@ -79,6 +93,7 @@ model MatchHistory {
   p2Elo   Int
   p1Diff  Int
   p2Diff  Int
+  time    DateTime @default(now())
 
   accountId Int
   account   Account @relation("matches", fields: [accountId], references: [id])

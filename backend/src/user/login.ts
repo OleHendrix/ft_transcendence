@@ -9,10 +9,10 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 		const { username, password } = req.body as { username: string; password: string };
 	
 		const user = await prisma.account.findUnique({ where: { username } });
-		if (!user) return res.status(400).send({ error: 'User not found' })
+		if (!user) return res.status(400).send({ error: 'Username not found' })
 		
 		const validPassword = await bcrypt.compare(password, user.password);
-		if (!validPassword) return res.status(401).send({ error: 'Incorrect password'});
+		if (!validPassword) return res.status(401).send({ error: 'Password incorrect'});
 
 		if (user.online)
 			res.status(402).send({ error: 'Already logged in' })
@@ -23,7 +23,7 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 				sub: user.id,
 				username: user.username,
 				email: user.email,
-				twofa: false,
+				twofaEnabled: false,
 			}, { expiresIn: '5m' });
 			return res.send({ token: tempToken, twofaRequired: true });
 		}
