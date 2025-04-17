@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = setupTotp;
+exports.verifySetupTotp = verifySetupTotp;
 const speakeasy_1 = __importDefault(require("speakeasy"));
 const qrcode_1 = __importDefault(require("qrcode"));
 function setupTotp(fastify, prisma) {
@@ -35,6 +36,31 @@ function setupTotp(fastify, prisma) {
                 }
             });
             return reply.send({ qrCodeUrl });
+        }));
+    });
+}
+function verifySetupTotp(fastify, prisma) {
+    return __awaiter(this, void 0, void 0, function* () {
+        fastify.post('/api/auth/verify-setup-totp', { preValidation: [fastify.authenticate] }, (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            yield request.jwtVerify();
+            const userId = request.account.sub;
+            const { token: totpToken } = request.body;
+            const account = yield prisma.account.findUnique({ where: { id: userId } });
+            if (!account || !account.totpSecret)
+                return reply.code(400).send({ success: false, message: 'Totp not setup' });
+            const isValid = speakeasy_1.default.totp.verify({
+                secret: account.totpSecret,
+                encoding: 'base32',
+                token: totpToken,
+                window: 1,
+            });
+            if (!isValid)
+                return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
+            yield prisma.account.update({
+                where: { id: userId },
+                data: { twofaEnabled: true },
+            });
+            return reply.send({ success: true, message: '2fa enabled ouweeee' });
         }));
     });
 }

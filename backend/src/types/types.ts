@@ -21,7 +21,7 @@ export interface QueueData
 	opponentID:	number | Opponent;
 }
 
-export interface PlayerType
+export interface AccountType
 {
 	id:			number;
 	username:	string;

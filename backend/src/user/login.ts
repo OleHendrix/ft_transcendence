@@ -8,21 +8,21 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 	{
 		const { username, password } = req.body as { username: string; password: string };
 	
-		const user = await prisma.account.findUnique({ where: { username } });
-		if (!user) return res.status(400).send({ error: 'Username not found' })
+		const account = await prisma.account.findUnique({ where: { username } });
+		if (!account) return res.status(400).send({ error: 'Username not found' })
 		
-		const validPassword = await bcrypt.compare(password, user.password);
+		const validPassword = await bcrypt.compare(password, account.password);
 		if (!validPassword) return res.status(401).send({ error: 'Password incorrect'});
 
-		if (user.online)
+		if (account.online)
 			res.status(402).send({ error: 'Already logged in' })
 
-		if (user.twofaEnabled)
+		if (account.twofaEnabled)
 		{
 			const tempToken = fastify.jwt.sign({
-				sub: user.id,
-				username: user.username,
-				email: user.email,
+				sub: account.id,
+				username: account.username,
+				email: account.email,
 				twofaEnabled: false,
 			}, { expiresIn: '5m' });
 			return res.send({ token: tempToken, twofaRequired: true });
@@ -34,11 +34,11 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 		});
 
 		const token = fastify.jwt.sign({
-			sub: user.id,
-			username: user.username,
-			email: user.email,
+			sub: account.id,
+			username: account.username,
+			email: account.email,
 		}, { expiresIn: '1h' });
 
-		return res.send({ success: true, token, user});
+		return res.send({ success: true, token, account });
 	});
 }

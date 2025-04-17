@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose, IoIosStats } from "react-icons/io";
 import { RiGamepadLine } from "react-icons/ri";
 import Player from "../../assets/Player.svg";
-import { MatchHistory, PlayerType } from "../types";
+import { MatchHistory, AccountType } from "../types";
 import { HiUserAdd } from "react-icons/hi";
 import { FaUserCheck } from "react-icons/fa";
 import { toPercentage } from "../Leaderboard";
@@ -15,7 +15,7 @@ import Lottie from "lottie-react";
 import OnlineIcon from '../../assets/Online.json';
 import axios from "axios";
 
-function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
+function ShowMatchHistory({currentAccount} : {currentAccount: AccountType})
 {
 	const matchHistory = currentAccount?.matches ?? [];
 	console.log(currentAccount);
@@ -68,9 +68,9 @@ function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 	);
 }
 
-function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: PlayerType[]): string
+function getPercentile(player: AccountType, stat: keyof AccountType, accounts: AccountType[]): string
 {
-	function calcWorseThan(player: PlayerType, stat: keyof PlayerType, accountsList: PlayerType[]): [number, number]
+	function calcWorseThan(player: AccountType, stat: keyof AccountType, accountsList: AccountType[]): [number, number]
 	{
 		let worseThan = 0;
 		let total = 0;
@@ -92,11 +92,11 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 	return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
 }
 
-function ShowStats({currentAccount} : {currentAccount: PlayerType})
+function ShowStats({currentAccount} : {currentAccount: AccountType})
 {
 	const { accounts } = useAccountContext();
 
-	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
+	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: AccountType, stat: keyof AccountType): React.ReactElement
 	{
 		return (
 			<tr className={`whitespace-nowrap ${isEven ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
@@ -142,7 +142,7 @@ function PlayerStats()
 {
 	const { accounts, loggedInAccounts } = useAccountContext();
 	const { setIsOpen, setReceiverId } = useChatContext();
-	const [ selectedAccount, setSelectedAccount ] = useState<PlayerType>();
+	const [ selectedAccount, setSelectedAccount ] = useState<AccountType>();
 	const [ friendStatus, setFriendStatus ] = useState(false);
 	const { username } = useParams();
 	const navigate = useNavigate();

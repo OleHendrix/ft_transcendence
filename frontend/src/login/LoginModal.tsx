@@ -2,7 +2,7 @@ import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { IoMdClose } from "react-icons/io";
-import { PlayerType, LoginFormType, LoginValidationType } from "../types"
+import { AccountType, LoginFormType, LoginValidationType } from "../types"
 import { useAccountContext } from "../contexts/AccountContext";
 import { useLoginContext } from "../contexts/LoginContext";
 import axios from "axios";
@@ -11,85 +11,20 @@ interface CheckLoginProps
 {
 	formData: LoginFormType;
 	token: String;
-	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	setLoggedInAccounts: Dispatch<SetStateAction<AccountType[]>>;
 	setValidation: Dispatch<SetStateAction<LoginValidationType>>;
 	setShow2FA: Dispatch<SetStateAction<boolean>>;
 }
 
-async function check2FA({ formData, token, setLoggedInAccounts, setValidation }  : CheckLoginProps)
-{
-	const { username } = formData;
-	try
-	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-totp`,
-		{
-			username: username,
-			token
-		});
-		const user = response.data.user;
-		if (response.data.success)
-		{
-			setLoggedInAccounts((prev) =>
-			{
-				if (prev.some((p) => p.username === username))
-					return prev;
-				const updatedPlayers = [...prev, user];
-				localStorage.setItem("loggedInAccounts", JSON.stringify([...prev, user]));
-				return updatedPlayers;
-			});
-			console.log("authorized:", username);
-			return true;
-		}
-	}
-	catch (error: any)
-	{
-		if (error.response?.status === 401)
-			setValidation(prev => ({...prev, ['2FA Code incorrect']: true}));
-	}
-	return false;
-}
-
-async function checkLogin( { formData, token, setLoggedInAccounts, setValidation, setShow2FA }  : CheckLoginProps)
-{
-	const {username, password } = formData;
-	try
-	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/login`, { username, password });
-		if (response.data.success)
-		{
-			const user = response.data.user;
-			if (user.twofaEnabled)
-			{
-				setShow2FA(true);
-				return false;
-			}
-			setLoggedInAccounts((prev) =>
-			{
-				if (prev.some((p) => p.username === user.username))
-					return prev;
-				const updatedPlayers = [...prev, user];
-				localStorage.setItem("loggedInAccounts", JSON.stringify([...prev, user]));
-				return updatedPlayers;
-			});
-			return true;
-		}
-	}
-	catch (error: any)
-	{
-		console.log(error.response.data.error);
-		setValidation(prev => ({...prev, [error.response.data.error]: true}))
-		return false;
-	}
-}
 
 function LoginModal()
 {
 	const { loggedInAccounts, setLoggedInAccounts } = useAccountContext();
-	const { setShowLoginModal } = useLoginContext();
 	
 	const [show2FA, setShow2FA] = useState(false);
 	const [token, setToken] = useState('');
-
+	const [tempJwt, setTempJwt] = useState('');
+	
 	const [formData, setFormData] = useState({username: '', password: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
 	const [validation, setValidation] = useState(
@@ -99,6 +34,77 @@ function LoginModal()
 			'Password incorrect': false,
 			'2FA Code incorrect': false
 		});
+
+	async function check2FA()
+	{
+		const { username } = formData;
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-totp`,
+			{
+				token,
+				jwt: tempJwt,
+			});
+			const account    = response.data.user;
+			const finalToken = response.data.token;
+	
+			if (response.data.success)
+			{
+				setLoggedInAccounts((prev) =>
+				{
+					if (prev.some((p) => p.username === username))
+						return prev;
+					const updatedAccounts = [...prev, {...account, jwt: finalToken }];
+					localStorage.setItem("loggedInAccounts", JSON.stringify(updatedAccounts));
+					return updatedAccounts;
+				});
+				console.log("authorized:", username);
+				return true;
+			}
+		}
+		catch (error: any)
+		{
+			if (error.response?.status === 401)
+				setValidation(prev => ({...prev, ['2FA Code incorrect']: true}));
+		}
+		return false;
+	}
+	
+	async function checkLogin()
+	{
+		const {username, password } = formData;
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/login`, { username, password });
+			if (response.data.success)
+			{
+				if (response.data.twodaRequired)
+				{
+					setShow2FA(true);
+					setTempJwt(response.data.token)
+					return false;
+				}
+				const account    = response.data.account;
+				const finalToken = response.data.token;
+
+				setLoggedInAccounts((prev) =>
+				{
+					if (prev.some((p) => p.username === account.username))
+						return prev;
+					const updatedAccounts = [...prev, { ...account, jwt: finalToken }];
+					localStorage.setItem("loggedInAccountus", JSON.stringify(updatedAccounts));
+					return updatedAccounts;
+				});
+				return true;
+			}
+		}
+		catch (error: any)
+		{
+			console.log(error.response.data.error);
+			setValidation(prev => ({...prev, [error.response.data.error]: true}))
+			return false;
+		}
+	}
 
 	const navigate = useNavigate();
 
@@ -131,12 +137,12 @@ function LoginModal()
 				e.preventDefault();
 				if (show2FA)
 				{
-					const success = await check2FA({ formData, token, setLoggedInAccounts, setValidation, setShow2FA});
+					const success = await check2FA();
 					if (success) navigate('/');
 				}
 				else
 				{
-					const success = await checkLogin({ formData, token, setLoggedInAccounts, setValidation, setShow2FA });
+					const success = await checkLogin();
 					if (success) navigate('/'); 
 				}
 			}} 

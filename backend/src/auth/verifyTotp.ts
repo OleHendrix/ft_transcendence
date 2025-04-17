@@ -4,7 +4,7 @@ import speakeasy from 'speakeasy';
 
 export default async function verifyTotp(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post('/api/auth/verify-totp', async (req, reply) =>
+	fastify.post('/api/auth/verify-login-totp', async (req, reply) =>
 	{
 		const { token: totpToken, jwt: tempJwt } = req.body as { token: string, jwt: string };
 		try
@@ -30,7 +30,7 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 
 			await prisma.account.update({
 				where: { id: userId },
-				data:  { online: true,  twofaEnabled: true },
+				data:  { online: true },
 			});
 
 			const finalToken = fastify.jwt.sign(

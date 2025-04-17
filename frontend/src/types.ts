@@ -34,7 +34,7 @@ export interface MatchHistory
 	p2Diff:		number;
 };
 
-export interface PlayerType
+export interface AccountType
 {
 	id:				number;
 	admin:			boolean;
@@ -47,8 +47,13 @@ export interface PlayerType
 	losses:			number;
 	winRate:		number;
 	elo:			number;
-	twofaEnabled:			boolean;
+	twofaEnabled:	boolean;
 	matches:		MatchHistory[];
+}
+
+export interface AuthenticatedAccount extends AccountType
+{
+	jwt: string;
 }
 
 export interface Message

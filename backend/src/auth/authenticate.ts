@@ -10,7 +10,7 @@ const authenticatePlugin: FastifyPluginAsync = async (fastify) =>
 		}
 		catch (err)
 		{
-			reply.code(401).send({ message: 'Unauthorized'});
+			reply.code(401).send({ message: 'Unauthorized' });
 		}
 	})
 };

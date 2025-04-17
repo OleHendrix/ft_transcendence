@@ -16,7 +16,7 @@ exports.default = verifyTotp;
 const speakeasy_1 = __importDefault(require("speakeasy"));
 function verifyTotp(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/auth/verify-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
+        fastify.post('/api/auth/verify-login-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
             const { token: totpToken, jwt: tempJwt } = req.body;
             try {
                 const decoded = fastify.jwt.verify(tempJwt);
@@ -34,7 +34,7 @@ function verifyTotp(fastify, prisma) {
                     return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
                 yield prisma.account.update({
                     where: { id: userId },
-                    data: { online: true, twofaEnabled: true },
+                    data: { online: true },
                 });
                 const finalToken = fastify.jwt.sign({
                     sub: account.id,

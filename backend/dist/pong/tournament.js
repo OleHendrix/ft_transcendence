@@ -16,7 +16,7 @@ exports.manageTournaments = manageTournaments;
 exports.getTournamentById = getTournamentById;
 exports.getTournamentLobbies = getTournamentLobbies;
 exports.setResults = setResults;
-const types_1 = require("./types");
+const types_1 = require("../types/types");
 require("ws");
 let tournamentLobbies = new Map();
 function createTournament(fastify) {

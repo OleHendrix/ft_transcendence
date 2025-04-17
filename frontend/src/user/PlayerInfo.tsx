@@ -13,7 +13,7 @@ import { MdOutlineDeleteForever } from "react-icons/md";
 import ImageCropper from "../ImageCrop";
 
 import axios from "axios";
-import { PlayerType } from "../types";
+import { AccountType } from "../types";
 
 interface EditIconProps
 {
@@ -78,7 +78,7 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 		{
 			try
 			{
-				const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
+				const res = await axios.post(`http://${window.location.hostname}:5001/api/auth/setup-totp`,
 				{
 					username: loggedInAccounts[indexPlayerStats].username
 				});
@@ -97,10 +97,15 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 	{
 		try
 		{
-			const response = await axios.post('http://localhost:5001/api/auth/verify-totp',
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-setup-totp`,
 			{
-				username: loggedInAccounts[indexPlayerStats].username,
 				token
+			},
+			{
+				headers:
+				{
+					Authorization: `Bearer ${loggedInAccounts[indexPlayerStats].jwt}`
+				}
 			});
 			if (response.data.success)
 			{
@@ -177,7 +182,7 @@ interface ShowInfoProps
 	setEditProfile: React.Dispatch<React.SetStateAction<boolean>>
 	settingUp2FA: boolean,
 	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>
-	selectedAccount: PlayerType | undefined;
+	selectedAccount: AccountType | undefined;
 }
 
 function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, selectedAccount}: ShowInfoProps )
@@ -288,7 +293,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, 
 	{
 		try
 		{
-			const response = await axios.post('http://localhost:5001/api/delete-account',
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/delete-account`,
 			{
 				username: selectedAccount?.username
 			});
@@ -480,7 +485,7 @@ function PlayerInfo()
 	const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
 	const [showCropper, setShowCropper] = useState(false);
 
-	const [selectedAccount, setSelectedAccount] = useState<PlayerType>();
+	const [selectedAccount, setSelectedAccount] = useState<AccountType>();
 	const navigate = useNavigate();
 	const { username } = useParams();
 

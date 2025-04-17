@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { PlayerData, TournamentData, Result } from "./types";
+import { PlayerData, TournamentData, Result } from "../types/types";
 import { WebSocket } from 'ws';
 import 'ws';
 

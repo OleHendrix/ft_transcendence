@@ -18,19 +18,19 @@ function login(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/login', (req, res) => __awaiter(this, void 0, void 0, function* () {
             const { username, password } = req.body;
-            const user = yield prisma.account.findUnique({ where: { username } });
-            if (!user)
+            const account = yield prisma.account.findUnique({ where: { username } });
+            if (!account)
                 return res.status(400).send({ error: 'Username not found' });
-            const validPassword = yield bcrypt_1.default.compare(password, user.password);
+            const validPassword = yield bcrypt_1.default.compare(password, account.password);
             if (!validPassword)
                 return res.status(401).send({ error: 'Password incorrect' });
-            if (user.online)
+            if (account.online)
                 res.status(402).send({ error: 'Already logged in' });
-            if (user.twofaEnabled) {
+            if (account.twofaEnabled) {
                 const tempToken = fastify.jwt.sign({
-                    sub: user.id,
-                    username: user.username,
-                    email: user.email,
+                    sub: account.id,
+                    username: account.username,
+                    email: account.email,
                     twofaEnabled: false,
                 }, { expiresIn: '5m' });
                 return res.send({ token: tempToken, twofaRequired: true });
@@ -40,11 +40,11 @@ function login(fastify, prisma) {
                 data: { online: true }
             });
             const token = fastify.jwt.sign({
-                sub: user.id,
-                username: user.username,
-                email: user.email,
+                sub: account.id,
+                username: account.username,
+                email: account.email,
             }, { expiresIn: '1h' });
-            return res.send({ success: true, token, user });
+            return res.send({ success: true, token, account });
         }));
     });
 }

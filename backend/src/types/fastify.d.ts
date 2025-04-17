@@ -9,7 +9,7 @@ declare module 'fastify'
 
 	interface FastifyRequest
 	{
-		user:
+		account:
 		{
 			sub:      number;
 			username: string;

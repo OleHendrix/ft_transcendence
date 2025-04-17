@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { PlayerType } from './types';
+import { AccountType } from './types';
 import logo from "../assets/Logo.png";
 import { useParams, useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
@@ -19,8 +19,8 @@ export function toPercentage(n: number, decimals: number): number
 
 export default function Leaderboard()
 {
-	const [ accounts, setAccounts ] = useState<PlayerType[]>([]);
-	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
+	const [ accounts, setAccounts ] = useState<AccountType[]>([]);
+	const [ sortedAccounts, setSortedAccounts ] = useState<AccountType[]>([]);
 	const navigate = useNavigate();
 
 	useEffect(() =>
