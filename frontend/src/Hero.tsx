@@ -189,7 +189,7 @@ function Buttons()
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length > 2 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}
-					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/setup')}}>
+					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/menu')}}>
 				<p>Tournament</p>
 				<TbTournament />
 			</motion.button>

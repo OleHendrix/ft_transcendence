@@ -23,6 +23,7 @@ export async function createTournament(fastify: FastifyInstance)
 				
 				const tournamentData = {
 					tournamentId,
+					// hostId,
 					hostUsername,
 					players,
 					maxPlayers: Number(maxPlayers),
@@ -31,7 +32,7 @@ export async function createTournament(fastify: FastifyInstance)
 				};
 
 				tournamentLobbies.set(tournamentId, tournamentData);
-				console.log(tournamentLobbies);
+				// console.log(tournamentLobbies);
 				reply.send( { tournamentId: tournamentId } );
 			} catch (error){
 				console.log(error);

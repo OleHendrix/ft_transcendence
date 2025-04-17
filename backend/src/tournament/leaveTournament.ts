@@ -6,7 +6,7 @@ export async function leaveTournament(fastify: FastifyInstance)
 {
 	fastify.post('/api/leave-tournament', async (request, reply) => {
 		const { playerId, tournamentId } = request.body as { playerId: number, tournamentId: number };
-		console.log(`player ${playerId} LEAVING tournament ${tournamentId}`);
+		// console.log(`player ${playerId} LEAVING tournament ${tournamentId}`);
 		let tournament = tournamentLobbies.get(tournamentId);
 		if (!tournament)
 			return reply.status(400).send({ error: "Invalid tournament ID" });

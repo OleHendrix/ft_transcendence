@@ -34,7 +34,7 @@ function getMatch(userID) {
     }
     return matchTable.get(key);
 }
-function addGame(user1, user2, isLocalGame, tournamentId, tournament) {
+function addGame(user1, user2, isLocalGame, tournamentId) {
     let newMatch = {
         state: (0, pongLogic_1.initGame)(user1, user2),
         p1: user1,

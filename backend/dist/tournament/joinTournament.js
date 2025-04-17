@@ -17,7 +17,7 @@ function joinTournament(fastify) {
             return __awaiter(this, void 0, void 0, function* () {
                 fastify.get('/ws/join-tournament', { websocket: true }, (connection, req) => {
                     try {
-                        console.log(req.query);
+                        // console.log(req.query);
                         const { playerId, playerUsername, tournamentId } = req.query;
                         (0, handleJoinTournament_1.handleJoinTournament)(connection, Number(playerId), playerUsername, Number(tournamentId));
                     }

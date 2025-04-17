@@ -48,7 +48,7 @@ function broadcastTournamentUpdate(tournamentId, updateType) {
         };
     }
     const message = JSON.stringify(payload);
-    console.log(`broadcast ${message}`);
+    // console.log(`broadcast ${message}`);
     tournament.sockets.forEach(socket => {
         if (socket.readyState === ws_1.WebSocket.OPEN) {
             socket.send(message);

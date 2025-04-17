@@ -33,7 +33,7 @@ function handleJoinTournament(connection, playerId, playerUsername, tournamentId
     connection.on("close", () => {
         tournament.players = tournament.players.filter(p => p.id !== playerId);
         tournament.sockets.delete(connection);
-        console.log("ON CLOSE PLAYERUPDATE");
+        // console.log("ON CLOSE PLAYERUPDATE");
         (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "PLAYER_UPDATE");
     });
 }

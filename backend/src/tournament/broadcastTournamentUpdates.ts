@@ -53,7 +53,7 @@ export function broadcastTournamentUpdate(tournamentId: number, updateType: stri
 		};
 	}
 	const message = JSON.stringify(payload);
-	console.log(`broadcast ${message}`);
+	// console.log(`broadcast ${message}`);
 
 	tournament.sockets.forEach(socket => {
 		if (socket.readyState === WebSocket.OPEN) {

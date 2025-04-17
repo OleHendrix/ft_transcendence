@@ -8,7 +8,7 @@ import { useAccountContext } 		from '../contexts/AccountContext';
 
 export default function TournamentWaitingRoom() {
 	const { loggedInAccounts } 									= useAccountContext();
-	const { tournamentId, tournamentData, players } 			= useTournamentContext();
+	const { setTournamentId, tournamentId, tournamentData, players } 			= useTournamentContext();
 	const navigate 												= useNavigate();
 
 	const handleClose = async () => {
@@ -17,10 +17,11 @@ export default function TournamentWaitingRoom() {
 				playerId: loggedInAccounts[0].id,
 				tournamentId,
 			});
+			setTournamentId(-1);
+			navigate('/');
 		} catch (error) {
 			console.log(error);
 		}
-		navigate('/');
 	};
 	return (
 		<AnimatePresence>
@@ -48,7 +49,6 @@ export default function TournamentWaitingRoom() {
 	
 					{/* Tournament Info Section */}
 					<section className="w-full text-center">
-						<h1 className="text-4xl font-black mb-6">Tournament Waiting Room</h1>
 						<h1 className="text-4xl font-black mb-6">Tournament Waiting Room</h1>
 						{tournamentData ? (
 							<div>

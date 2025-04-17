@@ -8,12 +8,6 @@ type TournamentContextType = {
 	tournamentId: 		number | null;
 	setTournamentId: 	Dispatch<SetStateAction<number | null>>;
 
-	showTournamentSetup: 	boolean;
-	setShowTournamentSetup: Dispatch<SetStateAction<boolean>>;
-
-	showTournamentLobbyList: 	boolean;
-	setShowTournamentLobbyList: Dispatch<SetStateAction<boolean>>;
-
 	showTournamentWaitingRoom: 	boolean;
 	setShowTournamentWaitingRoom: Dispatch<SetStateAction<boolean>>;
 
@@ -32,8 +26,6 @@ const TournamentContext = createContext<TournamentContextType | null>(null);
 export function TournamentProvider({ children }: {children: ReactNode})
 {
 	const [ tournamentId, setTournamentId ] 							= useState<number | null>(null);
-	const [ showTournamentSetup, setShowTournamentSetup ]				= useState(false);
-	const [ showTournamentLobbyList, setShowTournamentLobbyList ]		= useState(false);
 	const [ showTournamentWaitingRoom, setShowTournamentWaitingRoom] 	= useState(false);
 	const [players, setPlayers] 										= useState<any[]>([]);
 	const [tournamentData, setTournamentData]							= useState<any | null>(null);
@@ -72,7 +64,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 			navigate('/tournament/waiting-room');
 			startNextRound();
 		}
-		}, [isPlaying]);
+	}, [isPlaying]);
 
 	useEffect(() => {
 		if (tournamentId === null) return;
@@ -130,8 +122,6 @@ export function TournamentProvider({ children }: {children: ReactNode})
 	const value = useMemo(() => (
 		{
 			tournamentId, setTournamentId,
-			showTournamentSetup, setShowTournamentSetup,
-			showTournamentLobbyList, setShowTournamentLobbyList,
 			showTournamentWaitingRoom, setShowTournamentWaitingRoom,
 			players, setPlayers,
 			tournamentData, setTournamentData,
@@ -139,8 +129,6 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		}
 	), [
 		tournamentId, setTournamentId,
-		showTournamentSetup, setShowTournamentSetup,
-		showTournamentLobbyList, setShowTournamentLobbyList,
 		showTournamentWaitingRoom, setShowTournamentWaitingRoom,
 		players, setPlayers,
 		tournamentData, setTournamentData,
