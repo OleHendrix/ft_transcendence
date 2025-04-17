@@ -486,12 +486,12 @@ function PlayerInfo()
 
 	useEffect(() =>
 	{
-		async function getPlayer()
+		async function getAccount()
 		{
 			try
 			{
 				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
-					{ params: { username: username }})
+					{ params: { requestedUser: username, username: username }})
 				if (response.data.success)
 					setSelectedAccount(response.data.user);
 
@@ -500,7 +500,7 @@ function PlayerInfo()
 			{
 				console.log(error.response)
 			}
-		}; getPlayer()
+		}; getAccount()
 	}, [editProfile])
 
 	function handleProfileImageUpload(e: React.ChangeEvent<HTMLInputElement>)
@@ -552,7 +552,6 @@ function PlayerInfo()
 			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
 			setTriggerFetchAccounts(false);
 			navigate('/');
-			// setShowPlayerStats(false);
 		}
 		catch (error: any)
 		{

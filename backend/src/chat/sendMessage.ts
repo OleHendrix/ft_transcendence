@@ -4,13 +4,13 @@ import { getOrCreateChatSession } from "./chatUtils/getOrCreateChatSession";
 import { notifyClients } from "./createWebsocket";
 
 
-export default async function sendMessage(server: FastifyInstance, prisma: PrismaClient) {
+export default async function sendMessage(server: FastifyInstance, prisma: PrismaClient)
+{
 	server.post('/api/send-message', async (request, reply) =>
 		{
 			const { senderId, receiverId, content, status } = request.body as { senderId: number; receiverId: number; content: string, status: number };
 	
 			const chatSession = await getOrCreateChatSession(senderId, receiverId);
-	
 			const message = await prisma.message.create(
 			{
 				data:
@@ -33,8 +33,9 @@ export default async function sendMessage(server: FastifyInstance, prisma: Prism
 				chatSessionId: message.chatSessionId,
 				status: message.status
 			};
-	
-			notifyClients(messageToClient);
+
+			if (messageToClient.status != 5)
+				notifyClients(messageToClient);
 			return reply.send({ success: true, messageToClient });
 		});
 

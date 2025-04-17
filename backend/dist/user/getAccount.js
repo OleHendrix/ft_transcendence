@@ -13,10 +13,29 @@ exports.default = getAccount;
 function getAccount(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.get('/api/get-account', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username } = request.query;
-            const user = yield prisma.account.findUnique({ where: { username } });
+            const { requestedUser, username } = request.query;
+            const requestedUserId = parseInt(requestedUser);
+            const user = yield prisma.account.findUnique({
+                where: {
+                    username
+                },
+                include: {
+                    matches: true,
+                }
+            });
+            let friendshipStatus = false;
+            if (requestedUser !== username) {
+                const friendship = yield prisma.friendship.findFirst({
+                    where: {
+                        OR: [{ requesterId: requestedUserId, receiverId: user === null || user === void 0 ? void 0 : user.id }, { requesterId: user === null || user === void 0 ? void 0 : user.id, receiverId: requestedUserId }]
+                    }
+                });
+                if (friendship)
+                    friendshipStatus = friendship.accepted;
+            }
+            // }
             if (user) {
-                reply.send({ success: true, user });
+                reply.send({ success: true, user, friendshipStatus });
             }
             else
                 reply.status(404).send({ success: false, error: "Error in fetching account" });

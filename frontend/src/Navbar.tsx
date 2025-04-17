@@ -14,6 +14,9 @@ function Navbar()
 
 	async function toMenu()
 	{
+		if (isPlaying !== PlayerState.playing)
+			return;
+		navigate('/');
 		setIsPlaying(PlayerState.idle)
 		try
 		{

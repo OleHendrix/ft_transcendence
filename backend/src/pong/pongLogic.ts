@@ -244,6 +244,8 @@ export function mirrorGame(match: Match): Match
 
 export function calculateNewElo(p1Elo: number, p2Elo: number, win: number)
 {
+	if (win === 0.5)
+		return p1Elo; //wont lose elo on draws as stoping a local game will cause a draw
 	const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
 	return(Math.round(p1Elo + 24 * (win - expectedOutcome)));
 }

@@ -6,13 +6,23 @@ import { useAccountContext } from '../contexts/AccountContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatTime, ParseResult, getOpponent } from './pongUtils';
 import { usePongContext } from '../contexts/PongContext';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate, useNavigationType } from 'react-router-dom';
+import { IoArrowUndoOutline } from "react-icons/io5";
 
 function PongGame()
 {
 	const { loggedInAccounts, setIsPlaying } 					= useAccountContext();
 	const { pongState: pong, setPongState, match, setMatch } 	= usePongContext();
-	// const navigate 												= useNavigate();
+
+	const navigate = useNavigate();
+	const navigationType = useNavigationType();
+
+	useEffect(() => {
+		if (navigationType === "POP") {
+			leaveMatch(loggedInAccounts[0].id)
+		}
+	}, [location, navigationType]);
+
 
 	const socketRef = useRef<WebSocket | null>(null);
 	const keysPressed = useRef<{ [key: string]: boolean }>({});
@@ -89,11 +99,12 @@ function PongGame()
 		};
 	}, []);
 
-	async function leaveMatch(userID: number)
+	function leaveMatch(userID: number)
 	{
+		navigate("/");
 		setIsPlaying(PlayerState.idle);
-		await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
-		// navigate('/');
+		axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
+		navigate('/');
 	}
 
 	async function rematch(user1: PlayerData, user2: PlayerData)
@@ -104,7 +115,7 @@ function PongGame()
 		if (isLocal === true && user2.id !== -1)
 			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true, tournament: -1 });
 		else
-			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying)
+			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying, navigate)
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
@@ -128,15 +139,44 @@ function PongGame()
 		}
 	}, [pong.p2.lastBounce]);
 
+	async function toMenu()
+	{
+		setIsPlaying(PlayerState.idle)
+		try
+		{
+			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
+			await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: loggedInAccounts[0].id });
+		}
+		catch (error)
+		{
+			console.log(error);
+		}
+		navigate('/');
+	}
+
 	const bounceStrength = 1.2 * -pong.ball.dir.x; //TODO: cap max
 	return (
 		<>
-			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
-				{pong.result === Result.PLAYING && (
-					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10">
+			<div className='w-screen h-screen flex flex-col'>
+			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+				<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
+					<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-20 hover:opacity-70" />
+				</motion.button>
+				<div className='absolute left-[24%] text-2xl opacity-50'>
+					{match?.p1.username}
+				</div>
+				{pong.result === Result.PLAYING &&
+				(
+					<div className="absolute left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10 opacity-50">
 						{formatTime(pong.timer)}
 					</div>
 				)}
+				<div className='absolute right-[25%] text-2xl opacity-50'>
+					{match?.p2.username}
+				</div>
+			</nav>
+
+			<div className={`w-screen min-h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
 				<div className="relative w-full h-full">
 					<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 						<div className="h-full w-1/2 flex justify-center items-center">
@@ -229,6 +269,7 @@ function PongGame()
 					</motion.div>
 				</motion.div>
 			</AnimatePresence>}
+			</div>
 		</>
 	)
 }

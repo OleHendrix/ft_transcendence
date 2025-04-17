@@ -51,6 +51,18 @@ export interface PlayerType
 	matches:		MatchHistory[];
 }
 
+export interface Message
+{
+	id: number;
+	content: string;
+	timestamp: string;
+	receiverId: number;
+	chatSessionId: number;
+	senderUsername: string;
+	senderId: number;
+	status: number;
+}
+
 export interface SignUpFormType
 {
 	username: string;
