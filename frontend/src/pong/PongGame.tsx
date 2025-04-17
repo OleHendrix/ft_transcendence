@@ -7,7 +7,8 @@ import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
 import { useLoginContext } from '../contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RiRobot2Line } from "react-icons/ri";
+import { IoArrowUndoOutline } from "react-icons/io5";
+
 
 function formatTime(ms: number): string
 {
@@ -202,18 +203,25 @@ function PongGame()
 	return (
 		<>
 			<div className='w-screen h-screen flex flex-col'>
-			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center justify-center shadow-xl text-lg font-medium z-10">
-				<motion.button whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
-					<img src={logo} alt="Logo" className="h-16 w-auto hover:cursor-pointer" />
+			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+				<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
+					<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-20 hover:opacity-70" />
 				</motion.button>
-			</nav>
-
-			<div className={`w-screen min-h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
-				{pong.result === Result.PLAYING && (
-					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10">
+				<div className='absolute left-[24%] text-2xl opacity-50'>
+					{pong?.p1Data.username}
+				</div>
+				{pong.result === Result.PLAYING &&
+				(
+					<div className="absolute left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10 opacity-50">
 						{formatTime(pong.timer)}
 					</div>
 				)}
+				<div className='absolute right-[25%] text-2xl opacity-50'>
+					{pong?.p2Data.username}
+				</div>
+			</nav>
+
+			<div className={`w-screen min-h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
 				<div className="relative w-full h-full">
 					<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 						<div className="h-full w-1/2 flex justify-center items-center">

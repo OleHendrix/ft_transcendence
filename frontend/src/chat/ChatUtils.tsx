@@ -142,7 +142,7 @@ export function FriendRequest( {message, isSender} : MessageProps)
 					</motion.button>
 				</div>
 			)}
-			{message.status === 2 && <p className="text-xs font-light opacity-70 text-green-400 mt-2">{`You are now friends with ${message.senderUsername}`}</p>}
+			{message.status === 2 && <p className="text-xs font-light opacity-70 text-green-400 mt-2">{`You are now friends with ${isSender ?  receiverUsername : message.senderUsername}`}</p>}
 		 	{message.status === 3 && <p className="text-xs font-light opacity-70 text-red-400 mt-2">{isSender ? `${receiverUsername} declined the friend request` : "You declined the friend request"}</p>}
 		 	{message.status === 4 && <p className="text-xs font-light opacity-70 text-red-400 mt-2"> {"The friend request was cancelled"}</p>}
 		</div>

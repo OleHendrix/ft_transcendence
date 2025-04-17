@@ -26,8 +26,6 @@ model Account {
   elo             Int             @default(400)
 
   matches         		MatchHistory[]  @relation("matches")
-//   Friended				Account[]		 @relation("friends")
-//   FriendedBy			Account[]		 @relation("friends")
   sentFriendRequests     Friendship[] @relation("Requester")
   receivedFriendRequests Friendship[] @relation("Receiver")
   Blocks                Block[]          @relation("Blocks")
