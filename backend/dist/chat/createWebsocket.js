@@ -32,12 +32,12 @@ function createWebsocket(server, prisma) {
                     if (!activeChats.has(chatSessionId))
                         activeChats.set(chatSessionId, new Set());
                     activeChats.get(chatSessionId).add(connection);
-                    console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
+                    // console.log(`Chatsession ${chatSessionId} connected to WebSocket`);
                     connection.on("close", () => {
-                        console.log(`User ${chatSessionId} disconnected`);
+                        // console.log(`User ${chatSessionId} disconnected`);
                         activeChats.get(chatSessionId).delete(connection);
                         if (activeChats.get(chatSessionId).size === 0) {
-                            console.log(`chatSessionId ${chatSessionId} no longer active, removing from active chats`);
+                            // console.log(`chatSessionId ${chatSessionId} no longer active, removing from active chats`);
                             activeChats.delete(chatSessionId);
                         }
                     });

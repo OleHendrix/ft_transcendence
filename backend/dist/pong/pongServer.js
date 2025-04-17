@@ -34,13 +34,13 @@ function getMatch(userID) {
     }
     return matchTable.get(key);
 }
-function addGame(user1, user2, isLocalGame, tournament) {
+function addGame(user1, user2, isLocalGame, tournamentId) {
     let newMatch = {
         state: (0, pongLogic_1.initGame)(user1, user2),
         p1: user1,
         p2: user2,
         isLocalGame: isLocalGame,
-        tournament: tournament,
+        tournamentId: tournamentId,
     };
     let key = 0;
     while (matchTable.has(key)) {
@@ -65,21 +65,21 @@ function initPongServer(fastify) {
                         }
                         (0, pongLogic_1.updateGame)(match, userID, keysPressed);
                         if (match.isLocalGame === false && userID === match.p2.id)
-                            connection.send(JSON.stringify((0, pongLogic_1.mirrorGame)(match.state)));
+                            connection.send(JSON.stringify((0, pongLogic_1.mirrorGame)(match)));
                         else
-                            connection.send(JSON.stringify(match.state));
+                            connection.send(JSON.stringify(match));
                     });
                 });
             });
         });
         // adds a new match between userID1 and userID2
         fastify.post('/pong/add', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { user1, user2, isLocalGame, tournament } = request.body;
-            if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournament === undefined) {
+            const { user1, user2, isLocalGame, tournamentId } = request.body;
+            if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournamentId === undefined) {
                 reply.status(400);
                 return;
             }
-            addGame(user1, user2, isLocalGame, tournament);
+            addGame(user1, user2, isLocalGame, tournamentId);
             reply.status(201);
         }));
         fastify.post('/pong/is-local', (request, reply) => __awaiter(this, void 0, void 0, function* () {

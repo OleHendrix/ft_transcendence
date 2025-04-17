@@ -42,6 +42,7 @@ export function broadcastTournamentUpdate(tournamentId: number, updateType: stri
 			},
 		};
 	}
+
 	if (updateType === "WINNER_WINNER_CHICKEN_DINNER")
 	{
 		payload = {

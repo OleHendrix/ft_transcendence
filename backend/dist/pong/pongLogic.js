@@ -188,21 +188,20 @@ function initGame(p1Data, p2Data) {
         ai: { lastActivation: 0, desiredY: 0 },
         maxPoints: 3,
         p1Won: null,
-        p1Data: p1Data,
-        p2Data: p2Data,
         timer: 180 * 1000,
         result: types_1.Result.PLAYING,
     };
 }
-function mirrorGame(game) {
-    let mirror = structuredClone(game);
-    [mirror.p1.pos.y, mirror.p2.pos.y] = [mirror.p2.pos.y, mirror.p1.pos.y];
-    [mirror.p1.lastBounce, mirror.p2.lastBounce] = [mirror.p2.lastBounce, mirror.p1.lastBounce];
-    [mirror.p1Score, mirror.p2Score] = [mirror.p2Score, mirror.p1Score];
-    mirror.ball.pos.x = 100 - mirror.ball.pos.x;
-    mirror.ball.prevPos.x = 100 - mirror.ball.prevPos.x;
-    mirror.ball.dir.x = -mirror.ball.dir.x;
-    return mirror;
+function mirrorGame(match) {
+    let mirror = structuredClone(match);
+    let state = mirror.state;
+    [state.p1.pos.y, state.p2.pos.y] = [state.p2.pos.y, state.p1.pos.y];
+    [state.p1.lastBounce, state.p2.lastBounce] = [state.p2.lastBounce, state.p1.lastBounce];
+    [state.p1Score, state.p2Score] = [state.p2Score, state.p1Score];
+    state.ball.pos.x = 100 - state.ball.pos.x;
+    state.ball.prevPos.x = 100 - state.ball.prevPos.x;
+    state.ball.dir.x = -state.ball.dir.x;
+    return match;
 }
 function calculateNewElo(p1Elo, p2Elo, win) {
     const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
@@ -272,8 +271,8 @@ function endGame(match, result) {
             where: { id: p2 },
             data: { winRate: calcWinRate(player2.wins, player2.matchesPlayed) }
         });
-        if (match.tournament !== -1) {
-            (0, setResults_1.setResults)(match.tournament, p1, match.state.p1Score, match.state.p2Score, result);
+        if (match.tournamentId !== -1) {
+            (0, setResults_1.setResults)(match.tournamentId, p1, match.state.p1Score, match.state.p2Score, result);
         }
     });
 }

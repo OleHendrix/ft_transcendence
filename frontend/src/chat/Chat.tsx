@@ -73,7 +73,7 @@ function Chat()
 		};
 		
 		return () => {
-			console.log("Closing WebSocket...");
+			// console.log("Closing WebSocket...");
 			socket.close();
 		};
 	}, [chatSessionId]);

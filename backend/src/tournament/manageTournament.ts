@@ -10,13 +10,13 @@ export async function manageTournament(fastify: FastifyInstance)
 	fastify.post('/api/start-tournament', async (request, reply) =>
 	{
 		const { tournamentId } = request.body as { tournamentId: number };
-		console.log("Tournament starting:", tournamentId);
+		// console.log("Tournament starting:", tournamentId);
 		const lobby = tournamentLobbies.get(tournamentId);
 		if (!lobby) 
 				return reply.status(404).send({ error: 'Tournament not found' });
 		if (!lobby.rounds) 
 			setRounds(tournamentId);
-		if (!lobby.rounds) return ;
+		if (!lobby.rounds) return ; 
 
 		for(const round of lobby.rounds)
 		{

@@ -115,8 +115,6 @@ export interface PongState
 	ai:			AI;
 	maxPoints:	number;
 	p1Won:		boolean | null;
-	p1Data:		PlayerData;
-	p2Data:		PlayerData;
 	timer:		number;
 	result:		Result;
 }
@@ -127,7 +125,7 @@ export interface Match
 	p1:				PlayerData;
 	p2:				PlayerData;
 	isLocalGame:	boolean;
-	tournament:		number;
+	tournamentId:	number;
 };
 
 export interface MatchHistory

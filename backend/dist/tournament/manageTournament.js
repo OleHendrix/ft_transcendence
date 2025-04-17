@@ -19,7 +19,7 @@ function manageTournament(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/start-tournament', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { tournamentId } = request.body;
-            console.log("start ALDSKFLKJDFLKLF", tournamentId);
+            // console.log("Tournament starting:", tournamentId);
             const lobby = tournament_1.tournamentLobbies.get(tournamentId);
             if (!lobby)
                 return reply.status(404).send({ error: 'Tournament not found' });

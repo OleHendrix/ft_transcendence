@@ -29,7 +29,7 @@ function getMatch(userID: number | undefined): Match | null
 	return matchTable.get(key) as Match;
 }
 
-export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean, tournament: number)
+export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean, tournamentId: number)
 {
 	let newMatch: Match = 
 	{
@@ -37,7 +37,7 @@ export function addGame(user1: PlayerData, user2: PlayerData, isLocalGame: boole
 		p1:				user1,
 		p2:				user2,
 		isLocalGame:	isLocalGame,
-		tournament:		tournament,
+		tournamentId:	tournamentId,
 	}
 	let key = 0;
 	while (matchTable.has(key))
@@ -68,9 +68,9 @@ export default async function initPongServer(fastify: FastifyInstance)
 				}
 				updateGame(match, userID, keysPressed);
 				if (match.isLocalGame === false && userID === match.p2.id)
-					connection.send(JSON.stringify(mirrorGame(match.state)));
+					connection.send(JSON.stringify(mirrorGame(match)));
 				else
-					connection.send(JSON.stringify(match.state));
+					connection.send(JSON.stringify(match));
 			});
 		});
 	})
@@ -78,13 +78,13 @@ export default async function initPongServer(fastify: FastifyInstance)
 	// adds a new match between userID1 and userID2
 	fastify.post('/pong/add', async (request, reply) =>
 	{
-		const { user1, user2, isLocalGame, tournament } = request.body as { user1?: PlayerData, user2?: PlayerData, isLocalGame?: boolean, tournament?: number };
-		if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournament === undefined)
+		const { user1, user2, isLocalGame, tournamentId } = request.body as { user1?: PlayerData, user2?: PlayerData, isLocalGame?: boolean, tournamentId?: number };
+		if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournamentId === undefined)
 		{
 			reply.status(400);
 			return;
 		}
-		addGame(user1, user2, isLocalGame, tournament);
+		addGame(user1, user2, isLocalGame, tournamentId);
 		reply.status(201);
 	});
 

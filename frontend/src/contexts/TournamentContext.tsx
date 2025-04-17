@@ -5,23 +5,23 @@ import { useNavigate } 			from "react-router-dom";
 import { PlayerState }			from '../types';
 
 type TournamentContextType = {
-	tournamentId: number | null;
-	setTournamentId: Dispatch<SetStateAction<number | null>>;
+	tournamentId: 		number | null;
+	setTournamentId: 	Dispatch<SetStateAction<number | null>>;
 
-	showTournamentSetup: boolean;
+	showTournamentSetup: 	boolean;
 	setShowTournamentSetup: Dispatch<SetStateAction<boolean>>;
 
-	showTournamentLobbyList: boolean;
+	showTournamentLobbyList: 	boolean;
 	setShowTournamentLobbyList: Dispatch<SetStateAction<boolean>>;
 
-	showTournamentWaitingRoom: boolean;
+	showTournamentWaitingRoom: 	boolean;
 	setShowTournamentWaitingRoom: Dispatch<SetStateAction<boolean>>;
 
-	players: any[];
+	players: 	any[];
 	setPlayers: Dispatch<SetStateAction<any[]>>;
 
-	tournamentData: any | null;
-	setTournamentData: Dispatch<SetStateAction<any | null>>;
+	tournamentData: 	any | null;
+	setTournamentData:	Dispatch<SetStateAction<any | null>>;
 
 	socket: WebSocket | null;
 };
@@ -31,17 +31,17 @@ const TournamentContext = createContext<TournamentContextType | null>(null);
 
 export function TournamentProvider({ children }: {children: ReactNode})
 {
-	const [ tournamentId, setTournamentId ] = useState<number | null>(null);
-	const [ showTournamentSetup, setShowTournamentSetup ]			= useState(false);
-	const [ showTournamentLobbyList, setShowTournamentLobbyList ]	= useState(false);
-	const [ showTournamentWaitingRoom, setShowTournamentWaitingRoom] = useState(false);
-	const [players, setPlayers] = useState<any[]>([]);
-	const [tournamentData, setTournamentData] = useState<any | null>(null);
+	const [ tournamentId, setTournamentId ] 							= useState<number | null>(null);
+	const [ showTournamentSetup, setShowTournamentSetup ]				= useState(false);
+	const [ showTournamentLobbyList, setShowTournamentLobbyList ]		= useState(false);
+	const [ showTournamentWaitingRoom, setShowTournamentWaitingRoom] 	= useState(false);
+	const [players, setPlayers] 										= useState<any[]>([]);
+	const [tournamentData, setTournamentData]							= useState<any | null>(null);
+	const { loggedInAccounts, setIsPlaying, isPlaying } 				= useAccountContext();
+	const navigate 														= useNavigate();
 
 	const socketRef = useRef<WebSocket | null>(null);
 
-	const { loggedInAccounts, setIsPlaying, isPlaying } 		= useAccountContext();
-	const navigate 												= useNavigate();
 
 	async function startTournament() {
 		try {
@@ -56,7 +56,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 	async function startNextRound() {
 		try {
 			console.log("FRONTEND - tournament game finished checking to start next round", tournamentId);
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/start-next-Round`, { tournamentId, });
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { tournamentId, });
 			if (response.data.roundFinished)
 			{
 				setIsPlaying(PlayerState.playing);
@@ -68,10 +68,11 @@ export function TournamentProvider({ children }: {children: ReactNode})
 	}
 	useEffect(() => {
 		if (tournamentId !== null && isPlaying !== PlayerState.playing) {
+			console.log("Game finished");
 			navigate('/tournament/waiting-room');
 			startNextRound();
 		}
-		}, [tournamentId, isPlaying]);
+		}, [isPlaying]);
 
 	useEffect(() => {
 		if (tournamentId === null) return;
