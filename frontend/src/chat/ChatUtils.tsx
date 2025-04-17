@@ -45,19 +45,19 @@ export function GameInvite( {message, isSender} : MessageProps)
 	};
 
 	return (
-		<div key={message.id} className="mt-5 w-full flex flex-col bg-white/2 py-4 gap-1 items-center">
+		<div key={message.id} className="mt-5 -mx-2 w-[calc(100%+1rem)] flex flex-col bg-white/2 py-4 gap-1 items-center shadow-2xl">
 
 			<time className="text-xs opacity-30">
 		 		{format(new Date(message.timestamp), "HH:mm")}
 		 	</time>
 			{!isSender &&
 			(
-				<h1 className="text-base font-light italic opacity-100 hover:underline" onClick={() => navigate(`/playerstats/${message.senderUsername}`)}>
+				<h1 className="text-base italic opacity-100 hover:underline" onClick={() => navigate(`/playerstats/${message.senderUsername}`)}>
 					{message.senderUsername}
 				</h1>
 			)}
-			<p className="text-xs font-light opacity-30 mt-2">{isSender ? 'You sended an invite to play!' : 'Wants to play a game!'}</p>
-			<RiGamepadLine size={18} className='opacity-20' />
+			<p className="text-xs font-light opacity-50 mt-2">{isSender ? 'You sended an invite to play!' : 'Wants to play a game!'}</p>
+			<RiGamepadLine size={18} className='opacity-40' />
 			{isSender && message.status === 1 &&
 			(
 				<motion.button className="text-xs bg-red-900 hover:bg-red-800 py-1 px-2 rounded-md flex gap-2 mt-2 shadow-2xl cursor-pointer" whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.89 }}
@@ -110,18 +110,18 @@ export function FriendRequest( {message, isSender} : MessageProps)
 	}
 
 	return (
-		<div key={message.id} className="mt-5 w-full flex flex-col bg-white/2 py-4 gap-1 items-center">
+		<div key={message.id} className="mt-5 -mx-2 w-[calc(100%+1rem)] flex flex-col bg-white/2 py-4 gap-1 items-center shadow-2xl">
 			<time className="text-xs opacity-30">
 		 		{format(new Date(message.timestamp), "HH:mm")}
 		 	</time>
 			{!isSender &&
 			(
-				<h1 className="text-base font-light italic opacity-100 hover:underline" onClick={() => navigate(`/playerstats/${message.senderUsername}`)}>
+				<h1 className="text-base italic opacity-100 hover:underline" onClick={() => navigate(`/playerstats/${message.senderUsername}`)}>
 					{message.senderUsername}
 				</h1>
 			)}
-			<p className="text-xs font-light opacity-30 mt-2">{isSender ? 'You sended a friend request!' : 'Wants to be friends!'}</p>
-			<FaUserFriends size={18} className='opacity-20' />
+			<p className="text-xs font-light opacity-50 mt-2">{isSender ? 'You sended a friend request!' : 'Wants to be friends!'}</p>
+			<FaUserFriends size={18} className='opacity-30' />
 			{isSender && message.status === 1 &&
 			(
 				<motion.button className="text-xs bg-red-900 hover:bg-red-800 py-1 px-2 rounded-md flex gap-2 mt-2 shadow-2xl cursor-pointer" whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.89 }}
@@ -144,7 +144,7 @@ export function FriendRequest( {message, isSender} : MessageProps)
 			)}
 			{message.status === 2 && <p className="text-xs font-light opacity-70 text-green-400 mt-2">{`You are now friends with ${message.senderUsername}`}</p>}
 		 	{message.status === 3 && <p className="text-xs font-light opacity-70 text-red-400 mt-2">{isSender ? `${receiverUsername} declined the friend request` : "You declined the friend request"}</p>}
-		 	{message.status === 4 && <p className="text-xs font-light opacity-70 text-red-400 mt-2"> {"The you cancelled the friend request"}</p>}
+		 	{message.status === 4 && <p className="text-xs font-light opacity-70 text-red-400 mt-2"> {"The friend request was cancelled"}</p>}
 		</div>
 	)
 }
