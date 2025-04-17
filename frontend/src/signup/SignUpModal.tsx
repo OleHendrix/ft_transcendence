@@ -3,14 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAccountContext } from "../contexts/AccountContext";
-import { useLoginContext } from "../contexts/LoginContext";
 import { SignUpFormType } from "../types";
 import axios from "axios";
 
 function SignUpModal()
 {
 	const { loggedInAccounts, setNumberOfLoggedInAccounts } = useAccountContext();
-	const { setShowSignUpModal, setShowLoginModal } = useLoginContext();
 	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
 	const [emptyForm, setEmptyForm] = useState(true);
 	const [validation, setValidation] = useState(

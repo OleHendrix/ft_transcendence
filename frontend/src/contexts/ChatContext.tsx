@@ -1,15 +1,6 @@
 import { createContext, ReactNode, useMemo, useState, useContext, SetStateAction, Dispatch } from "react";
+import { Message } from '../types';
 
-interface Message {
-	id: number;
-	content: string;
-	timestamp: string;
-	receiverId: number;
-	chatSessionId: number;
-	senderUsername: string;
-	senderId: number;
-	status: number;
-}
 
 type ChatContextType = {
 	receiverId: number;

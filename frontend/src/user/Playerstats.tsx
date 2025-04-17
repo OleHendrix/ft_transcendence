@@ -1,14 +1,18 @@
 import { useAccountContext } from "../contexts/AccountContext";
-import { useLoginContext } from "../contexts/LoginContext";
-import { useState, useEffect, useMemo } from "react";
+import { useChatContext } from "../contexts/ChatContext";
+import { useState, useEffect, useMemo, use } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose, IoIosStats } from "react-icons/io";
 import { RiGamepadLine } from "react-icons/ri";
 import Player from "../../assets/Player.svg";
 import { MatchHistory, PlayerType } from "../types";
+import { HiUserAdd } from "react-icons/hi";
+import { FaUserCheck } from "react-icons/fa";
 import { toPercentage } from "../Leaderboard";
 import { format } from 'date-fns';
+import Lottie from "lottie-react";
+import OnlineIcon from '../../assets/Online.json';
 import axios from "axios";
 
 function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
@@ -19,9 +23,9 @@ function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
 	return (
-		<div className="border border-base-content/20 bg-transparent min-h-full overflow-y-auto">
+		<div className="border border-base-content/20 bg-transparent md:h-[465px] md:overflow-y-auto">
 			<table className="w-full table overflow-y-auto whitespace-nowrap">
-				<thead className="sticky top-0 z-10 bg-black shadow-2xl">
+				<thead className="md:sticky md:top-0 z-10 bg-black shadow-2xl">
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
 						<th className="text-center" colSpan={6}>
 						<div className="flex w-full items-center justify-center gap-1">
@@ -108,7 +112,7 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 	}
 
 	return (
-		<div className="w-full overflow-y-auto min-h-full border border-base-content/20 bg-transparent">
+		<div className="w-full border border-base-content/20 bg-transparent">
 			<link href="https://fonts.googleapis.com/css2?family=Droid+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet"></link>
 			<table className="table w-full table-auto">
 				<thead className="bg-black">
@@ -136,29 +140,62 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 
 function PlayerStats()
 {
-	const { accounts } = useAccountContext();
+	const { accounts, loggedInAccounts } = useAccountContext();
+	const { setIsOpen, setReceiverId } = useChatContext();
 	const [ selectedAccount, setSelectedAccount ] = useState<PlayerType>();
+	const [ friendStatus, setFriendStatus ] = useState(false);
 	const { username } = useParams();
 	const navigate = useNavigate();
 
-
 	useEffect(() =>
 	{
-		async function getPlayer()
+		async function getAccount()
 		{
 			try
 			{
 				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
-					{ params: { username: username }})
+					{
+						params:
+						{ 
+							requestedUser: loggedInAccounts[0].id,
+							username: username,
+						}
+					})
 				if (response.data.success)
+				{
 					setSelectedAccount(response.data.user);
+					setFriendStatus(response.data.friendshipStatus);
+				}
 			}
 			catch (error: any)
 			{
 				console.log(error.response)
 			}
-		}; getPlayer()
+		}; getAccount()
 	}, [])
+
+	async function sendFriendRequest()
+	{
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-friendship`,
+				{
+					requesterId: loggedInAccounts[0].id,
+					receiverId: selectedAccount?.id
+				})
+				if (response.data.success)
+				{
+					navigate('/');
+					setIsOpen(true);
+					if (selectedAccount)
+						setReceiverId(selectedAccount.id);
+				}
+		}
+		catch (error: any)
+		{
+			console.log(error.response)
+		}
+	}
 
 	let playerRank;
 	if (selectedAccount && selectedAccount !== undefined)
@@ -174,12 +211,15 @@ function PlayerStats()
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}>
 				<motion.div
-					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-4 md:p-8 gap-8 w-full max-w-xl md:max-w-3xl mx-4 md:mx-8 lg:mx-16 h-auto max-h-[80vh] overflow-y-auto rounded-xl relative shadow-xl"
+					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-4 md:p-8 gap-4 md:gap-8 
+                     w-full max-w-xl md:max-w-3xl mx-2 md:mx-8 lg:mx-16 
+                     h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto md:overflow-hidden 
+                     rounded-xl relative shadow-xl"
 					initial={{ scale: 0.9, y: 20 }}
 					animate={{ scale: 1, y: 0 }}
 					exit={{ scale: 0.9, y: 20 }}
 					transition={{ type: "spring", stiffness: 300, damping: 25 }}>
-
+					
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
 						onClick={() => navigate(-1)}>
@@ -188,7 +228,29 @@ function PlayerStats()
 
 					<div className="flex w-full flex-col items-center gap-2">
 						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
-						<img src={Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+						  <div className="relative">
+							<img src={Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+							{!friendStatus  && loggedInAccounts[0].username !== username &&
+							(
+								<motion.div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors" whileHover={ {scale: 1.10}}
+									onClick={() => sendFriendRequest()}>
+									<HiUserAdd size={16} className="text-[#ff914d]" />
+								</motion.div>
+							)}
+							{friendStatus && loggedInAccounts[0].username !== username &&
+							(
+								<div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full">
+									<FaUserCheck size={16} className="text-green-800" />
+								</div>
+							)}
+						  </div>
+						{selectedAccount?.online &&
+						(
+							<div className="flex justify-center items-center">
+								<h1>Online</h1>
+								<Lottie className="w-6" animationData={OnlineIcon} loop={true} />
+							</div>
+						)}
 						<div className="flex flex-col p-2 items-center text-white">
 							<div className="flex flex-col justify-center items-center">
 								<p className="font-light text-s">Rank:</p>
@@ -196,13 +258,13 @@ function PlayerStats()
 							</div>
 						</div>
 					</div>
-					<div className="flex-1 w-full overflow-y-auto">
-					<div className="flex flex-col md:flex-row justify-center w-full gap-3">
-						<div className="w-full md:w-2/5">
+					<div className="flex-1 w-full">
+					<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
+						<div className="w-full md:w-2/5 flex-shrink-0">
 							<ShowStats currentAccount={selectedAccount}/>
 						</div>
 
-						<div className="w-full md:w-3/5">
+						<div className="w-full md:w-3/5 flex-grow">
 							<ShowMatchHistory currentAccount={selectedAccount}/>
 						</div>
 					</div>

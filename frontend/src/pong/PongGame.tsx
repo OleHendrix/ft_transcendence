@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
 import { PlayerState, PongState, Result, Opponent, PlayerData } from '../types';
+import { useNavigate } from 'react-router-dom';
+import logo from '../../assets/Logo.png'
 import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
 import { useLoginContext } from '../contexts/LoginContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RiRobot2Line } from "react-icons/ri";
+import { IoArrowUndoOutline } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom';
+
 
 function formatTime(ms: number): string
 {
@@ -183,15 +186,44 @@ function PongGame()
 		}
 	}, [pong.p2.lastBounce]);
 
+	async function toMenu()
+	{
+		setIsPlaying(PlayerState.idle)
+		try
+		{
+			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
+			await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: loggedInAccounts[0].id });
+		}
+		catch (error)
+		{
+			console.log(error);
+		}
+		navigate('/');
+	}
+
 	const bounceStrength = 1.2 * -pong.ball.dir.x;
 	return (
 		<>
-			<div className={`w-screen h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
-				{pong.result === Result.PLAYING && (
-					<div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10">
+			<div className='w-screen h-screen flex flex-col'>
+			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+				<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
+					<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-20 hover:opacity-70" />
+				</motion.button>
+				<div className='absolute left-[24%] text-2xl opacity-50'>
+					{pong?.p1Data.username}
+				</div>
+				{pong.result === Result.PLAYING &&
+				(
+					<div className="absolute left-1/2 transform -translate-x-1/2 text-white text-2xl font-bold z-10 opacity-50">
 						{formatTime(pong.timer)}
 					</div>
 				)}
+				<div className='absolute right-[25%] text-2xl opacity-50'>
+					{pong?.p2Data.username}
+				</div>
+			</nav>
+
+			<div className={`w-screen min-h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
 				<div className="relative w-full h-full">
 					<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 						<div className="h-full w-1/2 flex justify-center items-center">
@@ -273,6 +305,7 @@ function PongGame()
 					</motion.div>
 				</motion.div>
 			</AnimatePresence>}
+			</div>
 		</>
 	)
 }
