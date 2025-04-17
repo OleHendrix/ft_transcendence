@@ -32,6 +32,7 @@ export default function TournamentWaitingRoom() {
 			>
 				<motion.div
 					className="flex flex-col items-center bg-[#2a2a2a]/90 text-white p-8 gap-8 rounded-none w-full h-full relative shadow-xl overflow-auto"
+					className="flex flex-col items-center bg-[#2a2a2a]/90 text-white p-8 gap-8 rounded-none w-full h-full relative shadow-xl overflow-auto"
 					initial={{ scale: 0.9, y: 20 }}
 					animate={{ scale: 1, y: 0 }}
 					exit={{ scale: 0.9, y: 20 }}
@@ -45,8 +46,10 @@ export default function TournamentWaitingRoom() {
 						<IoMdClose size={24} />
 					</button>
 	
+	
 					{/* Tournament Info Section */}
 					<section className="w-full text-center">
+						<h1 className="text-4xl font-black mb-6">Tournament Waiting Room</h1>
 						<h1 className="text-4xl font-black mb-6">Tournament Waiting Room</h1>
 						{tournamentData ? (
 							<div>
@@ -58,6 +61,7 @@ export default function TournamentWaitingRoom() {
 							<p>Loading tournament details...</p>
 						)}
 					</section>
+	
 	
 					{/* Players List */}
 					<section className="w-full mt-6">
