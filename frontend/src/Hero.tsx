@@ -10,7 +10,6 @@ import { useAccountContext } from "./contexts/AccountContext";
 import "./css/ponganimation.css";
 import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
-import { useTournamentContext } from './contexts/TournamentContext';
 
 function SimplePong()
 {
@@ -81,7 +80,6 @@ function endQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 function Buttons()
 {
 	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
-	const { setShowTournamentSetup } = useTournamentContext();
 	const navigate = useNavigate();
 	const hoverScale = 1.03;
 	const tapScale = 0.97;
