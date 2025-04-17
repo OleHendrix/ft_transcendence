@@ -13,7 +13,6 @@ import PongGame from './pong/PongGame.tsx';
 import PlayerInfoProtection from './user/PlayerInfoProtection.tsx';
 import PlayerInfo from './user/PlayerInfo.tsx';
 import PlayerStats from './user/Playerstats.tsx';
-import TournamentSetupForm from './tournament/TournamentSetupForm.tsx';
 import { Queue } from './Hero.tsx';
 import ErrorPage from './ErrorPage.tsx';
 

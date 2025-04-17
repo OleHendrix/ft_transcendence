@@ -13,6 +13,7 @@ import { AccountProvider, useAccountContext } from './contexts/AccountContext';
 import { TournamentProvider, useTournamentContext } from "./contexts/TournamentContext";
 import TournamentLobbyList from './tournament/TournamentLobbyList';
 import TournamentWaitingRoom from './tournament/TournamentWaitingRoom';
+import { PongProvider } from './contexts/PongContext';
 
 function MainContent()
 {
@@ -40,6 +41,7 @@ function App()
 			<div className="flex flex-col w-full h-full bg-[#222222]">
 			<AccountProvider>
 			<LoginProvider>
+				<PongProvider>
 				<TournamentProvider>
 					<ChatProvider>
 
@@ -48,6 +50,7 @@ function App()
 					<Outlet />
 					</ChatProvider>
 				</TournamentProvider>
+				</PongProvider>
 				</LoginProvider>
 			</AccountProvider>
 			</div>
