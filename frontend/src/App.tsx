@@ -2,17 +2,12 @@ import './css/index.css'
 import { Outlet } from 'react-router-dom';
 import Navbar from "./Navbar";
 import Hero from "./Hero";
-import Modals from "./Modals";
-import PongGame from "./pong/PongGame";
 import Chat from "./chat/Chat";
-import Leaderboard from "./Leaderboard";
 import { PlayerState } from "./types"
 import { ChatProvider } from "./contexts/ChatContext";
 import { LoginProvider } from "./contexts/LoginContext";
 import { AccountProvider, useAccountContext } from './contexts/AccountContext';
 import { TournamentProvider, useTournamentContext } from "./contexts/TournamentContext";
-import TournamentLobbyList from './tournament/TournamentLobbyList';
-import TournamentWaitingRoom from './tournament/TournamentWaitingRoom';
 
 function MainContent()
 {

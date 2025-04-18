@@ -277,8 +277,8 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, 
 		setFormData( prev => (
 		{
 			...prev,
-			username: selectedAccount?.username,
-			email: selectedAccount?.email,
+			username: selectedAccount?.username ?? '',
+			email: selectedAccount?.email ?? '',
 			password: '',
 			confirmPassword: ''
 		}))

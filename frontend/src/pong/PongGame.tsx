@@ -204,7 +204,7 @@ function PongGame()
 	return (
 		<>
 			<div className='w-screen h-screen flex flex-col'>
-			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] flex items-center shadow-xl text-lg font-medium z-10">
 				<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
 					<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-20 hover:opacity-70" />
 				</motion.button>
