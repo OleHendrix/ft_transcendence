@@ -36,18 +36,13 @@ export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) =
 		return;
 	socket.addEventListener("open", () =>
 	{
-		console.log("Connected to matchmaking server");
-
 		socket?.send(JSON.stringify(user));
 	});
 
 	socket.addEventListener("message", (event) =>
 	{
-		console.log("Message from server:", event.data);
-
 		if (event.data === "Starting match")
 		{
-			console.log("Match found! Redirecting...");
 			setIsPlaying(PlayerState.playing);
 			navigate('/pong-game');
 		}
@@ -67,7 +62,6 @@ export function Queue()
 		if (socket !== null)
 		{
 			socket.close();
-			console.log("Matchmaking cancelled");
 			socket = null;
 		}
 		navigate("/")
@@ -118,7 +112,7 @@ function Buttons()
 
 	async function AddGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournament: -1 });
+		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournamentId: -1 });
 		if (response.status >= 400)
 		{
 			console.log("Failed to create match");
@@ -142,7 +136,6 @@ function Buttons()
 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
 				onClick={() => 
 				{
-					navigate("/queue");
 					startQueue({ player: loggedInAccounts[0], opponentID: Opponent.ANY}, setIsPlaying, navigate);
 				}}>
 				<p>Online Game</p>
@@ -156,7 +149,6 @@ function Buttons()
 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
 				onClick={() => 
 				{
-					navigate("/queue");
 					startQueue( { player: { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username }, opponentID: Opponent.AI }, setIsPlaying, navigate);
 				}}>
 				<p>Versus AI</p>
@@ -173,7 +165,7 @@ function Buttons()
 				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
-				onClick={() => AddGame(loggedInAccounts[0], loggedInAccounts[1], true)}>
+				onClick={() => AddGame({id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, {id: loggedInAccounts[1].id, username: loggedInAccounts[1].username}, true)}>
 				<p>Local Game</p>
 				<RiGamepadLine />
 				</motion.button>

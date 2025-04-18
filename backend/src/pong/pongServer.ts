@@ -9,7 +9,6 @@ let matchIDTable = new Map<number, number>([]);
 
 function getMatch(userID: number | undefined): Match | null
 {
-	// console.log("\n-----------------\n>>> GET MATCH <<<\n-----------------");
 	if (userID === undefined)
 	{
 		console.log(">>> UID is undefined");
@@ -81,6 +80,7 @@ export default async function initPongServer(fastify: FastifyInstance)
 		const { user1, user2, isLocalGame, tournamentId } = request.body as { user1?: PlayerData, user2?: PlayerData, isLocalGame?: boolean, tournamentId?: number };
 		if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournamentId === undefined)
 		{
+			console.log(user1, user2, isLocalGame, tournamentId);
 			reply.status(400);
 			return;
 		}

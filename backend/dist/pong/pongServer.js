@@ -18,7 +18,6 @@ const types_1 = require("../types/types");
 let matchTable = new Map([]);
 let matchIDTable = new Map([]);
 function getMatch(userID) {
-    // console.log("\n-----------------\n>>> GET MATCH <<<\n-----------------");
     if (userID === undefined) {
         console.log(">>> UID is undefined");
         return null;
@@ -76,6 +75,7 @@ function initPongServer(fastify) {
         fastify.post('/pong/add', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { user1, user2, isLocalGame, tournamentId } = request.body;
             if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournamentId === undefined) {
+                console.log(user1, user2, isLocalGame, tournamentId);
                 reply.status(400);
                 return;
             }
