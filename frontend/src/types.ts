@@ -41,6 +41,7 @@ export interface PlayerType
 	online:			boolean;
 	username:		string;
 	email:			string;
+	avatar:			string;
 	matchesPlayed:	number;
 	wins:			number;
 	draws:			number;

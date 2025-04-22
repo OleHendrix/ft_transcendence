@@ -11,8 +11,7 @@ import { HiUserAdd } from "react-icons/hi";
 import { FaUserCheck } from "react-icons/fa";
 import { toPercentage } from "../Leaderboard";
 import { format } from 'date-fns';
-import Lottie from "lottie-react";
-import OnlineIcon from '../../assets/Online.json';
+import { OnlineStatus } from "../Leaderboard";
 import axios from "axios";
 
 function ShowMatchHistory({selectedAccount} : {selectedAccount: PlayerType})
@@ -228,7 +227,8 @@ function PlayerStats()
 					<div className="flex w-full flex-col items-center gap-2">
 						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
 						  <div className="relative">
-							<img src={Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+							<img src={selectedAccount?.avatar ?? Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+							{selectedAccount?.avatar && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
 							{!friendStatus  && loggedInAccounts[0].username !== username &&
 							(
 								<motion.div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors" whileHover={ {scale: 1.10}}
@@ -245,9 +245,9 @@ function PlayerStats()
 						  </div>
 						{selectedAccount?.online &&
 						(
-							<div className="flex justify-center items-center">
+							<div className="flex justify-center items-center gap-2">
 								<h1>Online</h1>
-								<Lottie className="w-6" animationData={OnlineIcon} loop={true} />
+								<OnlineStatus />
 							</div>
 						)}
 						<div className="flex flex-col p-2 items-center text-white">

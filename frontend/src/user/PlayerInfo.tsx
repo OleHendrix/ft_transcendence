@@ -475,7 +475,6 @@ function PlayerInfo()
 	const { setShowPlayerStats, indexPlayerStats } = useLoginContext();
 
 	const [editProfile, setEditProfile] = useState(false);
-	const [profileImage, setProfileImage] = useState(Player);
 	const [settingUp2FA, setSettingUp2FA] = useState(false);
 	const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
 	const [showCropper, setShowCropper] = useState(false);
@@ -493,7 +492,9 @@ function PlayerInfo()
 				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
 					{ params: { requestedUser: username, username: username }})
 				if (response.data.success)
+				{
 					setSelectedAccount(response.data.user);
+				}
 
 			}
 			catch (error: any)
@@ -523,10 +524,32 @@ function PlayerInfo()
 		}
 	};
 
-	function handleCropComplete(croppedImage: string)
+	async function handleCropComplete(croppedImage: string)
 	{
-		setProfileImage(croppedImage);
-		//update database etc...
+		const res = await fetch(croppedImage);
+		const blob = await res.blob();
+		const file = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+
+		const formData = new FormData();
+		formData.append('image', file);
+		if (selectedAccount)
+			formData.append('username', selectedAccount?.username)
+		try
+		{
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/upload`, formData,
+			{
+				headers:
+				{
+					'Accept': 'application/json' // géén Content-Type hier!
+				}
+			})
+			if (response.data.success)
+				console.log(response.data.imageUrl);
+		}
+		catch (error: any)
+		{
+			console.log(error.response);
+		}
 		setShowCropper(false);
 		setTempImageUrl(null);
 	};
@@ -579,8 +602,8 @@ function PlayerInfo()
 					<div className="flex w-full flex-col items-center gap-2">
 						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
 						  <div className="relative">
-							<img src={profileImage} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
-							{profileImage !== Player && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
+							<img src={selectedAccount?.avatar ?? Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+							{selectedAccount?.avatar && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
 							{editProfile &&
 							(
 								<label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors">

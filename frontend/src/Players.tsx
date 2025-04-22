@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from 'framer-motion';
 import { useAccountContext } from "./contexts/AccountContext";
 import { useLoginContext } from "./contexts/LoginContext";
@@ -20,7 +20,7 @@ const Players = React.memo(function Players()
 				{loggedInAccounts?.map((player, index) => 
 				<div key={index} className="flex items-center flex-col space-y-0.5 w-18">
 					<Link to={`/playerinfo/${player.username}`}>
-						<motion.img src={loggedInAccounts.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player}
+						<motion.img src={player.avatar ? player.avatar : loggedInAccounts.length > 2 ? Player : index === 0 ? Player1 : index === 1 ? Player2 : Player}
 							className="h-12 w-auto hover:cursor-pointer"
 							whileHover={{scale: 1.07}}
 							whileTap={{scale: 0.93}}

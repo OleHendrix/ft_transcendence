@@ -8,8 +8,6 @@ import { useAccountContext } from './contexts/AccountContext';
 import PlayerStats from './user/Playerstats';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
-import Lottie from "lottie-react";
-import OnlineIcon from '../assets/Online.json';
 
 export function toPercentage(n: number, decimals: number): number
 {
@@ -17,10 +15,36 @@ export function toPercentage(n: number, decimals: number): number
 	return (Math.floor(n * factor) / factor);
 }
 
+export function OnlineStatus()
+{
+	return(
+		<div className="relative w-2 h-2">
+			<span className="absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75 animate-ping"></span>
+			<span className="absolute inline-flex h-full w-full rounded-full bg-green-500"></span>
+		</div>
+	)
+}
+
+interface SearchBarProps
+{
+	setSearchInput: React.Dispatch<React.SetStateAction<string>>
+}
+
+export function SearchBar({setSearchInput} : SearchBarProps)
+{
+	return (
+		<label className="flex items-center gap-2 bg-[#1b1b1b] text-white px-4 py-2 rounded-2xl w-full md:max-w-[200px] border border-[#323232] focus-within:border-[#ff914d] transition">
+			<svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"> <circle cx="11" cy="11" r="8" /> <line x1="21" y1="21" x2="16.65" y2="16.65" /> </svg>
+			<input className="bg-transparent outline-none w-full text-sm placeholder-gray-400" type="search" placeholder="Search..." onChange={(e) => setSearchInput(e.target.value)}/>
+		</label>
+	)
+}
+
 export default function Leaderboard()
 {
 	const [ accounts, setAccounts ] = useState<PlayerType[]>([]);
 	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
+	const [searchInput, setSearchInput] = useState('');
 	const navigate = useNavigate();
 
 	useEffect(() =>
@@ -75,6 +99,10 @@ export default function Leaderboard()
 						<p className='text-2xl'>Top Players</p>
 						<GoTrophy size={18} className='text-[#ff914d] mt-2'/>
 					</div>
+
+					<div className='w-full flex justify-end'>
+						<SearchBar setSearchInput={setSearchInput}/>
+					</div>
 					
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
@@ -86,7 +114,7 @@ export default function Leaderboard()
 						<table className="table w-full text-center">
 							<thead className="sticky top-0 z-10 bg-black shadow-2xl">
 								<tr className="text-m md:text-lg font-light bg-[#303030]/90 text-lightgrey">
-									<th className="text-m text-left">#</th>
+									{!searchInput && (<th className="text-m text-left">#</th>)}
 									<th className="text-left">Name</th>
 									<th className="">Status</th>
 									<th>ELO</th>
@@ -96,26 +124,30 @@ export default function Leaderboard()
 								</tr>
 							</thead>
 							<tbody>
-								{sortedAccounts.map((account, index) => (
+								{sortedAccounts.filter(account => account.username.toLowerCase().includes(searchInput.toLowerCase())).map((account, index) => (
 									<tr
 										key={account.id}
 										className={`text-l font-bold
-											${index === 0 ? "bg-[linear-gradient(to_right,_#FFD70080_0%,_#FFD70032_15%,_#E0B32022_25%,_#F0D00001_100%)]" :
+											${ searchInput ? "bg-[#383838]/80" :
+											index === 0 ? "bg-[linear-gradient(to_right,_#FFD70080_0%,_#FFD70032_15%,_#E0B32022_25%,_#F0D00001_100%)]" :
 											index === 1 ? "bg-[linear-gradient(to_right,_#C0C0D080_0%,_#C0C0D032_15%,_#C0C0D022_25%,_#C0C0D001_100%)]" :
 											index === 2 ? "bg-[linear-gradient(to_right,_#B85C0080_0%,_#B85C0032_15%,_#B85C0022_25%,_#B85C0001_100%)]" :
 											index % 2 === 0 ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
+										{!searchInput &&
+										(
 										<td className="w-6 p-[0.25px]">
 											<div className={`w-9 h-9 rounded-md ml-1 flex items-center justify-center 
-												${getBorderColour(index + 1)}`}
+												${searchInput ? "shadow-xl text-lg border-2 " : getBorderColour(index + 1)}`}
 												style={{ textShadow: '1px 1px 4px rgba(0, 0, 0, 0.5)' }}>
 												{index + 1}
 											</div>
 										</td>
+										)}
 										
 										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => navigate(`./${account.username}`) }>{account.username}</span></td>
 										<td className='text-left'>
 										<div className='flex items-center justify-center'>
-											{account.online ? <Lottie className="w-6 items-center" animationData={OnlineIcon} loop={true} /> : <div></div>}
+											{account.online ? <OnlineStatus /> : <div></div>}
 										</div>
 										</td>
 										<td className="w-25">{account.elo}</td>
