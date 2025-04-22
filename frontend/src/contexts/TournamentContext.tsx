@@ -2,7 +2,7 @@ import { createContext, useState, useEffect, useRef, useMemo, Dispatch, SetState
 import axios 					from "axios";
 import { useAccountContext } 	from "./AccountContext";
 import { useNavigate } 			from "react-router-dom";
-import { PlayerState }			from '../types';
+import { PlayerState, TournamentData }			from '../types';
 
 type TournamentContextType = {
 	tournamentId: 		number | null;
@@ -14,8 +14,8 @@ type TournamentContextType = {
 	players: 	any[];
 	setPlayers: Dispatch<SetStateAction<any[]>>;
 
-	tournamentData: 	any | null;
-	setTournamentData:	Dispatch<SetStateAction<any | null>>;
+	tournamentData: 	TournamentData | null;
+	setTournamentData:	Dispatch<SetStateAction<TournamentData | null>>;
 
 	socket: WebSocket | null;
 };
@@ -28,7 +28,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 	const [ tournamentId, setTournamentId ] 							= useState<number | null>(null);
 	const [ showTournamentWaitingRoom, setShowTournamentWaitingRoom] 	= useState(false);
 	const [players, setPlayers] 										= useState<any[]>([]);
-	const [tournamentData, setTournamentData]							= useState<any | null>(null);
+	const [tournamentData, setTournamentData]							= useState<TournamentData | null>(null);
 	const { loggedInAccounts, setIsPlaying, isPlaying } 				= useAccountContext();
 	const navigate 														= useNavigate();
 
@@ -37,14 +37,13 @@ export function TournamentProvider({ children }: {children: ReactNode})
 
 	async function startTournament() {
 		try {
-			console.log("FRONTEND - starting tournament", tournamentId);
-			await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { tournamentId, });
 			setIsPlaying(PlayerState.playing);
 			navigate('/pong-game');
 		} catch (error) {
 			console.log(error);
 		}
 	}
+
 	async function startNextRound() {
 		try {
 			console.log("FRONTEND - tournament game finished checking to start next round", tournamentId);
@@ -58,17 +57,17 @@ export function TournamentProvider({ children }: {children: ReactNode})
 			console.log(error);
 		}
 	}
+
 	useEffect(() => {
-		if (tournamentId !== null && isPlaying !== PlayerState.playing) {
-			console.log("Game finished");
+		if (isPlaying !== PlayerState.playing && tournamentId !== null) {
 			navigate('/tournament/waiting-room');
 			startNextRound();
 		}
 	}, [isPlaying]);
 
 	useEffect(() => {
-		if (tournamentId === null) return;
-		if (!loggedInAccounts.length) return;
+		if (tournamentId === null || !loggedInAccounts.length)
+			return;
 
 		const player = loggedInAccounts[0];
 		if (socketRef.current) {
@@ -90,7 +89,6 @@ export function TournamentProvider({ children }: {children: ReactNode})
 				}
 				if (data.type === "START_SIGNAL")
 				{
-					console.log("start signal received starting tournament ", tournamentId);
 					startTournament();
 				}
 				if (data.type === "RESULT_UPDATE")
@@ -107,10 +105,12 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		};
 	
 		socket.onerror = (err) => {
+			navigate('/');
 			console.error("WebSocket error:", err);
 		};
 	
 		socket.onclose = () => {
+			navigate('/');
 			console.log("WebSocket tournament waiting room closed");
 		};
 	

@@ -19,7 +19,6 @@ function manageTournament(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/start-tournament', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { tournamentId } = request.body;
-            // console.log("Tournament starting:", tournamentId);
             const lobby = tournament_1.tournamentLobbies.get(tournamentId);
             if (!lobby)
                 return reply.status(404).send({ error: 'Tournament not found' });
@@ -30,8 +29,10 @@ function manageTournament(fastify) {
             for (const round of lobby.rounds) {
                 (0, pongServer_1.addGame)(round.p1, round.p2, false, tournamentId);
             }
+            (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "START_SIGNAL");
             return reply.send({ succes: true });
         }));
+        //everytime a game finishes this is called
         fastify.post('/api/start-next-round', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             const { tournamentId } = request.body;
@@ -41,25 +42,27 @@ function manageTournament(fastify) {
             if (!lobby.rounds)
                 return reply.status(500).send({ error: 'NO ROUNDS' });
             if (allRoundsFinished(lobby.rounds)) {
+                console.log("ALLROUNDSFINISHED");
                 let winners = [];
                 for (const round of lobby.rounds) {
                     winners.push(round.result === types_1.Result.P1WON ? round.p1 : round.p2);
                 }
-                lobby.players = winners;
+                // lobby.players = winners;
                 lobby.rounds = [];
                 if (lobby.players.length === 1) {
                     tournament_1.tournamentLobbies.delete(tournamentId);
                     (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "WINNER_WINNER_CHICKEN_DINNER");
                     return reply.send({ winner: (_a = lobby.players.pop()) === null || _a === void 0 ? void 0 : _a.username });
                 }
-                (0, setRounds_1.setRounds)(tournamentId);
-                (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "PLAYER_UPDATE");
-                for (const round of lobby.rounds) {
-                    (0, pongServer_1.addGame)(round.p1, round.p2, false, tournamentId);
-                }
+                // setRounds(tournamentId);
+                // broadcastTournamentUpdate(tournamentId, "PLAYER_UPDATE");
+                // for(const round of lobby.rounds)
+                // {
+                // 	addGame(round.p1, round.p2, false, tournamentId);
+                // }
                 return reply.send({ roundFinished: true });
             }
-            (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "RESULT_UPDATE");
+            // broadcastTournamentUpdate(tournamentId, "RESULT_UPDATE");
             return reply.send({ roundFinished: false, message: 'Waiting for more results' });
         }));
     });

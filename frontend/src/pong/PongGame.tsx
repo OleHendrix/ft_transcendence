@@ -101,10 +101,13 @@ function PongGame()
 
 	function leaveMatch(userID: number)
 	{
-		navigate("/");
+		// navigate("/");
 		setIsPlaying(PlayerState.idle);
 		axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
-		navigate('/');
+		if (match.tournamentId !== -1)
+			navigate('/tournament/waiting-room');
+		else
+			navigate('/');
 	}
 
 	async function rematch(user1: PlayerData, user2: PlayerData)
@@ -123,6 +126,7 @@ function PongGame()
 
 	useEffect(() =>
 	{
+		if (!pong) return ;
 		if (pong.p1.lastBounce !== 0)
 		{
 			setP1IsBouncing(true);
@@ -132,6 +136,7 @@ function PongGame()
 
 	useEffect(() =>
 	{
+		if (!pong) return ;
 		if (pong.p2.lastBounce !== 0)
 		{
 			setP2IsBouncing(true);

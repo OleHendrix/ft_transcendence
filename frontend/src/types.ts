@@ -139,6 +139,15 @@ export interface PongState
 	result:		Result;
 }
 
+export interface Round
+{
+	p1:			PlayerData;
+	p2:			PlayerData;
+	p1score:	number;
+	p2score:	number;
+	result:		Result;
+}
+
 export interface Match
 {
 	state:			PongState;
@@ -154,3 +163,17 @@ export enum PlayerState
 	playing,
 	queueing
 }
+
+
+import type { WebSocket } from 'ws';
+
+export interface TournamentData
+{
+	tournamentId:	number;
+	hostId:			number;
+	hostUsername: 	string;
+	players:		PlayerData[];
+	maxPlayers:		number;
+	rounds:			Round[][] | null;
+	sockets:		Set<WebSocket>;
+};

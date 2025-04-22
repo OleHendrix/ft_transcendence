@@ -40,14 +40,10 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	tournament.sockets.add(connection);
   
 	broadcastTournamentUpdate(tournamentId, "PLAYER_UPDATE");
-	if (tournament.players.length >= tournament.maxPlayers){
-		broadcastTournamentUpdate(tournamentId, "START_SIGNAL");
-	}
   
 	connection.on("close", () => {
 		tournament.players = tournament.players.filter(p => p.id !== playerId);
 		tournament.sockets.delete(connection);
-		// console.log("ON CLOSE PLAYERUPDATE");
 		broadcastTournamentUpdate(tournamentId, "PLAYER_UPDATE");
 	});
 }

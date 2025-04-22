@@ -25,7 +25,7 @@ function createTournament(fastify) {
                         const players = [];
                         const tournamentData = {
                             tournamentId,
-                            // hostId,
+                            hostId,
                             hostUsername,
                             players,
                             maxPlayers: Number(maxPlayers),
@@ -33,7 +33,6 @@ function createTournament(fastify) {
                             sockets,
                         };
                         tournament_1.tournamentLobbies.set(tournamentId, tournamentData);
-                        // console.log(tournamentLobbies);
                         reply.send({ tournamentId: tournamentId });
                     }
                     catch (error) {
