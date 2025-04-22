@@ -51,6 +51,11 @@ export interface PlayerType
 	matches:		MatchHistory[];
 }
 
+export interface AuthenticatedAccount extends PlayerType
+{
+	jwt: string;
+}
+
 export interface Message
 {
 	id: number;

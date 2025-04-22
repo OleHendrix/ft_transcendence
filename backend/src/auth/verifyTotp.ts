@@ -4,16 +4,22 @@ import speakeasy from 'speakeasy';
 
 export default async function verifyTotp(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post('/api/auth/verify-totp', async (req, reply) =>
+	fastify.post('/api/auth/verify-totp',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
-		const { username, token } = req.body as { username: string; token: string; };
-		console.log("checking 2fa from:", username, "token:", token);
-		const account = await prisma.account.findUnique({ where: { username } });
+		const userId = request.account.sub;
+		const { token } = request.body as { token: string; };
+
+		console.log("checking 2fa from:", userId, "token:", token);
+		const account = await prisma.account.findUnique({ where: { id: userId } });
 
 		if (!account || !account.totpSecret)
 			return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
 
-		console.log("found user with totp:", username);
+		console.log("found user with totp:", userId);
 		const isValid = speakeasy.totp.verify(
 			{
 				secret: account.totpSecret,
@@ -26,15 +32,21 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 		if (!isValid)
 			return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
 
-		const updatedAccount = await prisma.account.update(
+		await prisma.account.update(
 		{
-				where: { username },
-				data:
-				{
-					twofa: true
-				}
-		});
-		console.log("authorized:", username);
-		return { success: true, user: updatedAccount };
+			where: { id: userId },
+			data:  { online: true}
+		})
+
+		const finalToken = fastify.jwt.sign({
+			sub: account.id,
+			username: account.username,
+			email: account.email,
+			twofaRequired: true,
+		},
+		{ expiresIn: '1h' });
+		
+		console.log("authorized:", userId);
+		return reply.send({ success: true, token: finalToken, account});
 	});
 }

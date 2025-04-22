@@ -12,7 +12,7 @@ import { PlayerState } from "./types";
 const Players = React.memo(function Players()
 {
 	const { isPlaying, loggedInAccounts, setTriggerFetchAccounts } = useAccountContext();
-	const { setShowSignUpModal, setShowPlayerStats, setIndexPlayerStats } = useLoginContext();
+	const { setIndexPlayerStats } = useLoginContext();
 
 	return(
 		<>

@@ -23,12 +23,17 @@ import initMatchMaking 	from "./pong/matchMaking"
 import { setupChat } 	from './chat/chat';
 import { setupTournament } from './tournament/tournament';
 
+import authenticate from './auth/authenticate';
+import verifySetupTotp from './auth/verifySetupTotp';
+
 const fastify = Fastify();
 export const prisma = new PrismaClient();
 
 fastify.register(fastifyCors);
 fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
+
+fastify.register(authenticate);
 
 setupChat(fastify, prisma);
 setupTournament(fastify);
@@ -50,6 +55,7 @@ const start = async () =>
 	await updateAccount(fastify, prisma);
 
 	await setupTotp(fastify, prisma);
+	await verifySetupTotp(fastify, prisma);
 	await verifyTotp(fastify, prisma);
 	await deleteTotp(fastify, prisma);
 

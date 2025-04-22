@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType, PlayerState } from "../types";
+import { PlayerType, PlayerState, AuthenticatedAccount } from "../types";
 import axios from 'axios';
 
 type AccountContextType = 
@@ -8,8 +8,8 @@ type AccountContextType =
 	setAccounts: Dispatch<SetStateAction<PlayerType[]>>;
 	numberOfLoggedInAccounts: number;
 	setNumberOfLoggedInAccounts: Dispatch<SetStateAction<number>>;
-	loggedInAccounts: PlayerType[];
-	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	loggedInAccounts: AuthenticatedAccount[];
+	setLoggedInAccounts: Dispatch<SetStateAction<AuthenticatedAccount[]>>;
 	triggerFetchAccounts: boolean;
 	setTriggerFetchAccounts: Dispatch<SetStateAction<boolean>>;
 	isPlaying: PlayerState;
@@ -26,7 +26,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 {
 	const [ accounts,                 setAccounts]                 = useState<PlayerType[]>([]);
 	const [ numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
-	const [ loggedInAccounts,         setLoggedInAccounts]         = useState<PlayerType[]>([]);
+	const [ loggedInAccounts,         setLoggedInAccounts]         = useState<AuthenticatedAccount[]>([]);
 	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     = useState(false);
 	const [ isPlaying,                setIsPlaying]                = useState(PlayerState.idle);
 	const [ showLeaderboard,          setShowLeaderboard ]         = useState(false);

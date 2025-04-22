@@ -17,15 +17,19 @@ const speakeasy_1 = __importDefault(require("speakeasy"));
 const qrcode_1 = __importDefault(require("qrcode"));
 function setupTotp(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/auth/setup-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username } = req.body;
-            console.log('username:', username);
-            const account = yield prisma.account.findUnique({ where: { username } });
+        fastify.post('/api/auth/setup-totp', {
+            preHandler: fastify.authenticate
+        }, (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            console.log('kom je hier wel?');
+            const userId = request.account.sub;
+            console.log('yoo', userId);
+            const account = yield prisma.account.findUnique({ where: { id: userId } });
             if (!account)
                 return reply.code(404).send({ message: 'User not found' });
-            const secret = speakeasy_1.default.generateSecret({ name: `NextBall: ${username}` });
+            const username = account.username;
+            const secret = speakeasy_1.default.generateSecret({ name: `NextBall [${username}]` });
             yield prisma.account.update({
-                where: { username },
+                where: { id: userId },
                 data: { totpSecret: secret.base32 }
             });
             const qrCodeUrl = yield qrcode_1.default.toDataURL(secret.otpauth_url || '', {

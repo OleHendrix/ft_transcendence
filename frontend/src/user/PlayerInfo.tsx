@@ -78,11 +78,16 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 		{
 			try
 			{
-				const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
+				const jwt = loggedInAccounts[indexPlayerStats].jwt;
+				console.log(jwt);
+				const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/setup-totp`, {},
 				{
-					username: loggedInAccounts[indexPlayerStats].username
+					headers:
+					{
+						Authorization: `Bearer ${jwt}`
+					}
 				});
-				setQrCode(res.data.qrCodeUrl);
+				setQrCode(response.data.qrCodeUrl);
 				console.log('QR Code:', qrCode);
 			}
 			catch (err)
@@ -97,10 +102,16 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 	{
 		try
 		{
-			const response = await axios.post('http://localhost:5001/api/auth/verify-totp',
+			const jwt = loggedInAccounts[indexPlayerStats].jwt;
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-setup-totp`,
 			{
-				username: loggedInAccounts[indexPlayerStats].username,
 				token
+			},
+			{
+				headers:
+				{
+					Authorization: `Bearer ${jwt}`
+				}
 			});
 			if (response.data.success)
 			{

@@ -12,20 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = verifyTotp;
+exports.default = verifySetupTotp;
 const speakeasy_1 = __importDefault(require("speakeasy"));
-function verifyTotp(fastify, prisma) {
+function verifySetupTotp(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/auth/verify-totp', {
+        fastify.post('/api/auth/verify-setup-totp', {
             preHandler: fastify.authenticate
         }, (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const userId = request.account.sub;
+            const username = request.account.username;
             const { token } = request.body;
-            console.log("checking 2fa from:", userId, "token:", token);
-            const account = yield prisma.account.findUnique({ where: { id: userId } });
+            console.log("checking 2fa from:", username, "token:", token);
+            const account = yield prisma.account.findUnique({ where: { username } });
             if (!account || !account.totpSecret)
                 return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
-            console.log("found user with totp:", userId);
             const isValid = speakeasy_1.default.totp.verify({
                 secret: account.totpSecret,
                 encoding: 'base32',
@@ -35,17 +34,10 @@ function verifyTotp(fastify, prisma) {
             if (!isValid)
                 return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
             yield prisma.account.update({
-                where: { id: userId },
-                data: { online: true }
+                where: { username },
+                data: { twofa: true }
             });
-            const finalToken = fastify.jwt.sign({
-                sub: account.id,
-                username: account.username,
-                email: account.email,
-                twofaRequired: true,
-            }, { expiresIn: '1h' });
-            console.log("authorized:", userId);
-            return reply.send({ success: true, token: finalToken, account });
+            return reply.send({ success: true, twofa: true });
         }));
     });
 }
