@@ -11,10 +11,12 @@ import { RiGroup2Line } from "react-icons/ri";
 import { CgUnblock } from "react-icons/cg";
 import { BiRocket } from "react-icons/bi";
 import { GameInvite, DefaultMessage, FriendRequest, IsTypingBubble, EmptyChatBanner } from "./ChatUtils";
+import { PlayerData } from "../types";
 import axios from 'axios';
 import { useAccountContext } from ".././contexts/AccountContext";
 import { useChatContext } from ".././contexts/ChatContext";
 import "../css/TypingLoader.css";
+import { AddGame } from "../Hero";
 
 function Chat()
 {
@@ -264,9 +266,38 @@ function MessageList( )
 
 function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => void }) 
 {
-	const { loggedInAccounts } = useAccountContext();
+	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { receiverId, setMessageReceived, setIsBlocked } = useChatContext();
+	const navigate = useNavigate();
 
+	function inviteSocket(msgID: number) {
+		console.log("in invite socket", msgID);
+		const socket = new WebSocket(`ws://${window.location.hostname}:5001/invite/send`);
+
+		socket.addEventListener("open", () => {
+			socket.send(JSON.stringify({ id: msgID }));
+		});
+
+		socket.addEventListener("message", (event) => {
+			try {
+				const opponent = JSON.parse(event.data);
+				AddGame(
+					{id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, 
+					{id: opponent.id, username: opponent.username}, 
+					false,
+					setIsPlaying,
+					navigate
+				);
+			} catch (error) {
+				console.error("Invalid event.data:", event.data);
+			}
+		});
+
+		const handleUnload = () => {
+			socket.close();
+		};
+		window.addEventListener("beforeunload", handleUnload);
+	}
 
 	const sendGameInvite = async () => 
 	{
@@ -278,10 +309,10 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 					status: 1 // pending invite
 			});
 
-			if (response.data.success)
-			{
+			if (response.data.success) {
 				console.log("SendGameInvite:succes");
 				setMessageReceived(true);
+				inviteSocket(response.data.messageToClient.id);
 			}
 		} catch (error) {
 			console.log("SendGameInvite:ERROR:", error);
@@ -294,12 +325,14 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 		try
 		{
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-friendship`,
-				{
-					requesterId: loggedInAccounts[0].id,
-					receiverId: receiverId
-				})
-				if (response.data.success)
-					setMessageReceived(true);
+			{
+				requesterId: loggedInAccounts[0].id,
+				receiverId: receiverId
+			})
+			if (response.data.success)
+			{
+				setMessageReceived(true);
+			}
 		}
 		catch (error: any)
 		{
@@ -308,15 +341,13 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 		setMessageMenu(false);
 	}
 
-	const blockUser = async () => 
-	{
+	const blockUser = async () => {
 		try {
 			const block = await axios.post(`http://${window.location.hostname}:5001/api/block-user`, {
 				receiverId,
 				senderId: loggedInAccounts[0]?.id
 			})
-			if (block.data.succes)
-			{
+			if (block.data.succes) {
 				console.log("BlockUser:Succes");
 				setIsBlocked(true);
 				setMessageReceived(true);
@@ -332,8 +363,7 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 				receiverId,
 				senderId: loggedInAccounts[0]?.id
 			})
-			if (unblock.data.succes)
-			{
+			if (unblock.data.succes) {
 				console.log("unBlockUser:Succes");
 				setIsBlocked(false);
 				setMessageReceived(true);
@@ -389,7 +419,6 @@ function MessageInput()
 				content: message,
 				status: 0
 			});
-
 			if (response.data.success)
 			{
 				console.log("MessageInput: setMessageReceived(true)");

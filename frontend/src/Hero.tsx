@@ -103,24 +103,30 @@ export function Queue()
 	)
 }
 
+export async function AddGame(
+	user1: PlayerData,
+	user2: PlayerData,
+	isLocalGame: boolean,
+	setIsPlaying: (state: PlayerState) => void,
+	navigate: ReturnType<typeof useNavigate>
+)
+{
+	const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournamentId: -1 });
+	if (response.status >= 400)
+	{
+		console.log("Failed to create match");
+		return;
+	}
+	setIsPlaying(PlayerState.playing);
+	navigate('/pong-game');
+}
+
 function Buttons()
 {
 	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
 	const navigate = useNavigate();
 	const hoverScale = 1.03;
 	const tapScale = 0.97;
-
-	async function AddGame(user1: PlayerData, user2: PlayerData, isLocalGame: boolean)
-	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournamentId: -1 });
-		if (response.status >= 400)
-		{
-			console.log("Failed to create match");
-			return;
-		}
-		setIsPlaying(PlayerState.playing);
-		navigate('/pong-game');
-	}
 
 	return(
 		<div className="flex flex-col font-bold text-m md:text-lg whitespace-nowrap space-y-4 w-full">
@@ -165,7 +171,7 @@ function Buttons()
 				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
-				onClick={() => AddGame({id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, {id: loggedInAccounts[1].id, username: loggedInAccounts[1].username}, true)}>
+				onClick={() => AddGame({id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, {id: loggedInAccounts[1].id, username: loggedInAccounts[1].username}, true, setIsPlaying, navigate)}>
 				<p>Local Game</p>
 				<RiGamepadLine />
 				</motion.button>
