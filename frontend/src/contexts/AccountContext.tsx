@@ -31,7 +31,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 	const [ isPlaying,                setIsPlaying]                = useState(PlayerState.idle);
 	const [ showLeaderboard,          setShowLeaderboard ]         = useState(false);
 	const [ showStats, 				  setShowStats] 			   = useState(false);
-
+	
 	useEffect(() =>
 	{
 		const savedLoggedInAccounts = localStorage.getItem('loggedInAccounts');

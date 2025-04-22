@@ -15,11 +15,9 @@ import Lottie from "lottie-react";
 import OnlineIcon from '../../assets/Online.json';
 import axios from "axios";
 
-function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
+function ShowMatchHistory({selectedAccount} : {selectedAccount: PlayerType})
 {
-	const matchHistory = currentAccount?.matches ?? [];
-	console.log(currentAccount);
-	console.log(matchHistory);
+	const matchHistory = selectedAccount?.matches ?? [];
 	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
 
 	return (
@@ -41,7 +39,7 @@ function ShowMatchHistory({currentAccount} : {currentAccount: PlayerType})
 							key={match.id}
 							className={`${"h-18 font-medium "} ${match.winner === "Draw"
 								? "bg-[linear-gradient(to_bottom_right,_#40404050_0%,_#47474790_30%,_#40404070_70%,_#33333337_100%)]"
-								: match.winner === currentAccount?.username 
+								: match.winner === selectedAccount?.username 
 								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
 								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}>
 							<td className="w-2/5 text-left pr-2">
@@ -92,7 +90,7 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 	return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
 }
 
-function ShowStats({currentAccount} : {currentAccount: PlayerType})
+function ShowStats({selectedAccount} : {selectedAccount: PlayerType})
 {
 	const { accounts } = useAccountContext();
 
@@ -126,12 +124,12 @@ function ShowStats({currentAccount} : {currentAccount: PlayerType})
 					</tr>
 				</thead>
 				<tbody>
-					{GetStatEntry(false, "Rating: ",   "",  currentAccount, 'elo')}
-					{GetStatEntry(true,  "Win rate: ", "%", currentAccount, 'winRate')}
-					{GetStatEntry(false, "Matches: ",  "",  currentAccount, 'matchesPlayed')}
-					{GetStatEntry(true,  "Wins: ",     "",  currentAccount, 'wins')}
-					{GetStatEntry(false, "Draws: ",    "",  currentAccount, 'draws')}
-					{GetStatEntry(true,  "Losses: ",   "",  currentAccount, 'losses')}
+					{GetStatEntry(false, "Rating: ",   "",  selectedAccount, 'elo')}
+					{GetStatEntry(true,  "Win rate: ", "%", selectedAccount, 'winRate')}
+					{GetStatEntry(false, "Matches: ",  "",  selectedAccount, 'matchesPlayed')}
+					{GetStatEntry(true,  "Wins: ",     "",  selectedAccount, 'wins')}
+					{GetStatEntry(false, "Draws: ",    "",  selectedAccount, 'draws')}
+					{GetStatEntry(true,  "Losses: ",   "",  selectedAccount, 'losses')}
 				</tbody>
 			</table>
 		</div>
@@ -144,11 +142,14 @@ function PlayerStats()
 	const { setIsOpen, setReceiverId } = useChatContext();
 	const [ selectedAccount, setSelectedAccount ] = useState<PlayerType>();
 	const [ friendStatus, setFriendStatus ] = useState(false);
+	const [ playerRank, setPlayerRank] = useState(0)
 	const { username } = useParams();
 	const navigate = useNavigate();
 
 	useEffect(() =>
 	{
+		if (!username || !loggedInAccounts.length)
+			return ;
 		async function getAccount()
 		{
 			try
@@ -164,6 +165,7 @@ function PlayerStats()
 				if (response.data.success)
 				{
 					setSelectedAccount(response.data.user);
+					setPlayerRank(Number(getPercentile(response.data.user, "elo", accounts).split(" ")[3].slice(1, 2)))
 					setFriendStatus(response.data.friendshipStatus);
 				}
 			}
@@ -172,7 +174,10 @@ function PlayerStats()
 				console.log(error.response)
 			}
 		}; getAccount()
-	}, [])
+	}, [loggedInAccounts])
+
+	if (!loggedInAccounts.length)
+		return <div className="text-white text-center mt-10">Loading account...</div>; // Bij refresh heeft loggedincaccounts tijd nodig om te fetchen.
 
 	async function sendFriendRequest()
 	{
@@ -196,12 +201,6 @@ function PlayerStats()
 			console.log(error.response)
 		}
 	}
-
-	let playerRank;
-	if (selectedAccount && selectedAccount !== undefined)
-		playerRank = Number(getPercentile(selectedAccount!, "elo", accounts).split(" ")[3].slice(1, 2));
-	else
-		return ;
 
 	return (
 		<AnimatePresence>
@@ -254,18 +253,18 @@ function PlayerStats()
 						<div className="flex flex-col p-2 items-center text-white">
 							<div className="flex flex-col justify-center items-center">
 								<p className="font-light text-s">Rank:</p>
-								<h2 className="font-semibold text-3xl font-mono" style={{ fontFamily: '"Droid Sans Mono", monospace' }}>{"#" + playerRank}</h2>
+								<h2 className="font-semibold text-3xl font-mono" style={{ fontFamily: '"Droid Sans Mon0o", monospace' }}>{"#" + playerRank}</h2>
 							</div>
 						</div>
 					</div>
 					<div className="flex-1 w-full">
 					<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
 						<div className="w-full md:w-2/5 flex-shrink-0">
-							<ShowStats currentAccount={selectedAccount}/>
+							{selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType}/>}
 						</div>
 
 						<div className="w-full md:w-3/5 flex-grow">
-							<ShowMatchHistory currentAccount={selectedAccount}/>
+							{selectedAccount && <ShowMatchHistory selectedAccount={selectedAccount  as PlayerType}/>}
 						</div>
 					</div>
 					</div>

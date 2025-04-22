@@ -86,8 +86,6 @@ export default async function sendFriendship(server: FastifyInstance, prisma: Pr
 				}
 			});
 		}
-		
-
 
 		const chatSession = await getOrCreateChatSession(requesterId, receiverId);
 		const message = await prisma.message.create(
