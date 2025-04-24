@@ -12,7 +12,7 @@ import { CgUnblock } from "react-icons/cg";
 import { BiRocket } from "react-icons/bi";
 import { GameInvite, DefaultMessage, FriendRequest, IsTypingBubble, EmptyChatBanner } from "./ChatUtils";
 import axios from 'axios';
-import { SearchBar } from "../Leaderboard";
+import SearchBar from "../utils/SearchBar";
 import { useAccountContext } from ".././contexts/AccountContext";
 import { useChatContext } from ".././contexts/ChatContext";
 import "../css/TypingLoader.css";

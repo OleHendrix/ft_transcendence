@@ -1,5 +1,5 @@
 import logo from "../assets/Logo.png";
-import { useNavigate, isRouteErrorResponse, useRouteError } from "react-router-dom";
+import { useNavigate, useRouteError } from "react-router-dom";
 import { useEffect, useState } from 'react';
 
 function ErrorPage()

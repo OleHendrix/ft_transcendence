@@ -71,7 +71,7 @@ function upload(fastify, prisma) {
                     avatar: `/uploads/${path_1.default.basename(filepath)}`
                 }
             });
-            reply.send({ success: true, imageUrl: `/uploads/${path_1.default.basename(filepath)}` });
+            reply.send({ success: true, imageUrl: `http://${request.hostname}:5001${updatedAccount.avatar}` });
         }));
     });
 }

@@ -9,8 +9,15 @@ export default async function getAccounts(fastify: FastifyInstance, prisma: Pris
 		{
 			let accounts = await prisma.account.findMany({ where: { NOT: { id: 1 } }, include: { matches: true }});
 			const accountsWithoutPassword = accounts.map(({ password, totpSecret, ...rest }) => rest);
-			// console.log('hallo??', accountsWithoutPassword);
-			return reply.send({ accounts: accountsWithoutPassword });
+			const accountsWithAvatarPath = accountsWithoutPassword.map((account) =>
+			{
+  				return 	{
+    				...account,
+    				avatar: account.avatar ? `http://${request.hostname}:5001${account.avatar}` : account.avatar
+  						};
+			});
+			console.log(accountsWithAvatarPath);
+			return reply.send({ accounts: accountsWithAvatarPath });
 		}
 		catch (error)
 		{

@@ -14,8 +14,6 @@ type AccountContextType =
 	setTriggerFetchAccounts: Dispatch<SetStateAction<boolean>>;
 	isPlaying: PlayerState;
 	setIsPlaying: Dispatch<SetStateAction<PlayerState>>;
-	showLeaderboard: boolean;
-	setShowLeaderboard: Dispatch<SetStateAction<boolean>>;
 	showStats: boolean;
 	setShowStats: Dispatch<SetStateAction<boolean>>;
 };
@@ -29,7 +27,6 @@ export function AccountProvider({ children }: {children: ReactNode})
 	const [ loggedInAccounts,         setLoggedInAccounts]         = useState<PlayerType[]>([]);
 	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     = useState(false);
 	const [ isPlaying,                setIsPlaying]                = useState(PlayerState.idle);
-	const [ showLeaderboard,          setShowLeaderboard ]         = useState(false);
 	const [ showStats, 				  setShowStats] 			   = useState(false);
 	
 	useEffect(() =>
@@ -51,7 +48,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		} fetchAccounts();
 		setTriggerFetchAccounts(false);
-	}, [ numberOfLoggedInAccounts, triggerFetchAccounts, showLeaderboard ])
+	}, [ numberOfLoggedInAccounts, triggerFetchAccounts ])
 
 	const value = useMemo(() => (
 		{
@@ -60,10 +57,9 @@ export function AccountProvider({ children }: {children: ReactNode})
 			loggedInAccounts, setLoggedInAccounts,
 			triggerFetchAccounts, setTriggerFetchAccounts,
 			isPlaying, setIsPlaying,
-			showLeaderboard, setShowLeaderboard,
 			showStats, setShowStats
 
-		}), [ accounts, numberOfLoggedInAccounts, loggedInAccounts, triggerFetchAccounts, isPlaying, showLeaderboard, showStats ]);
+		}), [ accounts, numberOfLoggedInAccounts, loggedInAccounts, triggerFetchAccounts, isPlaying, showStats ]);
 	return (
 		<AccountContext.Provider value={value}>
 			{ children }

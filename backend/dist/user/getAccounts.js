@@ -30,8 +30,11 @@ function getAccounts(fastify, prisma) {
                     var { password, totpSecret } = _a, rest = __rest(_a, ["password", "totpSecret"]);
                     return rest;
                 });
-                // console.log('hallo??', accountsWithoutPassword);
-                return reply.send({ accounts: accountsWithoutPassword });
+                const accountsWithAvatarPath = accountsWithoutPassword.map((account) => {
+                    return Object.assign(Object.assign({}, account), { avatar: account.avatar ? `http://${request.hostname}:5001${account.avatar}` : account.avatar });
+                });
+                console.log(accountsWithAvatarPath);
+                return reply.send({ accounts: accountsWithAvatarPath });
             }
             catch (error) {
                 return reply.status(500).send({ error: 'Error getting accounts from database' });

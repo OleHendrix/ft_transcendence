@@ -2,10 +2,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { PlayerType } from './types';
 import logo from "../assets/Logo.png";
-import { useParams, useNavigate, Outlet } from 'react-router-dom';
+import SearchBar from './utils/SearchBar';
+import OnlineStatus from './utils/OnlineStatus';
+import { useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
-import { useAccountContext } from './contexts/AccountContext';
-import PlayerStats from './user/Playerstats';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
 
@@ -13,31 +13,6 @@ export function toPercentage(n: number, decimals: number): number
 {
 	const factor = Math.pow(10, decimals);
 	return (Math.floor(n * factor) / factor);
-}
-
-export function OnlineStatus()
-{
-	return(
-		<div className="relative w-2 h-2">
-			<span className="absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75 animate-ping"></span>
-			<span className="absolute inline-flex h-full w-full rounded-full bg-green-500"></span>
-		</div>
-	)
-}
-
-interface SearchBarProps
-{
-	setSearchInput: React.Dispatch<React.SetStateAction<string>>
-}
-
-export function SearchBar({setSearchInput} : SearchBarProps)
-{
-	return (
-		<label className="flex items-center gap-2 bg-[#1b1b1b] text-white px-4 py-2 rounded-2xl w-full md:max-w-[200px] border border-[#323232] focus-within:border-[#ff914d] transition">
-			<svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"> <circle cx="11" cy="11" r="8" /> <line x1="21" y1="21" x2="16.65" y2="16.65" /> </svg>
-			<input className="bg-transparent outline-none w-full text-sm placeholder-gray-400" type="search" placeholder="Search..." onChange={(e) => setSearchInput(e.target.value)}/>
-		</label>
-	)
 }
 
 export default function Leaderboard()
@@ -100,15 +75,17 @@ export default function Leaderboard()
 						<GoTrophy size={18} className='text-[#ff914d] mt-2'/>
 					</div>
 
-					<div className='w-full flex justify-end'>
-						<SearchBar setSearchInput={setSearchInput}/>
-					</div>
 					
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
 						onClick={() => navigate('/')}>
 						<IoMdClose size={24} />
 					</button>
+
+					<div className='flex flex-col w-full h-180 overflow-y-auto rounded-lg gap-2'>
+					<div className='w-full flex justify-end'>
+						<SearchBar setSearchInput={setSearchInput} backGroundColor={'bg-[#1a1a1a]/20'}/>
+					</div>
 
 					<div className="w-full h-180 overflow-y-auto rounded-lg border border-base-content/5 bg-transparent">
 						<table className="table w-full text-center">
@@ -158,6 +135,7 @@ export default function Leaderboard()
 								))}
 							</tbody>
 						</table>
+					</div>
 					</div>
 					<Outlet />
 				</motion.div>

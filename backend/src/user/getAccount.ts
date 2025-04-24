@@ -35,10 +35,7 @@ export default async function getAccount(fastify: FastifyInstance, prisma: Prism
 		if (user)
 		{
 			if (user.avatar && user.avatar !== '')
-			{
 				user.avatar = `http://${request.hostname}:5001${user.avatar}`;
-				console.log(user);
-			}
 			reply.send({ success: true, user, friendshipStatus });
 		}
 		else

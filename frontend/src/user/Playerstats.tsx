@@ -11,7 +11,7 @@ import { HiUserAdd } from "react-icons/hi";
 import { FaUserCheck } from "react-icons/fa";
 import { toPercentage } from "../Leaderboard";
 import { format } from 'date-fns';
-import { OnlineStatus } from "../Leaderboard";
+import OnlineStatus from "../utils/OnlineStatus";
 import axios from "axios";
 
 function ShowMatchHistory({selectedAccount} : {selectedAccount: PlayerType})
@@ -227,7 +227,7 @@ function PlayerStats()
 					<div className="flex w-full flex-col items-center gap-2">
 						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
 						  <div className="relative">
-							<img src={selectedAccount?.avatar ?? Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+							<img src={selectedAccount?.avatar !== '' ? selectedAccount?.avatar : Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
 							{selectedAccount?.avatar && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
 							{!friendStatus  && loggedInAccounts[0].username !== username &&
 							(
@@ -245,7 +245,7 @@ function PlayerStats()
 						  </div>
 						{selectedAccount?.online &&
 						(
-							<div className="flex justify-center items-center gap-2">
+							<div className="flex justify-center items-baseline gap-2">
 								<h1>Online</h1>
 								<OnlineStatus />
 							</div>

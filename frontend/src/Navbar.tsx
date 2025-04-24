@@ -9,7 +9,7 @@ import { PiUserListLight } from "react-icons/pi";
 
 function Navbar()
 {
-	const { isPlaying, setIsPlaying, loggedInAccounts, setShowLeaderboard } = useAccountContext();
+	const { isPlaying, setIsPlaying, loggedInAccounts } = useAccountContext();
 	const navigate = useNavigate();
 
 	async function toMenu()
