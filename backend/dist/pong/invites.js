@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = initInvite;
+const pongServer_1 = require("./pongServer");
 class BiMap {
     constructor() {
         this.forward = new Map();
@@ -59,7 +60,8 @@ function initInvite(fastify) {
         if (socket === undefined)
             return reply.code(500).send(false);
         // TODO: check if sender is available
-        socket.send(JSON.stringify(user));
+        if ((0, pongServer_1.isInGame)())
+            socket.send(JSON.stringify(user));
         invites.deleteByKey(msgID);
         return reply.code(200).send(true);
     }));

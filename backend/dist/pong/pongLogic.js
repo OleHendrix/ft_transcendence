@@ -187,7 +187,6 @@ function initGame(p1Data, p2Data) {
         lastUpdate: -1,
         ai: { lastActivation: 0, desiredY: 0 },
         maxPoints: 3,
-        p1Won: null,
         timer: 180 * 1000,
         result: types_1.Result.PLAYING,
     };
@@ -198,10 +197,15 @@ function mirrorGame(match) {
     [state.p1.pos.y, state.p2.pos.y] = [state.p2.pos.y, state.p1.pos.y];
     [state.p1.lastBounce, state.p2.lastBounce] = [state.p2.lastBounce, state.p1.lastBounce];
     [state.p1Score, state.p2Score] = [state.p2Score, state.p1Score];
+    [mirror.p1, mirror.p2] = [mirror.p2, mirror.p1];
+    if (state.result === types_1.Result.P1WON)
+        state.result = types_1.Result.P2WON;
+    else if (state.result === types_1.Result.P2WON)
+        state.result = types_1.Result.P1WON;
     state.ball.pos.x = 100 - state.ball.pos.x;
     state.ball.prevPos.x = 100 - state.ball.prevPos.x;
     state.ball.dir.x = -state.ball.dir.x;
-    return match;
+    return mirror;
 }
 function calculateNewElo(p1Elo, p2Elo, win) {
     if (win === 0.5)

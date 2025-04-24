@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
-import { addGame } from "./pongServer";
+import { isInGame, addGame } from "./pongServer";
 import { Opponent, PlayerType, QueueData } from "./../types/types"
 
 class BiMap<K, V>
@@ -67,6 +67,7 @@ export default function initInvite(fastify: FastifyInstance)
 		// console.log(msgID, user, socket);
 		if (socket === undefined) return reply.code(500).send(false);
 		// TODO: check if sender is available
+		// if (isInGame())
 		socket.send(JSON.stringify(user));
 		invites.deleteByKey(msgID);
 		return reply.code(200).send(true);

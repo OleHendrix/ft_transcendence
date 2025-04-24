@@ -34,16 +34,3 @@ export function ParseResult()
 		</div>
 	);
 }
-
-export function getOpponent(): PlayerData
-{
-	const { match} = usePongContext();
-	const { loggedInAccounts } = useAccountContext();
-
-	if (match.p1.id !== loggedInAccounts[0].id)
-		return match.p1;
-	else if (match.p2.id === -1)
-		return { id: -1, username: "AI 👾"};
-	else
-		return match.p2;
-}
