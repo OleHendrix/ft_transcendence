@@ -3,17 +3,22 @@ import { PrismaClient } from '@prisma/client';
 
 export default async function deleteTotp(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post('/api/auth/delete-totp', async (req, reply) =>
+	fastify.post('/api/auth/delete-totp',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
-		const { username } = req.body as { username: string };
-		const account = await prisma.account.findUnique({ where: { username } });
+		const userId = request.account.sub;
 
-		if (!account)
-			return reply.status(404).send({ error: 'User not found' });
+		const account = await prisma.account.findUnique({ where: { id: userId } });
+
+		if (!account || !account.totpSecret)
+			return reply.status(404).send({ error: 'User not found or 2fa not enabled' });
 
 		const updatedAccount = await prisma.account.update(
 		{
-			where: { username },
+			where: { id: userId },
 			data:
 			{
 				totpSecret: null,
@@ -21,6 +26,6 @@ export default async function deleteTotp(fastify: FastifyInstance, prisma: Prism
 			}
 		});
 
-		return reply.send({ success: true, user: updatedAccount});
+		return reply.send({ success: true, account: updatedAccount });
 	});
 }

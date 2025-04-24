@@ -12,16 +12,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = logout;
 function logout(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post("/api/logout", (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const { userId } = req.body;
-            const user = yield prisma.account.findUnique({ where: { id: userId } });
-            if (!user)
-                return res.status(400).send({ error: 'User not found' });
-            yield prisma.account.update({
+        fastify.post('/api/logout', {
+            preHandler: fastify.authenticate
+        }, (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const userId = request.account.sub;
+            const user = yield prisma.account.update({
                 where: { id: userId },
                 data: { online: false }
             });
-            res.send({ success: true });
+            if (!user)
+                return reply.status(404).send({ error: 'User not found' });
+            reply.send({ success: true });
         }));
     });
 }

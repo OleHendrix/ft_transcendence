@@ -33,6 +33,7 @@ const pongServer_1 = __importDefault(require("./pong/pongServer"));
 const matchMaking_1 = __importDefault(require("./pong/matchMaking"));
 const chat_1 = require("./chat/chat");
 const tournament_1 = require("./tournament/tournament");
+const invites_1 = __importDefault(require("./pong/invites"));
 const authenticate_1 = __importDefault(require("./auth/authenticate"));
 const verifySetupTotp_1 = __importDefault(require("./auth/verifySetupTotp"));
 const fastify = (0, fastify_1.default)();
@@ -63,6 +64,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, deleteTotp_1.default)(fastify, exports.prisma);
     yield (0, pongServer_1.default)(fastify);
     (0, matchMaking_1.default)(fastify);
+    (0, invites_1.default)(fastify);
     fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {
         if (err) {
             console.error(err);

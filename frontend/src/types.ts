@@ -139,7 +139,6 @@ export interface PongState
 	lastUpdate:	number;
 	ai:			AI;
 	maxPoints:	number;
-	p1Won:		boolean | null;
 	timer:		number;
 	result:		Result;
 }

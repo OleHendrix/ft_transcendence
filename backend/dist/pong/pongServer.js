@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isInGame = isInGame;
 exports.addGame = addGame;
 exports.default = initPongServer;
 // import { markAsUncloneable } from 'worker_threads';
@@ -19,19 +20,22 @@ let matchTable = new Map([]);
 let matchIDTable = new Map([]);
 function getMatch(userID) {
     if (userID === undefined) {
-        console.log(">>> UID is undefined");
+        // console.log(">>> UID is undefined");
         return null;
     }
     if (matchIDTable.has(userID) === false) {
-        console.log(">>> cannot find UID in MID table:", matchIDTable);
+        // console.log(">>> cannot find UID in MID table:", matchIDTable);
         return null;
     }
     const key = matchIDTable.get(userID);
     if (matchTable.has(key) === false) {
-        console.log(">>> cannot find MID in match table:", matchTable);
+        // console.log(">>> cannot find MID in match table:", matchTable);
         return null;
     }
     return matchTable.get(key);
+}
+function isInGame(userID) {
+    return matchIDTable.has(userID);
 }
 function addGame(user1, user2, isLocalGame, tournamentId) {
     let newMatch = {
@@ -63,10 +67,12 @@ function initPongServer(fastify) {
                             return;
                         }
                         (0, pongLogic_1.updateGame)(match, userID, keysPressed);
-                        if (match.isLocalGame === false && userID === match.p2.id)
+                        if (match.isLocalGame === false && userID === match.p2.id) {
                             connection.send(JSON.stringify((0, pongLogic_1.mirrorGame)(match)));
-                        else
+                        }
+                        else {
                             connection.send(JSON.stringify(match));
+                        }
                     });
                 });
             });
@@ -75,7 +81,7 @@ function initPongServer(fastify) {
         fastify.post('/pong/add', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { user1, user2, isLocalGame, tournamentId } = request.body;
             if (user1 === undefined || user2 === undefined || isLocalGame === undefined || tournamentId === undefined) {
-                console.log(user1, user2, isLocalGame, tournamentId);
+                // console.log(user1, user2, isLocalGame, tournamentId);
                 reply.status(400);
                 return;
             }
@@ -93,7 +99,7 @@ function initPongServer(fastify) {
         }));
         fastify.post('/pong/end-game', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { userID } = request.body;
-            console.log("--- ending match with UID:", userID);
+            // console.log("--- ending match with UID:", userID);
             const match = getMatch(userID);
             if (match === null) {
                 reply.status(404);
@@ -109,7 +115,7 @@ function initPongServer(fastify) {
         }));
         fastify.post('/pong/delete', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { userID } = request.body;
-            console.log("--- deleting match with UID:", userID);
+            // console.log("--- deleting match with UID:", userID);
             if (userID === undefined) {
                 reply.status(204);
                 return;
@@ -125,7 +131,6 @@ function initPongServer(fastify) {
             }
             const match = matchTable.get(key);
             if (match.isLocalGame === true) {
-                console;
                 matchIDTable.delete(match.p1.id);
                 matchIDTable.delete(match.p2.id);
             }

@@ -11,10 +11,7 @@ export default async function setupTotp(fastify: FastifyInstance, prisma: Prisma
 		},
 		async (request, reply) =>
 	{
-		console.log('kom je hier wel?');
 		const userId = request.account.sub;
-		console.log('yoo', userId);
-
 
 		const account = await prisma.account.findUnique({ where: { id: userId } });
 		if (!account)

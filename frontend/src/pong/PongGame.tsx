@@ -1,22 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from "axios";
-import { PlayerState, Result, PlayerData } from '../types';
+import { PlayerState, Result, PlayerData, Opponent } from '../types';
 import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatTime, ParseResult, getOpponent } from './pongUtils';
+import { formatTime, ParseResult } from './pongUtils';
 import { usePongContext } from '../contexts/PongContext';
 import { useNavigate, useNavigationType } from 'react-router-dom';
 import { IoArrowUndoOutline } from "react-icons/io5";
-
-
-// function formatTime(ms: number): string
-// {
-// 	const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-// 	const minutes = Math.floor(totalSeconds / 60);
-// 	const seconds = totalSeconds % 60;
-// 	return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-// }
 
 function PongGame()
 {
@@ -132,21 +123,24 @@ function PongGame()
 
 	useEffect(() =>
 	{
-		if (pong.p1.lastBounce !== 0)
+		if (pong && pong.p1.lastBounce !== 0)
 		{
 			setP1IsBouncing(true);
 			setTimeout(() => { setP1IsBouncing(false) }, 80);
 		}
-	}, [pong.p1.lastBounce]);
+	}, [pong?.p1?.lastBounce]);
 
 	useEffect(() =>
 	{
-		if (pong.p2.lastBounce !== 0)
+		if (pong && pong.p2.lastBounce !== 0)
 		{
 			setP2IsBouncing(true);
 			setTimeout(() => { setP2IsBouncing(false) }, 80);
 		}
-	}, [pong.p2.lastBounce]);
+	}, [pong?.p2?.lastBounce]);
+
+	if (!pong || !match)
+		return (<div className='text-2xl italic'>loading...</div>);
 
 	async function toMenu()
 	{
@@ -163,15 +157,25 @@ function PongGame()
 		navigate('/');
 	}
 
+	function getOpponent(): PlayerData
+	{
+		if (match.p1.id !== loggedInAccounts[0].id)
+			return match.p1;
+		else if (match.p2.id === -1)
+			return { id: -1, username: "AI👾"};
+		else
+			return match.p2;
+	}
+
 	const bounceStrength = 1.2 * -pong.ball.dir.x; //TODO: cap max
 	return (
 		<>
 			<div className='w-screen h-screen flex flex-col'>
 			<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
 				<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
-					<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-20 hover:opacity-70" />
+					<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-30 hover:opacity-70" />
 				</motion.button>
-				<div className='absolute left-[24%] text-2xl opacity-50'>
+				<div className='absolute left-[25%] text-2xl opacity-50'>
 					{match?.p1.username}
 				</div>
 				{pong.result === Result.PLAYING &&
@@ -260,11 +264,13 @@ function PongGame()
 									whileTap={{ scale: 0.97 }}
 									onClick={() => { leaveMatch(loggedInAccounts[0].id) }}>Back To Home
 								</motion.button>
-								<motion.button className="pt-2 bg-[#134588] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#246bcb] hover:cursor-pointer"
-									whileHover={{ scale: 1.03 }}
-									whileTap={{ scale: 0.97 }}
-									onClick={() => { rematch(loggedInAccounts[0], getOpponent()) }}>Rematch
-								</motion.button>
+								{match.isLocalGame === false &&
+									<motion.button className="pt-2 bg-[#134588] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#246bcb] hover:cursor-pointer"
+										whileHover={{ scale: 1.03 }}
+										whileTap={{ scale: 0.97 }}
+										onClick={() => { leaveMatch(loggedInAccounts[0].id); startQueue({player: {id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, opponentID: Opponent.ANY}, setIsPlaying, navigate) }}>Find new match
+									</motion.button>
+								}
 							</>
 							}
 							{match.tournamentId !== -1 &&

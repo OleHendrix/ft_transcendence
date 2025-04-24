@@ -20,9 +20,7 @@ function setupTotp(fastify, prisma) {
         fastify.post('/api/auth/setup-totp', {
             preHandler: fastify.authenticate
         }, (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            console.log('kom je hier wel?');
             const userId = request.account.sub;
-            console.log('yoo', userId);
             const account = yield prisma.account.findUnique({ where: { id: userId } });
             if (!account)
                 return reply.code(404).send({ message: 'User not found' });

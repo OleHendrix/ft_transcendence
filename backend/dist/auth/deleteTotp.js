@@ -12,19 +12,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = deleteTotp;
 function deleteTotp(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/auth/delete-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username } = req.body;
-            const account = yield prisma.account.findUnique({ where: { username } });
-            if (!account)
-                return reply.status(404).send({ error: 'User not found' });
+        fastify.post('/api/auth/delete-totp', {
+            preHandler: fastify.authenticate
+        }, (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const userId = request.account.sub;
+            const account = yield prisma.account.findUnique({ where: { id: userId } });
+            if (!account || !account.totpSecret)
+                return reply.status(404).send({ error: 'User not found or 2fa not enabled' });
             const updatedAccount = yield prisma.account.update({
-                where: { username },
+                where: { id: userId },
                 data: {
                     totpSecret: null,
                     twofa: false
                 }
             });
-            return reply.send({ success: true, user: updatedAccount });
+            return reply.send({ success: true, account: updatedAccount });
         }));
     });
 }
