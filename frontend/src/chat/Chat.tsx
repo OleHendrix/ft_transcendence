@@ -13,6 +13,7 @@ import { BiRocket } from "react-icons/bi";
 import { GameInvite, DefaultMessage, FriendRequest, IsTypingBubble, EmptyChatBanner } from "./ChatUtils";
 import { PlayerData } from "../types";
 import axios from 'axios';
+import SearchBar from "../utils/SearchBar";
 import { useAccountContext } from ".././contexts/AccountContext";
 import { useChatContext } from ".././contexts/ChatContext";
 import "../css/TypingLoader.css";
@@ -119,23 +120,28 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 
 function ChatHeader()
 {
-	const {accounts, loggedInAccounts} 				= useAccountContext();
+	const {accounts, loggedInAccounts} 									= useAccountContext();
+	const [searchInput, setSearchInput] 								= useState('');
 	const {receiverId, setReceiverId, setReceiverUsername} 				= useChatContext();
 
 	return (
-		<div className="w-full max-w-full">
-		<div className="flex justify-end space-x-2 mb-2 overflow-x-scroll overscroll-x-contain whitespace-nowrap">
+		<div className="w-full flex flex-col max-w-full">
+		<div className="flex justify-end space-x-2 mb-2 overflow-x-auto">
 			{accounts
 				.filter((account) => 
 					account.username !== loggedInAccounts[0]?.username && !account.admin )
+				.filter((account) => account.username.toLowerCase().includes(searchInput.toLowerCase()))
 				.map((account, index) => (
 					<div key={index} className={`flex items-center flex-col space-y-0.5 w-12 flex-shrink-0 ${receiverId !== account.id ? 'opacity-40' : 'opacity-100'}`}>
+						<div className="relative">
 						<motion.img
-							src={Player}
-							className="h-10 w-10 cursor-pointer"
+							src={account.avatar !== '' ? account.avatar : Player}
+							className="h-10 w-10 cursor-pointer rounded-full object-cover shadow-lg"
 							whileHover={{ scale: 1.07 }}
 							whileTap={{ scale: 0.93 }}
 							onClick={() => {setReceiverId(account.id); setReceiverUsername(account.username)}}/>
+							{account.avatar !== '' && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
+							</div>
 						<p className="text-[10px] opacity-90 w-full text-center truncate">{account.username}</p>
 					</div>
 				))}
@@ -145,6 +151,9 @@ function ChatHeader()
 				</motion.div>
 				<p className="text-[10px] text-[#ff914d] opacity-90 font-bold w-full text-center truncate">Group</p>
 			</div>
+		</div>
+		<div className="w-full flex justify-end">
+		<SearchBar setSearchInput={setSearchInput} /> 
 		</div>
 		</div>
 	);

@@ -8,14 +8,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = deleteAccount;
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 function deleteAccount(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/delete-account', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { username } = request.body;
-            // console.log(username);
             try {
+                const account = yield prisma.account.findUnique({ where: { username } });
+                if ((account === null || account === void 0 ? void 0 : account.avatar) && account.avatar !== "") {
+                    const filePath = path_1.default.join(process.cwd(), account.avatar);
+                    if (fs_1.default.existsSync(filePath))
+                        fs_1.default.unlinkSync(filePath);
+                }
                 const deleted = yield prisma.account.delete({ where: { username } });
                 console.log(deleted);
                 return reply.send({ success: true });

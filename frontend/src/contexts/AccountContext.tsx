@@ -6,18 +6,12 @@ type AccountContextType =
 {
 	accounts: PlayerType[];
 	setAccounts: Dispatch<SetStateAction<PlayerType[]>>;
-	numberOfLoggedInAccounts: number;
-	setNumberOfLoggedInAccounts: Dispatch<SetStateAction<number>>;
 	loggedInAccounts: AuthenticatedAccount[];
 	setLoggedInAccounts: Dispatch<SetStateAction<AuthenticatedAccount[]>>;
 	triggerFetchAccounts: boolean;
 	setTriggerFetchAccounts: Dispatch<SetStateAction<boolean>>;
 	isPlaying: PlayerState;
 	setIsPlaying: Dispatch<SetStateAction<PlayerState>>;
-	showLeaderboard: boolean;
-	setShowLeaderboard: Dispatch<SetStateAction<boolean>>;
-	showStats: boolean;
-	setShowStats: Dispatch<SetStateAction<boolean>>;
 };
 
 const AccountContext = createContext<AccountContextType | null>(null);
@@ -25,12 +19,9 @@ const AccountContext = createContext<AccountContextType | null>(null);
 export function AccountProvider({ children }: {children: ReactNode})
 {
 	const [ accounts,                 setAccounts]                 = useState<PlayerType[]>([]);
-	const [ numberOfLoggedInAccounts, setNumberOfLoggedInAccounts] = useState(0);
 	const [ loggedInAccounts,         setLoggedInAccounts]         = useState<AuthenticatedAccount[]>([]);
 	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     = useState(false);
 	const [ isPlaying,                setIsPlaying]                = useState(PlayerState.idle);
-	const [ showLeaderboard,          setShowLeaderboard ]         = useState(false);
-	const [ showStats, 				  setShowStats] 			   = useState(false);
 	
 	useEffect(() =>
 	{
@@ -51,19 +42,15 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		} fetchAccounts();
 		setTriggerFetchAccounts(false);
-	}, [ numberOfLoggedInAccounts, triggerFetchAccounts, showLeaderboard ])
+	}, [ triggerFetchAccounts ])
 
 	const value = useMemo(() => (
 		{
 			accounts, setAccounts,
-			numberOfLoggedInAccounts, setNumberOfLoggedInAccounts,
 			loggedInAccounts, setLoggedInAccounts,
 			triggerFetchAccounts, setTriggerFetchAccounts,
 			isPlaying, setIsPlaying,
-			showLeaderboard, setShowLeaderboard,
-			showStats, setShowStats
-
-		}), [ accounts, numberOfLoggedInAccounts, loggedInAccounts, triggerFetchAccounts, isPlaying, showLeaderboard, showStats ]);
+		}), [ accounts, loggedInAccounts, triggerFetchAccounts, isPlaying ]);
 	return (
 		<AccountContext.Provider value={value}>
 			{ children }

@@ -27,6 +27,7 @@ export interface PlayerType
 	username:	string;
 	email:		string;
 	password:	string;
+	avater:		string;
 	wins:		number;
 	draws:		number;
 	losses:		number;
