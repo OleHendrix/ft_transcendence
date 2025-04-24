@@ -10,6 +10,7 @@ import { BiLogOut } from "react-icons/bi";
 import { FiEdit3, FiCamera } from "react-icons/fi";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import ImageCropper from "../ImageCrop";
+import ModalWrapper from "../utils/ModalWrapper";
 
 import axios from "axios";
 import { PlayerType } from "../types";
@@ -616,68 +617,66 @@ function PlayerInfo()
 	}
 
 	return (
-		<AnimatePresence>
-			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-				<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-md h-auto max-h-[80vh] overflow-y-auto relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
-					<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => {navigate('/'); setTriggerFetchAccounts(false)}}>
-						<IoMdClose size={24} />
+		<ModalWrapper>
+			<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-md h-auto max-h-[80vh] overflow-y-auto relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+				<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
+					onClick={() => {navigate('/'); setTriggerFetchAccounts(false)}}>
+					<IoMdClose size={24} />
+				</button>
+				{!editProfile &&
+				(
+					<button className="absolute items-center top-4 left-4 text-gray-400 hover:text-white hover:cursor-pointer"
+						onClick={() => {logout()}}>
+						<BiLogOut size={24} />
 					</button>
-					{!editProfile &&
-					(
-						<button className="absolute items-center top-4 left-4 text-gray-400 hover:text-white hover:cursor-pointer"
-							onClick={() => {logout()}}>
-							<BiLogOut size={24} />
-						</button>
-					)}
-					<div className="flex w-full flex-col items-center gap-2">
-						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
-						  <div className="relative">
-							<img src={selectedAccount?.avatar !== '' ? selectedAccount?.avatar : Player} className="h-16 w-16 rounded-full object-cover shadow-lg"/>
-							{selectedAccount?.avatar && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
-							{editProfile &&
-							(
-								<label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors">
-									<input className="hidden" id="profile-upload" type="file" accept="image/*" onChange={handleProfileImageUpload}/>
-									<FiCamera size={16} className="text-[#ff914d]" />
-								</label>
-							)}
-						</div>
-						{showCropper && tempImageUrl &&
+				)}
+				<div className="flex w-full flex-col items-center gap-2">
+					<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
+						<div className="relative">
+						<img src={selectedAccount?.avatar !== '' ? selectedAccount?.avatar : Player} className="h-16 w-16 rounded-full object-cover shadow-lg"/>
+						{selectedAccount?.avatar && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
+						{editProfile &&
 						(
-							<ImageCropper imageUrl={tempImageUrl}
-								handleCropComplete={handleCropComplete}
-								handleCropCancel={handleCropCancel}/>
-						)}
-						{!editProfile &&
-						(
-							<div className="flex w-full justify-between">
-								<div className="flex flex-col items-center">
-									<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
-										key="edit-button" 
-										whileHover={ {scale: 1.17}}
-										whileTap={ {scale: 0.87}}
-										onClick={() => setEditProfile(true)}><LiaUserEditSolid size={24} />
-									</motion.button>
-									<p className="font-thin text-xs opacity-40">Edit profile</p>
-								</div>
-								<div className="flex flex-col items-center">
-									<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
-										key="stats-button" 
-										whileHover={ {scale: 1.17}}
-										whileTap={ {scale: 0.87}}
-										onClick={() => navigate('./stats')}><IoIosStats size={24} />
-									</motion.button>
-									<p className="font-thin text-xs opacity-40">Show Stats</p>
-								</div>
-							</div>
+							<label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors">
+								<input className="hidden" id="profile-upload" type="file" accept="image/*" onChange={handleProfileImageUpload}/>
+								<FiCamera size={16} className="text-[#ff914d]" />
+							</label>
 						)}
 					</div>
-					<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount}/>
-					<Outlet />
-				</motion.div>
+					{showCropper && tempImageUrl &&
+					(
+						<ImageCropper imageUrl={tempImageUrl}
+							handleCropComplete={handleCropComplete}
+							handleCropCancel={handleCropCancel}/>
+					)}
+					{!editProfile &&
+					(
+						<div className="flex w-full justify-between">
+							<div className="flex flex-col items-center">
+								<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
+									key="edit-button" 
+									whileHover={ {scale: 1.17}}
+									whileTap={ {scale: 0.87}}
+									onClick={() => setEditProfile(true)}><LiaUserEditSolid size={24} />
+								</motion.button>
+								<p className="font-thin text-xs opacity-40">Edit profile</p>
+							</div>
+							<div className="flex flex-col items-center">
+								<motion.button className="items-center mt-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer"
+									key="stats-button" 
+									whileHover={ {scale: 1.17}}
+									whileTap={ {scale: 0.87}}
+									onClick={() => navigate('./stats')}><IoIosStats size={24} />
+								</motion.button>
+								<p className="font-thin text-xs opacity-40">Show Stats</p>
+							</div>
+						</div>
+					)}
+				</div>
+				<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount}/>
+				<Outlet />
 			</motion.div>
-		</AnimatePresence>
+		</ModalWrapper>
 	);
 }
 

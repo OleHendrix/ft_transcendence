@@ -6,6 +6,7 @@ import { UsernameField, EmailField, PasswordField, ConfirmPasswordField } from '
 import { AlreadyLoggedInMessage, AccountExistsMessage} from '../utils/forms/ValidationMessages';
 import { SignUpButton, LoginMessage } from "../utils/forms/utils";
 import { SubmitSignUp } from "../utils/forms/SubmitSignUp";
+import ModalWrapper from "../utils/ModalWrapper";
 import { useAccountContext } from "../contexts/AccountContext";
 import axios from "axios";
 
@@ -73,8 +74,7 @@ function SignUpModal()
 	}, [formData]);
 
 	return(
-	<AnimatePresence>
-		<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+		<ModalWrapper>
 			<motion.div className="bg-[#2a2a2a] text-white p-8 rounded-lg w-md h-auto max-h-[80vh] overflow-y-auto relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 				{/* {isLoading &&
 				(
@@ -107,8 +107,7 @@ function SignUpModal()
 					{!(validation['Already logged in'] && validation['Username exists'] || validation['Email exists']) && <LoginMessage />}
 				</form>
 			</motion.div>
-		</motion.div>
-	</AnimatePresence>
+		</ModalWrapper>
 	)
 }
 
