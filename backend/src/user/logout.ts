@@ -1,23 +1,25 @@
-import { FastifyInstance } from "fastify";
+import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 
 export default async function logout(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post("/api/logout", async (req, res) =>
-	{
-		const { userId } = req.body as { userId: number };
-	
-		const user = await prisma.account.findUnique({ where: { id: userId } });
-		if (!user) 
-			return res.status(400).send({ error: 'User not found' })
-		
-		await prisma.account.update(
+	fastify.post('/api/logout',
 		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
+	{
+		const userId = request.account.sub;
+	
+		const user = await prisma.account.update(
+			{
 				where: { id:     userId },
 				data:  { online: false }
-		}
+			}
 		);
+		if (!user) 
+			return reply.status(404).send({ error: 'User not found' })
 
-		res.send({ success: true });
+		reply.send({ success: true });
 	});
 }

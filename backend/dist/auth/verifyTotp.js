@@ -16,13 +16,16 @@ exports.default = verifyTotp;
 const speakeasy_1 = __importDefault(require("speakeasy"));
 function verifyTotp(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/auth/verify-totp', (req, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username, token } = req.body;
-            console.log("checking 2fa from:", username, "token:", token);
-            const account = yield prisma.account.findUnique({ where: { username } });
+        fastify.post('/api/auth/verify-totp', {
+            preHandler: fastify.authenticate
+        }, (request, reply) => __awaiter(this, void 0, void 0, function* () {
+            const userId = request.account.sub;
+            const { token } = request.body;
+            console.log("checking 2fa from:", userId, "token:", token);
+            const account = yield prisma.account.findUnique({ where: { id: userId } });
             if (!account || !account.totpSecret)
                 return reply.code(400).send({ success: false, message: 'TOTP is not setup' });
-            console.log("found user with totp:", username);
+            console.log("found user with totp:", userId);
             const isValid = speakeasy_1.default.totp.verify({
                 secret: account.totpSecret,
                 encoding: 'base32',
@@ -31,14 +34,18 @@ function verifyTotp(fastify, prisma) {
             });
             if (!isValid)
                 return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
-            const updatedAccount = yield prisma.account.update({
-                where: { username },
-                data: {
-                    twofa: true
-                }
+            yield prisma.account.update({
+                where: { id: userId },
+                data: { online: true }
             });
-            console.log("authorized:", username);
-            return { success: true, user: updatedAccount };
+            const finalToken = fastify.jwt.sign({
+                sub: account.id,
+                username: account.username,
+                email: account.email,
+                twofaRequired: true,
+            }, { expiresIn: '1h' });
+            console.log("authorized:", userId);
+            return reply.send({ success: true, token: finalToken, account });
         }));
     });
 }

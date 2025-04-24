@@ -9,20 +9,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = logout;
-function logout(fastify, prisma) {
+exports.default = authenticate;
+function authenticate(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.post('/api/logout', {
-            preHandler: fastify.authenticate
-        }, (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            const userId = request.account.sub;
-            const user = yield prisma.account.update({
-                where: { id: userId },
-                data: { online: false }
+        console.log('registering authenticate');
+        fastify.decorate('authenticate', function (request, reply) {
+            return __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const decoded = yield request.jwtVerify();
+                    request.account = decoded;
+                }
+                catch (err) {
+                    console.error("JWT error:", err);
+                    reply.status(401).send('Unauthorized');
+                }
             });
-            if (!user)
-                return reply.status(404).send({ error: 'User not found' });
-            reply.send({ success: true });
-        }));
+        });
     });
 }

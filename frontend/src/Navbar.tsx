@@ -9,7 +9,7 @@ import { PiUserListLight } from "react-icons/pi";
 
 function Navbar()
 {
-	const { isPlaying, setIsPlaying, loggedInAccounts, setShowLeaderboard } = useAccountContext();
+	const { isPlaying, setIsPlaying, loggedInAccounts } = useAccountContext();
 	const navigate = useNavigate();
 
 	async function toMenu()
@@ -21,7 +21,7 @@ function Navbar()
 		try
 		{
 			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
-			await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: loggedInAccounts[0].id });
+			await axios.post(`http://${window.location.hostname}:5001/pong/delete`,   { userID: loggedInAccounts[0].id });
 		}
 		catch (error)
 		{

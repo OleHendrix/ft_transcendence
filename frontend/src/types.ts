@@ -51,6 +51,11 @@ export interface PlayerType
 	matches:		MatchHistory[];
 }
 
+export interface AuthenticatedAccount extends PlayerType
+{
+	jwt: string;
+}
+
 export interface Message
 {
 	id: number;
@@ -134,7 +139,6 @@ export interface PongState
 	lastUpdate:	number;
 	ai:			AI;
 	maxPoints:	number;
-	p1Won:		boolean | null;
 	timer:		number;
 	result:		Result;
 }

@@ -33,17 +33,23 @@ const pongServer_1 = __importDefault(require("./pong/pongServer"));
 const matchMaking_1 = __importDefault(require("./pong/matchMaking"));
 const chat_1 = require("./chat/chat");
 const tournament_1 = require("./tournament/tournament");
+const invites_1 = __importDefault(require("./pong/invites"));
+const authenticate_1 = __importDefault(require("./auth/authenticate"));
+const verifySetupTotp_1 = __importDefault(require("./auth/verifySetupTotp"));
 const fastify = (0, fastify_1.default)();
 exports.prisma = new client_1.PrismaClient();
 fastify.register(cors_1.default);
 fastify.register(jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
 fastify.register(websocket_1.default, { options: { clientTracking: true } });
+// fastify.register(authenticate);
+// console.log("Does Fastify have authenticate?", typeof fastify.authenticate);
 (0, chat_1.setupChat)(fastify, exports.prisma);
 (0, tournament_1.setupTournament)(fastify);
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     return { message: 'Server is running!' };
 }));
 const start = () => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, authenticate_1.default)(fastify);
     yield (0, addAccount_1.default)(fastify, exports.prisma);
     yield (0, deleteAccount_1.default)(fastify, exports.prisma);
     yield (0, getAccounts_1.default)(fastify, exports.prisma);
@@ -53,10 +59,12 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, logout_1.default)(fastify, exports.prisma);
     yield (0, updateAccount_1.default)(fastify, exports.prisma);
     yield (0, setupTotp_1.default)(fastify, exports.prisma);
+    yield (0, verifySetupTotp_1.default)(fastify, exports.prisma);
     yield (0, verifyTotp_1.default)(fastify, exports.prisma);
     yield (0, deleteTotp_1.default)(fastify, exports.prisma);
     yield (0, pongServer_1.default)(fastify);
     (0, matchMaking_1.default)(fastify);
+    (0, invites_1.default)(fastify);
     fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) => {
         if (err) {
             console.error(err);

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { FaUserFriends } from "react-icons/fa";
 import { RiGamepadLine } from "react-icons/ri";
-import { Message } from '../types'
+import { Message, PlayerState } from '../types'
 import { useChatContext } from '../contexts/ChatContext';
 import { useAccountContext } from '../contexts/AccountContext';
 import { format } from 'date-fns';
@@ -16,7 +16,7 @@ interface MessageProps
 
 export function GameInvite( {message, isSender} : MessageProps)
 {
-	const { loggedInAccounts } = useAccountContext();
+	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 	const { receiverId, setChatMessages } = useChatContext();
 	const navigate = useNavigate();
  
@@ -31,6 +31,15 @@ export function GameInvite( {message, isSender} : MessageProps)
 				status: newStatus,
 				messageId,
 			});
+			if (newStatus === 2) {
+				const result = await axios.post(`http://${window.location.hostname}:5001/invite/accept`, { msgID: messageId, user: {id: loggedInAccounts[0].id , username: loggedInAccounts[0].username}});
+				if (result.data === true) {
+					setIsPlaying(PlayerState.playing);
+					navigate('/pong-game');
+				}
+			} else if (newStatus >= 3) {
+				await axios.post(`http://${window.location.hostname}:5001/invite/decline`, { msgID: messageId });
+			}
 
 			setChatMessages((prevMessages) => // update localstorage 
 				prevMessages.map((msg) =>

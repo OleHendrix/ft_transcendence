@@ -78,11 +78,15 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 		{
 			try
 			{
-				const res = await axios.post('http://localhost:5001/api/auth/setup-totp',
+				const jwt = loggedInAccounts[indexPlayerStats].jwt;
+				const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/setup-totp`, {},
 				{
-					username: loggedInAccounts[indexPlayerStats].username
+					headers:
+					{
+						Authorization: `Bearer ${jwt}`
+					}
 				});
-				setQrCode(res.data.qrCodeUrl);
+				setQrCode(response.data.qrCodeUrl);
 				console.log('QR Code:', qrCode);
 			}
 			catch (err)
@@ -97,10 +101,16 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 	{
 		try
 		{
-			const response = await axios.post('http://localhost:5001/api/auth/verify-totp',
+			const jwt = loggedInAccounts[indexPlayerStats].jwt;
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-setup-totp`,
 			{
-				username: loggedInAccounts[indexPlayerStats].username,
 				token
+			},
+			{
+				headers:
+				{
+					Authorization: `Bearer ${jwt}`
+				}
 			});
 			if (response.data.success)
 			{
@@ -108,7 +118,7 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 				updatedloggedInAccounts[indexPlayerStats] =
 				{
 					...updatedloggedInAccounts[indexPlayerStats],
-					twofa: response.data.user.twofa
+					twofa: response.data.account.twofa
 				};
 				setLoggedInAccounts(updatedloggedInAccounts);
 				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
@@ -246,15 +256,19 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, 
 	{
 		try
 		{
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`,
-			{
-				username: selectedAccount?.username
-			});
+			const jwt = loggedInAccounts[indexPlayerStats].jwt;
+			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`, {},
+				{
+					headers:
+					{
+						Authorization: `Bearer ${jwt}`
+					}
+				});
 			if (response.data.success)
 			{
 				const updatedLoggedInAccounts = loggedInAccounts.map((account) =>
 					account.username === selectedAccount?.username
-						? { ...account, twofa: response.data.user.twofa }
+						? { ...account, twofa: response.data.account.twofa }
 						: account
 				);
 				setLoggedInAccounts(updatedLoggedInAccounts);
@@ -542,11 +556,14 @@ function PlayerInfo()
 	{
 		try
 		{
-			await axios.post(`http://${window.location.hostname}:5001/api/logout`,
+			const jwt = loggedInAccounts[indexPlayerStats].jwt;
+			await axios.post(`http://${window.location.hostname}:5001/api/logout`, {},
 				{
-					userId: loggedInAccounts[indexPlayerStats].id
-				}
-			)
+					headers:
+					{
+						Authorization: `Bearer ${jwt}`
+					}
+				});
 			const updatedaccounts = loggedInAccounts.filter((account, index) => index !== indexPlayerStats)
 			setLoggedInAccounts(updatedaccounts);
 			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
