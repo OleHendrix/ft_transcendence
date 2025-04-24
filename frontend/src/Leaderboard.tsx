@@ -2,14 +2,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { PlayerType } from './types';
 import logo from "../assets/Logo.png";
-import { useParams, useNavigate, Outlet } from 'react-router-dom';
+import SearchBar from './utils/SearchBar';
+import OnlineStatus from './utils/OnlineStatus';
+import { useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
-import { useAccountContext } from './contexts/AccountContext';
-import PlayerStats from './user/Playerstats';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
-import Lottie from "lottie-react";
-import OnlineIcon from '../assets/Online.json';
 
 export function toPercentage(n: number, decimals: number): number
 {
@@ -21,6 +19,7 @@ export default function Leaderboard()
 {
 	const [ accounts, setAccounts ] = useState<PlayerType[]>([]);
 	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
+	const [searchInput, setSearchInput] = useState('');
 	const navigate = useNavigate();
 
 	useEffect(() =>
@@ -75,6 +74,7 @@ export default function Leaderboard()
 						<p className='text-2xl'>Top Players</p>
 						<GoTrophy size={18} className='text-[#ff914d] mt-2'/>
 					</div>
+
 					
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
@@ -82,11 +82,16 @@ export default function Leaderboard()
 						<IoMdClose size={24} />
 					</button>
 
+					<div className='flex flex-col w-full h-180 overflow-y-auto rounded-lg gap-2'>
+					<div className='w-full flex justify-end'>
+						<SearchBar setSearchInput={setSearchInput} backGroundColor={'bg-[#1a1a1a]/20'}/>
+					</div>
+
 					<div className="w-full h-180 overflow-y-auto rounded-lg border border-base-content/5 bg-transparent">
 						<table className="table w-full text-center">
 							<thead className="sticky top-0 z-10 bg-black shadow-2xl">
 								<tr className="text-m md:text-lg font-light bg-[#303030]/90 text-lightgrey">
-									<th className="text-m text-left">#</th>
+									{!searchInput && (<th className="text-m text-left">#</th>)}
 									<th className="text-left">Name</th>
 									<th className="">Status</th>
 									<th>ELO</th>
@@ -96,26 +101,30 @@ export default function Leaderboard()
 								</tr>
 							</thead>
 							<tbody>
-								{sortedAccounts.map((account, index) => (
+								{sortedAccounts.filter(account => account.username.toLowerCase().includes(searchInput.toLowerCase())).map((account, index) => (
 									<tr
 										key={account.id}
 										className={`text-l font-bold
-											${index === 0 ? "bg-[linear-gradient(to_right,_#FFD70080_0%,_#FFD70032_15%,_#E0B32022_25%,_#F0D00001_100%)]" :
+											${ searchInput ? "bg-[#383838]/80" :
+											index === 0 ? "bg-[linear-gradient(to_right,_#FFD70080_0%,_#FFD70032_15%,_#E0B32022_25%,_#F0D00001_100%)]" :
 											index === 1 ? "bg-[linear-gradient(to_right,_#C0C0D080_0%,_#C0C0D032_15%,_#C0C0D022_25%,_#C0C0D001_100%)]" :
 											index === 2 ? "bg-[linear-gradient(to_right,_#B85C0080_0%,_#B85C0032_15%,_#B85C0022_25%,_#B85C0001_100%)]" :
 											index % 2 === 0 ? "bg-[#303030]/80" : "bg-[#383838]/80"}`}>
+										{!searchInput &&
+										(
 										<td className="w-6 p-[0.25px]">
 											<div className={`w-9 h-9 rounded-md ml-1 flex items-center justify-center 
-												${getBorderColour(index + 1)}`}
+												${searchInput ? "shadow-xl text-lg border-2 " : getBorderColour(index + 1)}`}
 												style={{ textShadow: '1px 1px 4px rgba(0, 0, 0, 0.5)' }}>
 												{index + 1}
 											</div>
 										</td>
+										)}
 										
 										<td className="text-left"><span className='hover:underline cursor-pointer' onClick={() => navigate(`./${account.username}`) }>{account.username}</span></td>
 										<td className='text-left'>
 										<div className='flex items-center justify-center'>
-											{account.online ? <Lottie className="w-6 items-center" animationData={OnlineIcon} loop={true} /> : <div></div>}
+											{account.online ? <OnlineStatus /> : <div></div>}
 										</div>
 										</td>
 										<td className="w-25">{account.elo}</td>
@@ -126,6 +135,7 @@ export default function Leaderboard()
 								))}
 							</tbody>
 						</table>
+					</div>
 					</div>
 					<Outlet />
 				</motion.div>

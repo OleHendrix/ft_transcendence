@@ -8,7 +8,7 @@ export default async function getAccount(fastify: FastifyInstance, prisma: Prism
 		const { requestedUser, username } = request.query as { requestedUser: string; username: string };
 		const requestedUserId = parseInt(requestedUser);
 
-		const user = await prisma.account.findUnique(
+		let user = await prisma.account.findUnique(
 		{ 
 			where:
 			{
@@ -32,9 +32,10 @@ export default async function getAccount(fastify: FastifyInstance, prisma: Prism
 			if (friendship)
 				friendshipStatus = friendship.accepted;
 		}
-		// }
 		if (user)
 		{
+			if (user.avatar && user.avatar !== '')
+				user.avatar = `http://${request.hostname}:5001${user.avatar}`;
 			reply.send({ success: true, user, friendshipStatus });
 		}
 		else

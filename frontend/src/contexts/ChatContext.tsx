@@ -1,8 +1,8 @@
 import { createContext, ReactNode, useMemo, useState, useContext, SetStateAction, Dispatch } from "react";
 import { Message } from '../types';
 
-
-type ChatContextType = {
+type ChatContextType =
+{
 	receiverId: number;
 	setReceiverId: Dispatch<SetStateAction<number>>;
 	receiverUsername: string;
@@ -27,7 +27,8 @@ type ChatContextType = {
 
 const ChatContext = createContext<ChatContextType | null>(null);
 
-export function ChatProvider({ children }: { children: ReactNode }) {
+export function ChatProvider({ children }: { children: ReactNode })
+{
 	const [receiverId, setReceiverId] = useState(-1);
 	const [receiverUsername, setReceiverUsername] = useState('')
 	const [isOpen, setIsOpen] = useState(false);

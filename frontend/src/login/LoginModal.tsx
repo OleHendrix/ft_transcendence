@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { IoMdClose } from "react-icons/io";
 import { PlayerType, LoginFormType, LoginValidationType } from "../types"
 import { useAccountContext } from "../contexts/AccountContext";
-import { useLoginContext } from "../contexts/LoginContext";
 import axios from "axios";
 
 interface CheckLoginProps
@@ -20,7 +19,6 @@ interface CheckLoginProps
 function LoginModal()
 {
 	const { loggedInAccounts, setLoggedInAccounts } = useAccountContext();
-	const { setShowLoginModal } = useLoginContext();
 	
 	const [show2FA, setShow2FA] = useState(false);
 	const [token, setToken]     = useState('');

@@ -41,6 +41,7 @@ export interface PlayerType
 	online:			boolean;
 	username:		string;
 	email:			string;
+	avatar:			string;
 	matchesPlayed:	number;
 	wins:			number;
 	draws:			number;
@@ -48,6 +49,7 @@ export interface PlayerType
 	winRate:		number;
 	elo:			number;
 	twofa:			boolean;
+	jwt:			string;
 	matches:		MatchHistory[];
 }
 
@@ -75,6 +77,15 @@ export interface SignUpFormType
 	password: string;
 	confirmPassword: string;
 };
+
+export interface SignUpValidatonType
+{
+	'Already logged in': boolean;
+	'Username exists': boolean;
+	'Email exists': boolean;
+	'Password does not match': boolean;
+	'Password matches!': boolean;
+}
 
 export interface LoginFormType
 {

@@ -55,7 +55,7 @@ export function Queue()
 {
 	const navigate = useNavigate();
 	const [queueTime, setQueueTime] = useState(0);
-	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
+	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 
 	function endQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 	{
@@ -199,7 +199,7 @@ function Buttons()
 
 function Hero()
 {
-	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
+	const { isPlaying, setIsPlaying } = useAccountContext();
 
 	return(
 		<>

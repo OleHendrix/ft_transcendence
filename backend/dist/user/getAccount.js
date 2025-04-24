@@ -15,7 +15,7 @@ function getAccount(fastify, prisma) {
         fastify.get('/api/get-account', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { requestedUser, username } = request.query;
             const requestedUserId = parseInt(requestedUser);
-            const user = yield prisma.account.findUnique({
+            let user = yield prisma.account.findUnique({
                 where: {
                     username
                 },
@@ -33,8 +33,9 @@ function getAccount(fastify, prisma) {
                 if (friendship)
                     friendshipStatus = friendship.accepted;
             }
-            // }
             if (user) {
+                if (user.avatar && user.avatar !== '')
+                    user.avatar = `http://${request.hostname}:5001${user.avatar}`;
                 reply.send({ success: true, user, friendshipStatus });
             }
             else

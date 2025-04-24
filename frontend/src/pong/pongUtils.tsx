@@ -2,7 +2,6 @@ import { useAccountContext } from "../contexts/AccountContext";
 import { usePongContext } from "../contexts/PongContext";
 import { Result, PlayerData } from "../types";
 
-
 export function formatTime(ms: number): string
 {
 	const totalSeconds = Math.max(0, Math.floor(ms / 1000));
