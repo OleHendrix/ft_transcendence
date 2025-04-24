@@ -16,7 +16,6 @@ export default async function getAccounts(fastify: FastifyInstance, prisma: Pris
     				avatar: account.avatar ? `http://${request.hostname}:5001${account.avatar}` : account.avatar
   						};
 			});
-			console.log(accountsWithAvatarPath);
 			return reply.send({ accounts: accountsWithAvatarPath });
 		}
 		catch (error)

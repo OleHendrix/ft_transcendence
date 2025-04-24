@@ -49,6 +49,7 @@ export interface PlayerType
 	winRate:		number;
 	elo:			number;
 	twofa:			boolean;
+	jwt:			string;
 	matches:		MatchHistory[];
 }
 

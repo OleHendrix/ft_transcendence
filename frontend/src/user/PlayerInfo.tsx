@@ -65,9 +65,10 @@ interface Enable2FAProps
 {
 	setSettingUp2FA:  	React.Dispatch<React.SetStateAction<boolean>>;
 	selectedAccount: 	PlayerType | undefined;
+	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 }
 
-export function Enable2FA({setSettingUp2FA, selectedAccount}: Enable2FAProps)
+export function Enable2FA({setSettingUp2FA, selectedAccount, setSelectedAccount}: Enable2FAProps)
 {
 	const { loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts }  = useAccountContext();
 
@@ -75,6 +76,7 @@ export function Enable2FA({setSettingUp2FA, selectedAccount}: Enable2FAProps)
 	const [falseCode, setFalseCode] = useState(false);
 	const [qrCode, setQrCode]   = useState<string | null>(null);
 	const [scannedQrCode, setScannedQrCode ] = useState(false);
+	const navigate = useNavigate();
 
 	useEffect(() =>
 	{
@@ -82,7 +84,8 @@ export function Enable2FA({setSettingUp2FA, selectedAccount}: Enable2FAProps)
 		{
 			try
 			{
-				const jwt = loggedInAccounts[indexPlayerStats].jwt;
+				const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
+				console.log(jwt);
 				const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/setup-totp`, {},
 				{
 					headers:
@@ -105,7 +108,7 @@ export function Enable2FA({setSettingUp2FA, selectedAccount}: Enable2FAProps)
 	{
 		try
 		{
-			const jwt = loggedInAccounts[indexPlayerStats].jwt;
+			const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-setup-totp`,
 			{
 				token
@@ -123,10 +126,11 @@ export function Enable2FA({setSettingUp2FA, selectedAccount}: Enable2FAProps)
 				account.username === selectedAccount?.username ?
 				{ 
 					...account, 
-					twofa: response.data.user.twofa 
+					twofa: true 
 				} : account);
 				setLoggedInAccounts(updatedLoggedInAccounts);
 				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedLoggedInAccounts));
+				setSelectedAccount(prev => ({...prev!, twofa: true}));
 				setTriggerFetchAccounts(true);
 				setSettingUp2FA(false);
 			}
@@ -193,9 +197,10 @@ interface ShowInfoProps
 	settingUp2FA: boolean,
 	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>
 	selectedAccount: PlayerType | undefined;
+	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 }
 
-function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, selectedAccount}: ShowInfoProps )
+function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, selectedAccount, setSelectedAccount}: ShowInfoProps )
 {
 	const { loggedInAccounts, setTriggerFetchAccounts, setLoggedInAccounts }  = useAccountContext();
 
@@ -259,7 +264,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, 
 	{
 		try
 		{
-			const jwt = loggedInAccounts[indexPlayerStats].jwt;
+			const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`, {},
 				{
 					headers:
@@ -273,10 +278,11 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, 
 				account.username === selectedAccount?.username ?
 				{ 
 					...account, 
-					twofa: response.data.user.twofa 
+					twofa: false 
 				} : account);
 				setLoggedInAccounts(updatedLoggedInAccounts);
 				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedLoggedInAccounts));
+				setSelectedAccount(prev => ({...prev!, twofa: false}));
 				setTriggerFetchAccounts(true);
 			}
 		}
@@ -458,7 +464,7 @@ function ShowInfo( {editProfile, setEditProfile, settingUp2FA, setSettingUp2FA, 
 						{ editProfile && <EditIcon onClick={() => {!selectedAccount?.twofa ? setSettingUp2FA(true) : setConfirmDisable2Fa(true)}} keyName="edit-2fa"/>}
 					</div>
 			)}
-			{settingUp2FA && editProfile && <Enable2FA setSettingUp2FA={setSettingUp2FA} selectedAccount={selectedAccount}/>}
+			{settingUp2FA && editProfile && <Enable2FA setSettingUp2FA={setSettingUp2FA} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount}/>}
 				</div>
 			{confirmDisable2Fa &&
 			(
@@ -589,7 +595,7 @@ function PlayerInfo()
 	{
 		try
 		{
-			const jwt = loggedInAccounts[indexPlayerStats].jwt;
+			const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
 			await axios.post(`http://${window.location.hostname}:5001/api/logout`, {},
 				{
 					headers:
@@ -597,7 +603,7 @@ function PlayerInfo()
 						Authorization: `Bearer ${jwt}`
 					}
 				});
-			const updatedaccounts = loggedInAccounts.filter((account, index) => index !== indexPlayerStats)
+			const updatedaccounts = loggedInAccounts.filter((account) => account.id !== selectedAccount?.id)
 			setLoggedInAccounts(updatedaccounts);
 			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
 			setTriggerFetchAccounts(false);
@@ -667,7 +673,7 @@ function PlayerInfo()
 							</div>
 						)}
 					</div>
-					<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA} selectedAccount={selectedAccount}/>
+					<ShowInfo editProfile={editProfile} setEditProfile={setEditProfile} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount}/>
 					<Outlet />
 				</motion.div>
 			</motion.div>
