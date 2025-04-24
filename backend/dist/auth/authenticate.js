@@ -16,10 +16,8 @@ function authenticate(fastify) {
         fastify.decorate('authenticate', function (request, reply) {
             return __awaiter(this, void 0, void 0, function* () {
                 try {
-                    console.log('hallo?');
                     const decoded = yield request.jwtVerify();
                     request.account = decoded;
-                    console.log(decoded);
                 }
                 catch (err) {
                     console.error("JWT error:", err);

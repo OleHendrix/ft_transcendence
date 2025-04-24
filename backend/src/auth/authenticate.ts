@@ -9,10 +9,8 @@ export default async function authenticate(fastify: FastifyInstance)
 	{
 		try
 		{
-			console.log('hallo?')
 			const decoded = await request.jwtVerify<JwtPayload>();
 			request.account = decoded;
-			console.log(decoded);
 		}
 		catch (err)
 		{

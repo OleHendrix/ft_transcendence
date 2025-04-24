@@ -40,13 +40,15 @@ exports.prisma = new client_1.PrismaClient();
 fastify.register(cors_1.default);
 fastify.register(jwt_1.default, { secret: process.env.SECRET_KEY || "balzak" });
 fastify.register(websocket_1.default, { options: { clientTracking: true } });
-fastify.register(authenticate_1.default);
+// fastify.register(authenticate);
+// console.log("Does Fastify have authenticate?", typeof fastify.authenticate);
 (0, chat_1.setupChat)(fastify, exports.prisma);
 (0, tournament_1.setupTournament)(fastify);
 fastify.get('/', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     return { message: 'Server is running!' };
 }));
 const start = () => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, authenticate_1.default)(fastify);
     yield (0, addAccount_1.default)(fastify, exports.prisma);
     yield (0, deleteAccount_1.default)(fastify, exports.prisma);
     yield (0, getAccounts_1.default)(fastify, exports.prisma);

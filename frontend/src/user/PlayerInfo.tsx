@@ -119,7 +119,7 @@ export function Enable2FA({setSettingUp2FA}: {setSettingUp2FA:  React.Dispatch<R
 				updatedloggedInAccounts[indexPlayerStats] =
 				{
 					...updatedloggedInAccounts[indexPlayerStats],
-					twofa: response.data.user.twofa
+					twofa: response.data.account.twofa
 				};
 				setLoggedInAccounts(updatedloggedInAccounts);
 				localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));

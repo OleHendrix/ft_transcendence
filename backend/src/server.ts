@@ -33,7 +33,10 @@ fastify.register(fastifyCors);
 fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
 
-fastify.register(authenticate);
+// fastify.register(authenticate);
+
+// console.log("Does Fastify have authenticate?", typeof fastify.authenticate);
+
 
 setupChat(fastify, prisma);
 setupTournament(fastify);
@@ -45,6 +48,8 @@ fastify.get('/', async (request, reply) =>
 
 const start = async () =>
 {
+	await authenticate(fastify);
+
 	await addAccount(fastify, prisma);
 	await deleteAccount(fastify, prisma);
 	await getAccounts(fastify, prisma);

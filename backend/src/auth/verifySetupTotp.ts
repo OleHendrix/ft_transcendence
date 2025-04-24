@@ -31,12 +31,12 @@ export default async function verifySetupTotp(fastify: FastifyInstance, prisma: 
 		if (!isValid)
 			return reply.code(401).send({ success: false, message: 'Verkeerde token gek' });
 
-		await prisma.account.update(
+		const updatedAccount = await prisma.account.update(
 		{
 			where: { username },
 			data:  { twofa: true}
 		})
 
-		return reply.send({ success: true, twofa: true });
+		return reply.send({ success: true, account: updatedAccount });
 	});
 }

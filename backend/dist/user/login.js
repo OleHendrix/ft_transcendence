@@ -27,6 +27,7 @@ function login(fastify, prisma) {
             if (account.online)
                 reply.status(402).send({ error: 'Already logged in' });
             if (account.twofa) {
+                console.log('needs 2fa');
                 const tempToken = fastify.jwt.sign({
                     sub: account.id,
                     username: account.username,

@@ -19,6 +19,7 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 
 		if (account.twofa)
 		{
+			console.log('needs 2fa');
 			const tempToken = fastify.jwt.sign({
 				sub: account.id,
 				username: account.username,
@@ -42,6 +43,6 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 		},
 		{ expiresIn: '1h' });
 
-		reply.send({ success: true, token: finalToken, account});
+		reply.send({ success: true, token: finalToken, account });
 	});
 }

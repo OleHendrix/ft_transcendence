@@ -40,7 +40,6 @@ function LoginModal()
 	
 	async function check2FA()
 	{
-		const { username } = formData;
 		try
 		{
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-totp`,
@@ -50,13 +49,13 @@ function LoginModal()
 			{
 				headers:
 				{
-					Authorization: `${tempJwt}`
+					Authorization: `Bearer ${tempJwt}`
 				}
 			});
 			if (response.data.success)
 			{
 				const account = response.data.account;
-				const jwt  = response.data.token;
+				const jwt     = response.data.token;
 				
 				const authenticatedAccount = { ...account, jwt };
 				setLoggedInAccounts((prev) => {
@@ -68,7 +67,6 @@ function LoginModal()
 					
 					return updatedPlayers;
 				});
-				console.log("authorized:", username);
 				return true;
 			}
 		}
@@ -86,22 +84,25 @@ function LoginModal()
 		try
 		{
 			const response = await axios.post(`http://${window.location.hostname}:5001/api/login`, { username, password });
+			const twofaRequired = response.data.twofaRequired;
+
+			console.log(response.data);
+			if (twofaRequired)
+			{
+				const tempToken = response.data.token;
+				setTempJwt(tempToken);
+				console.log('jaja 2fa');
+				setShow2FA(true);
+				return false;
+			}
 			if (response.data.success)
 			{
-				const tempToken     = response.data.token;
-				const twofaRequired = response.data.twofaRequired;
-
-				if (twofaRequired)
-				{
-					setShow2FA(true);
-					setTempJwt(tempToken);
-					return false;
-				}
 				const account = response.data.account;
-				const jwt  =  response.data.token;
+				const jwt     = response.data.token;
 				
 				const authenticatedAccount = { ...account, jwt };
-				setLoggedInAccounts((prev) => {
+				setLoggedInAccounts((prev) =>
+				{
 					if (prev.some((p) => p.username === account.username))
 						return prev;
 
