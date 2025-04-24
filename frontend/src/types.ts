@@ -72,6 +72,15 @@ export interface SignUpFormType
 	confirmPassword: string;
 };
 
+export interface SignUpValidatonType
+{
+	'Already logged in': boolean;
+	'Username exists': boolean;
+	'Email exists': boolean;
+	'Password does not match': boolean;
+	'Password matches!': boolean;
+}
+
 export interface LoginFormType
 {
 	username: string;

@@ -131,12 +131,15 @@ function ChatHeader()
 				.filter((account) => account.username.toLowerCase().includes(searchInput.toLowerCase()))
 				.map((account, index) => (
 					<div key={index} className={`flex items-center flex-col space-y-0.5 w-12 flex-shrink-0 ${receiverId !== account.id ? 'opacity-40' : 'opacity-100'}`}>
+						<div className="relative">
 						<motion.img
-							src={Player}
-							className="h-10 w-10 cursor-pointer"
+							src={account.avatar !== '' ? account.avatar : Player}
+							className="h-10 w-10 cursor-pointer rounded-full object-cover shadow-lg"
 							whileHover={{ scale: 1.07 }}
 							whileTap={{ scale: 0.93 }}
 							onClick={() => {setReceiverId(account.id); setReceiverUsername(account.username)}}/>
+							{account.avatar !== '' && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
+							</div>
 						<p className="text-[10px] opacity-90 w-full text-center truncate">{account.username}</p>
 					</div>
 				))}
