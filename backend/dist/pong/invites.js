@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = initInvite;
+const pongServer_1 = require("./pongServer");
 class BiMap {
     constructor() {
         this.forward = new Map();
@@ -39,29 +40,39 @@ class BiMap {
     hasValue(value) { return this.reverse.has(value); }
     size() { return this.forward.size; }
 }
-const invites = new BiMap();
+const invites = new BiMap(); // msgID <-> WebSocket
+const senders = new Map(); // msgID --> sender's userID
 function findSocket(msgID) {
     if (msgID === undefined)
         return undefined;
     return invites.getByKey(msgID);
 }
+function deleteByMsgID(msgID) {
+    if (msgID === undefined)
+        return;
+    invites.deleteByKey(msgID);
+    senders.delete(msgID);
+}
 function deleteBySocket(socket) {
     if (socket === undefined)
-        return undefined;
+        return;
+    const msgID = invites.getByValue(socket);
     invites.deleteByValue(socket);
+    if (msgID)
+        senders.delete(msgID);
 }
 function initInvite(fastify) {
     fastify.post('/invite/accept', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-        // console.log("accepting... size:" + invites.size());
         const { msgID, user } = request.body;
         const socket = findSocket(msgID);
-        // console.log(msgID, user, socket);
         if (socket === undefined)
             return reply.code(500).send(false);
         // TODO: check if sender is available
-        // if (isInGame())
+        if ((0, pongServer_1.isInGame)(senders.get(msgID)) === true) {
+            return reply.code(200).send(false);
+        }
         socket.send(JSON.stringify(user));
-        invites.deleteByKey(msgID);
+        deleteByMsgID(msgID);
         return reply.code(200).send(true);
     }));
     fastify.post('/invite/decline', (request, reply) => __awaiter(this, void 0, void 0, function* () {
@@ -70,32 +81,29 @@ function initInvite(fastify) {
         if (socket === undefined)
             return reply.code(500).send(false);
         socket.close();
-        invites.deleteByKey(msgID);
+        deleteByMsgID(msgID);
         return reply.code(200).send(true);
     }));
     fastify.post('/invite/cancel', (request, reply) => __awaiter(this, void 0, void 0, function* () {
         const { msgID } = request.body;
         if (msgID === undefined)
             return reply.code(500).send(false);
-        invites.deleteByKey(msgID);
+        deleteByMsgID(msgID);
         return reply.code(200).send(true);
     }));
     fastify.register(function (fastify) {
         return __awaiter(this, void 0, void 0, function* () {
             fastify.get("/invite/send", { websocket: true }, (connection, req) => {
                 connection.on("message", (message) => {
-                    // console.log("init connection")
                     const data = JSON.parse(message.toString());
-                    const msgID = data.id;
-                    // console.log("msgID:", msgID)
+                    const [msgID, senderID] = [data.ID, data.senderID];
                     if (msgID === undefined)
                         return;
                     invites.set(msgID, connection);
-                    // console.log("size:" + invites.size());
+                    senders.set(msgID, senderID);
                 });
                 connection.on("close", () => {
                     deleteBySocket(connection);
-                    // console.log("deleting... size:" + invites.size());
                 });
             });
         });

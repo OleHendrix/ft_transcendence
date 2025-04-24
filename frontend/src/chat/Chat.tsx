@@ -150,7 +150,7 @@ function ChatHeader()
 	);
 }
 
-function MessageList( )
+function MessageList()
 {
 	const { loggedInAccounts } = useAccountContext();
 	const { setMessageReceived, chatMessages, setChatMessages, receiverId, receiverUsername, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
@@ -275,7 +275,7 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 		const socket = new WebSocket(`ws://${window.location.hostname}:5001/invite/send`);
 
 		socket.addEventListener("open", () => {
-			socket.send(JSON.stringify({ id: msgID }));
+			socket.send(JSON.stringify({ ID: msgID, senderID: loggedInAccounts[0].id }));
 		});
 
 		socket.addEventListener("message", (event) => {

@@ -35,6 +35,8 @@ function getMatch(userID) {
     return matchTable.get(key);
 }
 function isInGame(userID) {
+    if (!userID)
+        return false;
     return matchIDTable.has(userID);
 }
 function addGame(user1, user2, isLocalGame, tournamentId) {

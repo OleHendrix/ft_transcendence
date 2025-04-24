@@ -42,7 +42,8 @@ class BiMap<K, V>
 	size(): number { return this.forward.size; }
 }
 
-const invites = new BiMap<number, WebSocket>();
+const invites = new BiMap<number, WebSocket>(); // msgID <-> WebSocket
+const senders = new Map<number, number>();      // msgID --> sender's userID
 
 function findSocket(msgID: number): WebSocket | undefined
 {
@@ -50,26 +51,36 @@ function findSocket(msgID: number): WebSocket | undefined
 	return invites.getByKey(msgID);
 }
 
+function deleteByMsgID(msgID: number)
+{
+	if (msgID === undefined) return;
+	invites.deleteByKey(msgID);
+	senders.delete(msgID);
+}
+
 function deleteBySocket(socket: WebSocket)
 {
-	if (socket === undefined) return undefined;
+	if (socket === undefined) return;
+	const msgID = invites.getByValue(socket);
 	invites.deleteByValue(socket);
+	if (msgID) senders.delete(msgID);
 }
 
 export default function initInvite(fastify: FastifyInstance)
 {
 	fastify.post('/invite/accept', async (request, reply) =>
 	{
-		// console.log("accepting... size:" + invites.size());
 		const { msgID, user } = request.body as { msgID: number, user: PlayerType };
 
 		const socket = findSocket(msgID);
-		// console.log(msgID, user, socket);
 		if (socket === undefined) return reply.code(500).send(false);
 		// TODO: check if sender is available
-		// if (isInGame())
+		if (isInGame(senders.get(msgID)) === true)
+		{
+			return reply.code(200).send(false);
+		}
 		socket.send(JSON.stringify(user));
-		invites.deleteByKey(msgID);
+		deleteByMsgID(msgID);
 		return reply.code(200).send(true);
 	});
 
@@ -80,7 +91,7 @@ export default function initInvite(fastify: FastifyInstance)
 		const socket = findSocket(msgID);
 		if (socket === undefined) return reply.code(500).send(false);
 		socket.close();
-		invites.deleteByKey(msgID);
+		deleteByMsgID(msgID);
 		return reply.code(200).send(true);
 	});
 
@@ -89,7 +100,7 @@ export default function initInvite(fastify: FastifyInstance)
 		const { msgID } = request.body as { msgID: number };
 
 		if (msgID === undefined) return reply.code(500).send(false);
-		invites.deleteByKey(msgID);
+		deleteByMsgID(msgID);
 		return reply.code(200).send(true);
 	});
 
@@ -99,20 +110,17 @@ export default function initInvite(fastify: FastifyInstance)
 		{
 			connection.on("message", (message) =>
 			{
-				// console.log("init connection")
 				const data = JSON.parse(message.toString());
-				const msgID = data.id;
+				const [msgID, senderID] = [data.ID, data.senderID];
 				
-				// console.log("msgID:", msgID)
 				if (msgID === undefined) return;
 				invites.set(msgID, connection);
-				// console.log("size:" + invites.size());
+				senders.set(msgID, senderID);
 			});
 
 			connection.on("close", () =>
 			{
 				deleteBySocket(connection);
-				// console.log("deleting... size:" + invites.size());
 			});
 		});
 	})

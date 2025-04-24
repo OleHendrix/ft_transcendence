@@ -43,7 +43,7 @@ model Message {
   senderId      Int
   receiverId    Int
   chatSessionId Int
-  status        Int        @default(0) // 0:basic - 1:pending - 2:accepted - 3:rejected
+  status        Int        @default(0) // 0:basic - 1:pending - 2:accepted - 3:rejected - 4:canceled - 5: sender unavailable
 
   chatSession   ChatSession   @relation(fields: [chatSessionId], references: [id])
   sender        Account       @relation("SentMessages", fields: [senderId], references: [id])
