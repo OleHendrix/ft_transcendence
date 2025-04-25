@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from 'framer-motion';
-import { IoMdClose } from "react-icons/io";
-import { Link, useNavigate } from 'react-router-dom';
-import { UsernameField, EmailField, PasswordField, ConfirmPasswordField } from '../utils/forms/InputFields';
-import { AlreadyLoggedInMessage, AccountExistsMessage} from '../utils/forms/ValidationMessages';
-import { SignUpButton, LoginMessage } from "../utils/forms/utils";
-import { SubmitSignUp } from "../utils/forms/SubmitSignUp";
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { UsernameField, EmailField, PasswordField, ConfirmPasswordField } from './utils/InputFields';
+import { AlreadyLoggedInMessage, AccountExistsMessage} from './utils/ValidationMessages';
+import { SignUpButton, LoginMessage } from "./utils/utils";
+import { defaultSignUpValidation, emptySignUpForm } from "../objects";
+import { SubmitSignUp } from "./utils/SubmitSignUp";
+import CloseButton from "../utils/CloseButton";
 import ModalWrapper from "../utils/ModalWrapper";
 import { useAccountContext } from "../contexts/AccountContext";
 import axios from "axios";
@@ -13,16 +14,9 @@ import axios from "axios";
 function SignUpModal()
 {
 	const { loggedInAccounts, setTriggerFetchAccounts } = useAccountContext();
-	const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
+	const [formData, setFormData] = useState(emptySignUpForm);
 	const [emptyForm, setEmptyForm] = useState(true);
-	const [validation, setValidation] = useState(
-		{
-			'Already logged in': false,
-			'Username exists': false,
-			'Email exists': false,
-			'Password does not match': false,
-			'Password matches!': false
-		});
+	const [validation, setValidation] = useState(defaultSignUpValidation)
 	
 	const navigate = useNavigate();
 		
@@ -82,10 +76,7 @@ function SignUpModal()
 						<Loader />
 					</div>
 				)} */}
-				<button className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-					onClick={() => navigate('/')}>
-					<IoMdClose size={24} />
-				</button>
+				<CloseButton onClick={() => navigate('/')} />
 				<h2 className="text-2xl font-bold mb-6 text-center">Create Your Account</h2>
 				<form className="space-y-4"
 					onSubmit={ async (e) => 

@@ -24,6 +24,5 @@ export async function SubmitSignUp(formData: SignUpFormType)
 			console.error("Signup error:", error.response?.data || error.message);
 			return (false);
 		}
-
 		// setIsLoading(false);
 }
