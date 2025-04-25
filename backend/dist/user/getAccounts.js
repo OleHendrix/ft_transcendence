@@ -33,7 +33,6 @@ function getAccounts(fastify, prisma) {
                 const accountsWithAvatarPath = accountsWithoutPassword.map((account) => {
                     return Object.assign(Object.assign({}, account), { avatar: account.avatar ? `http://${request.hostname}:5001${account.avatar}` : account.avatar });
                 });
-                console.log(accountsWithAvatarPath);
                 return reply.send({ accounts: accountsWithAvatarPath });
             }
             catch (error) {

@@ -6,16 +6,6 @@ import { PlayerType, LoginFormType, LoginValidationType } from "../types"
 import { useAccountContext } from "../contexts/AccountContext";
 import axios from "axios";
 
-interface CheckLoginProps
-{
-	formData: LoginFormType;
-	token: String;
-	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
-	setValidation: Dispatch<SetStateAction<LoginValidationType>>;
-	setShow2FA: Dispatch<SetStateAction<boolean>>;
-}
-
-
 function LoginModal()
 {
 	const { loggedInAccounts, setLoggedInAccounts } = useAccountContext();
