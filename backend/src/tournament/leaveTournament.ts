@@ -35,6 +35,6 @@ export async function leaveTournament(fastify: FastifyInstance)
 		if (tournament.players.length === 0) 
 			tournamentLobbies.delete(tournamentId);
 
-		broadcastTournamentUpdate(tournamentId, "PLAYER_UPDATE");
+		broadcastTournamentUpdate(tournamentId, "UPDATE");
 	})
 }

@@ -139,15 +139,6 @@ export interface PongState
 	result:		Result;
 }
 
-export interface Round
-{
-	p1:			PlayerData;
-	p2:			PlayerData;
-	p1score:	number;
-	p2score:	number;
-	result:		Result;
-}
-
 export interface Match
 {
 	state:			PongState;
@@ -172,8 +163,10 @@ export interface TournamentData
 	tournamentId:	number;
 	hostId:			number;
 	hostUsername: 	string;
-	players:		PlayerData[];
 	maxPlayers:		number;
-	rounds:			Round[][] | null;
+	players:		PlayerData[];
+	winners:		PlayerData[][];
+	roundIdx:		number;
+	rounds:			Match[][] | null;
 	sockets:		Set<WebSocket>;
 };

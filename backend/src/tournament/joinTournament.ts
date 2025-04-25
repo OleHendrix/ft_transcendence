@@ -8,7 +8,6 @@ export async function joinTournament(fastify: FastifyInstance)
 	{
 		fastify.get('/ws/join-tournament', { websocket: true }, (connection, req) => {
 			try {
-				// console.log(req.query);
 				const { playerId, playerUsername, tournamentId } = req.query as {
 					playerId: string;
 					playerUsername: string;

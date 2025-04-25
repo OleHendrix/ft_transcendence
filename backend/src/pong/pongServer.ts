@@ -124,7 +124,7 @@ export default async function initPongServer(fastify: FastifyInstance)
 	fastify.post('/pong/delete', async (request, reply) =>
 	{
 		const { userID } = request.body as { userID: number };
-		console.log("--- deleting match with UID:", userID);
+		// console.log("--- deleting match with UID:", userID);
 		if (userID === undefined)
 		{
 			reply.status(204);
@@ -144,7 +144,6 @@ export default async function initPongServer(fastify: FastifyInstance)
 		const match = matchTable.get(key) as Match;
 		if (match.isLocalGame === true)
 		{
-			console
 			matchIDTable.delete(match.p1.id);
 			matchIDTable.delete(match.p2.id);
 		}

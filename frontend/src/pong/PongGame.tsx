@@ -50,6 +50,7 @@ function PongGame()
 					userID: loggedInAccounts[0].id 
 				});
 				socket.close();
+				console.log(`PongGame:HandleUnload:api/pong/end-game:userId${loggedInAccounts[0].id}:socket_closed`);
 			} catch (error) {
 				console.log(error);
 			}
@@ -104,6 +105,8 @@ function PongGame()
 		// navigate("/");
 		setIsPlaying(PlayerState.idle);
 		axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
+		console.log(`PongGame:leaveMatch:api/pong/delete:userId${userID}:tournamentId${match.tournamentId}`);
+
 		if (match.tournamentId !== -1)
 			navigate('/tournament/waiting-room');
 		else

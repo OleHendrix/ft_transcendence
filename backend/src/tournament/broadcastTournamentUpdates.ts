@@ -1,59 +1,46 @@
 import { tournamentLobbies } from "./tournament";
 import { WebSocket } from "ws";
 
-export function broadcastTournamentUpdate(tournamentId: number, updateType: string) {
+
+export function broadcastTournamentUpdate(tournamentId: number, type: string) {
 	const tournament = tournamentLobbies.get(tournamentId);
 	if (!tournament) return;
-
+	
 	let payload;
-	if (updateType === "PLAYER_UPDATE")
+	if (type === "UPDATE")
 	{
-		payload = {
-			type: updateType,
-			tournament: {
-				tournamentId: tournament.tournamentId,
-				hostUsername: tournament.hostUsername,
-				maxPlayers: tournament.maxPlayers,
-				players: tournament.players.map(p => p.username),
-			},
+		payload = 
+		{
+			type,
+			tournament:
+			{
+				tournamentId: 	tournament.tournamentId,
+				hostId: 		tournament.hostId,
+				hostUsername: 	tournament.hostUsername,
+				maxPlayers:	 	tournament.maxPlayers,
+				players: 		tournament.players,
+				winners: 		tournament.winners,
+				roundIdx: 		tournament.roundIdx,
+				rounds: 		tournament.rounds
+			}
 		};
 	}
 
-	if (updateType === "START_SIGNAL")
+	else if (type === "START_SIGNAL")
 	{
 		payload = {
-			type: updateType,
+			type,
 			data: {
 				start: true,
 			}
 		};
+	} 
+	else {
+		console.warn("Unknown broadcast type:", type);
+		return;
 	}
 
-	if (updateType === "RESULT_UPDATE")
-	{
-		payload = {
-			type: updateType,
-			tournament: {
-				tournamentId: tournament.tournamentId,
-				hostUsername: tournament.hostUsername,
-				maxPlayers: tournament.maxPlayers,
-				players: tournament.players.map(p => p.username),
-				rounds: tournament.rounds
-			},
-		};
-	}
-
-	if (updateType === "WINNER_WINNER_CHICKEN_DINNER")
-	{
-		payload = {
-			type: updateType,
-			data: {
-				winner: true,
-			}
-		};
-	}
 	const message = JSON.stringify(payload);
-	// console.log(`broadcast ${message}`);
 
 	tournament.sockets.forEach(socket => {
 		if (socket.readyState === WebSocket.OPEN) {
@@ -61,3 +48,4 @@ export function broadcastTournamentUpdate(tournamentId: number, updateType: stri
 		}
 	});
 }
+

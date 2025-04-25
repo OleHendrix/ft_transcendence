@@ -109,7 +109,7 @@ function initPongServer(fastify) {
         }));
         fastify.post('/pong/delete', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { userID } = request.body;
-            console.log("--- deleting match with UID:", userID);
+            // console.log("--- deleting match with UID:", userID);
             if (userID === undefined) {
                 reply.status(204);
                 return;
@@ -125,7 +125,6 @@ function initPongServer(fastify) {
             }
             const match = matchTable.get(key);
             if (match.isLocalGame === true) {
-                console;
                 matchIDTable.delete(match.p1.id);
                 matchIDTable.delete(match.p2.id);
             }

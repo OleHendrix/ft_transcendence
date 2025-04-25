@@ -23,13 +23,17 @@ function createTournament(fastify) {
                             tournamentId++;
                         const sockets = new Set();
                         const players = [];
+                        const winners = [];
+                        const rounds = [];
                         const tournamentData = {
                             tournamentId,
                             hostId,
                             hostUsername,
                             players,
+                            winners,
+                            roundIdx: 0,
                             maxPlayers: Number(maxPlayers),
-                            rounds: null,
+                            rounds,
                             sockets,
                         };
                         tournament_1.tournamentLobbies.set(tournamentId, tournamentData);

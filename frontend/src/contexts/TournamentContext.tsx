@@ -2,7 +2,7 @@ import { createContext, useState, useEffect, useRef, useMemo, Dispatch, SetState
 import axios 					from "axios";
 import { useAccountContext } 	from "./AccountContext";
 import { useNavigate } 			from "react-router-dom";
-import { PlayerState, TournamentData }			from '../types';
+import { PlayerState, TournamentData, Result }			from '../types';
 
 type TournamentContextType = {
 	tournamentId: 		number | null;
@@ -58,10 +58,25 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		}
 	}
 
+	function allMatchesFinished()
+	{
+		if (!tournamentData) return;
+		if (!tournamentData.rounds) return;
+		const currentRound = tournamentData?.rounds[tournamentData.roundIdx];
+		for (const match of currentRound)
+		{
+			if (match.state.result === Result.PLAYING)
+				return false;
+		}
+		return true;
+	}
+
 	useEffect(() => {
 		if (isPlaying !== PlayerState.playing && tournamentId !== null) {
-			navigate('/tournament/waiting-room');
-			startNextRound();
+			if (allMatchesFinished())
+			{
+				startNextRound();
+			}
 		}
 	}, [isPlaying]);
 
@@ -83,21 +98,14 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		socket.onmessage = (event) => {
 			try {
 				const data = JSON.parse(event.data);
-				if (data.type === "PLAYER_UPDATE") {
+				if (data.type === "UPDATE")
+				{
 					setTournamentData(data.tournament);
 					setPlayers(data.tournament.players);
 				}
 				if (data.type === "START_SIGNAL")
 				{
 					startTournament();
-				}
-				if (data.type === "RESULT_UPDATE")
-				{
-					startNextRound();
-				}
-				if (data.type === "WINNER_WINNER_CHICKEN_DINNER")
-				{
-					console.log("WINNERWINNER", data.winner);
 				}
 			} catch (err) {
 				console.error("Failed to parse WebSocket message", err);

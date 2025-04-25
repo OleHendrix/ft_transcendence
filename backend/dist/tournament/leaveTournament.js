@@ -37,7 +37,7 @@ function leaveTournament(fastify) {
             tournament.players = tournament.players.filter(player => player.id !== playerId);
             if (tournament.players.length === 0)
                 tournament_1.tournamentLobbies.delete(tournamentId);
-            (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "PLAYER_UPDATE");
+            (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "UPDATE");
         }));
     });
 }

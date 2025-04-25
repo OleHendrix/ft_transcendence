@@ -3,15 +3,17 @@ import { tournamentLobbies } 	from "./tournament";
 
 export function setResults(tournamentId: number, p1: number, p1score: number, p2score: number, result: Result)
 {
-	let lobby = tournamentLobbies.get(tournamentId);
-	if (!lobby)
-		return ;
+	let tournament = tournamentLobbies.get(tournamentId);
 
-	let round = lobby.rounds?.find(round => round.p1.id === p1);
-	if (!round)
-		return ;
+	if (!tournament) return console.log(`setResults:tournamentId${tournamentId}:ERROR:ID_NOT_FOUND`);
+	if (!tournament.rounds) return console.log(`setResults:tournament.rounds:ERROR:NOT_FOUND`);
+	if (!tournament.rounds[tournament.roundIdx]) return console.log(`setResults:tournament.rounds[${tournament.roundIdx}]:ERROR:NOT_FOUND`);
 
-	round.p1score = p1score;
-	round.p2score = p2score;
-	round.result = result;
+	//what is dis
+	let round = tournament.rounds[tournament.roundIdx]?.find(round => round.p1.id === p1);
+	if (!round) return console.log(`setResults:tournament.rounds[${tournament.roundIdx}].find(round => round.p1.id === p1):ERROR:NOT_FOUND`);
+
+	round.state.p1Score = p1score;
+	round.state.p2Score = p2score;
+	round.state.result = result;
 }
