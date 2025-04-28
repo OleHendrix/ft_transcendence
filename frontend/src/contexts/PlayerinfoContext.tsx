@@ -39,10 +39,10 @@ export function PlayerinfoProvider({ children }: PlayerinfoProviderProps)
   );
 }
 
-export function usePlayerContext()
+export function usePlayerinfoContext()
 {
   const context = useContext(PlayerinfoContext);
   if (!context)
-    throw new Error('usePlayerContext must be used within a PlayerProvider');
+    throw new Error('usePlayerinfoContext must be used within a PlayerinfoProvider');
   return context;
 }
