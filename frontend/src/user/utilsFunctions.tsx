@@ -69,16 +69,15 @@ export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, sele
 interface updateAccountProps
 {
 	formData: SignUpFormType;
-	loggedInAccounts: PlayerType[];
+	loggedInAccounts: PlayerType[];	
 	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
 	selectedAccount: PlayerType | undefined;
 	setEditProfile: React.Dispatch<React.SetStateAction<boolean>>;
-	setEditPassword: React.Dispatch<React.SetStateAction<boolean>>;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 	navigate: NavigateFunction;
 }
 
-export async function updateAccount({formData, loggedInAccounts, setLoggedInAccounts, selectedAccount, setEditProfile, setEditPassword, setTriggerFetchAccounts, navigate}: updateAccountProps)
+export async function updateAccount({formData, loggedInAccounts, setLoggedInAccounts, selectedAccount, setEditProfile, setTriggerFetchAccounts, navigate}: updateAccountProps)
 {
 	try
 	{
@@ -103,7 +102,6 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 			setLoggedInAccounts(updatedloggedInAccounts);
 			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
 			setEditProfile(false);
-			setEditPassword(false);
 			setTriggerFetchAccounts(true);
 			navigate(`/playerinfo/${response.data.user.username}`);
 		}

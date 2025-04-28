@@ -9,7 +9,7 @@ import { SubmitSignUp } from "./utils/SubmitSignUp";
 import CloseButton from "../utils/CloseButton";
 import ModalWrapper from "../utils/ModalWrapper";
 import { useAccountContext } from "../contexts/AccountContext";
-import axios from "axios";
+import { checkValidation } from "./utils/checkValidation";
 
 function SignUpModal()
 {
@@ -22,49 +22,7 @@ function SignUpModal()
 		
 	useEffect(() =>
 	{
-		async function checkValidation()
-		{
-			try
-			{
-				const response = await axios.post(`http://${window.location.hostname}:5001/api/check-validation`,
-					{
-						username: formData.username,
-						email: formData.email
-					});
-				if (!response.data.success)
-				{
-					setValidation(prev => (
-						{
-							...prev,
-							[response.data.type]: true,
-						}
-					))
-				}
-				else
-				{
-					setValidation(prev => (
-						{
-							...prev,
-							'Username exists': false,
-							'Email exists': false
-						}
-					))
-				}
-			}
-			catch (error: any)
-			{
-				console.error("Error in vaidation")
-			}
-		}; checkValidation();
-
-		setValidation(prev => (
-		{
-			...prev,
-			'Already logged in': (loggedInAccounts.some(account => account.username === formData.username || account.email === formData.email)),
-			'Password does not match': (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) ? true : false,
-			'Password matches!': (formData.password && formData.confirmPassword && formData.password === formData.confirmPassword) ? true : false
-		}));
-		setEmptyForm(Object.values(formData).some(field => field === ""));
+		checkValidation({formData, loggedInAccounts, setValidation, setEmptyForm});
 	}, [formData]);
 
 	return(

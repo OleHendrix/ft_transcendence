@@ -1,7 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { BiLogOut } from 'react-icons/bi';
 import { FiEdit3, FiCamera } from "react-icons/fi";
 import { IoIosStats } from 'react-icons/io';
 import { LiaUserEditSolid } from 'react-icons/lia';
+import { MdOutlineDeleteForever } from 'react-icons/md';
+import Player from '../../assets/Player.svg';
 
 interface StyledButtonProps
 {
@@ -33,7 +36,7 @@ interface EditIconProps
 
 export function EditIcon({ onClick, keyName }: EditIconProps)
 {
-	return(
+	return (
 		<motion.button className="items-start mb-1 text-[#ff914d] hover:text-[#ab5a28] cursor-pointer opacity-30 hover:opacity-100"
 			key="edit-username" 
 			whileHover={ {scale: 1.17}}
@@ -64,31 +67,49 @@ export function ProfileActionButton({ keyword, onClick }: ProfileActionButtonPro
 	);
 }
 
-interface InputFieldProps
+interface DisplayInfoProps
 {
-	name: string;
-	value?: string;
-	placeholder?: string;
-	validation: Record<string, boolean>;
-	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	isPasswordField?: boolean; 
+	keyword: string;
+	value: string | undefined;
 }
 
-export function InputField({ name, value, placeholder, validation, onChange, isPasswordField } : InputFieldProps)
+export function DisplayInfo({ keyword, value }: DisplayInfoProps)
 {
-	function getBorderColor()
-	{
-		if (validation['Already logged in'] || validation['Username exists'] || validation['Email exists'])
-			return 'border-[#ff914d] focus:border-[#ff914d]';
-		else if (isPasswordField && validation['Password don\'t matches'])
-			return 'border-red-800';
-		else if (isPasswordField && validation['Password matches!'])
-			return 'border-green-500';
-		else
-			return 'border-gray-600 focus:border-white';
-	}
 	return (
-		<input className={`w-full p-2 bg-[#3a3a3a] font-medium rounded-3xl border ${getBorderColor()} focus:outline-none`}
-			name={name} type={name === "email" ? 'email' : (name === "password" || name === "confirmPassword") ? 'password' : 'text'} value={value} placeholder={placeholder} onChange={onChange}/>
-		);
+		<div className="w-full">
+			<div className="flex items-end justify-between gap-2">
+				<p className="block text-sm font-medium mb-1">{keyword}</p>
+			</div>
+			<div className="w-full p-2 opacity-50 bg-[#3a3a3a] font-medium rounded-3xl border border-gray-600 flex justify-between">
+				<p>{value}</p>
+			</div>
+		</div>
+	)
 }
+
+interface LogoutDeleteButtonProps
+{
+	keyword: "logout" | "delete";
+	onClick: () => void;
+}
+
+export function LogoutDeleteButton({ keyword, onClick }: LogoutDeleteButtonProps)
+{
+	return (
+		<button className="absolute items-center top-4 left-4 text-gray-400 hover:text-white hover:cursor-pointer"
+			onClick={onClick}>
+			{keyword === 'logout' ? <BiLogOut size={24} /> : <MdOutlineDeleteForever size={24} />}
+		</button>	
+	)
+}
+
+export function ImageDisplay({ avatar }: { avatar?: string })
+{
+	return (
+		<>
+			<img src={avatar !== '' ? avatar : Player} className="h-16 w-16 rounded-full object-cover shadow-lg" />
+			{ avatar && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div> }
+		</>
+	)
+}
+
