@@ -11,6 +11,10 @@ import { PlayerState } from "./types";
 const Players = React.memo(function Players()
 {
 	const { isPlaying, loggedInAccounts, setTriggerFetchAccounts } = useAccountContext();
+	useEffect(() =>
+	{
+		console.log(loggedInAccounts);
+	}, [loggedInAccounts]);
 
 	return(
 		<>

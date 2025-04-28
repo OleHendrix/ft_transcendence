@@ -13,12 +13,11 @@ import { checkValidation } from "./utils/checkValidation";
 
 function SignUpModal()
 {
-	const { loggedInAccounts, setTriggerFetchAccounts } = useAccountContext();
-	const [formData, setFormData] = useState(emptySignUpForm);
-	const [emptyForm, setEmptyForm] = useState(true);
-	const [validation, setValidation] = useState(defaultSignUpValidation)
-	
-	const navigate = useNavigate();
+	const { loggedInAccounts, setTriggerFetchAccounts } 	= useAccountContext();
+	const [formData, setFormData] 							= useState(emptySignUpForm);
+	const [emptyForm, setEmptyForm] 						= useState(true);
+	const [validation, setValidation] 						= useState(defaultSignUpValidation)
+	const navigate 											= useNavigate();
 		
 	useEffect(() =>
 	{

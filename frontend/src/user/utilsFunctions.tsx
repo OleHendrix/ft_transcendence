@@ -1,7 +1,37 @@
 import { NavigateFunction } from "react-router-dom";
-
 import { PlayerType, SignUpFormType } from "../types";
 import axios from "axios";
+import { useEffect } from "react";
+
+interface UseGetAccountProps
+{
+    username: string | undefined;
+    setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
+}
+
+export function useGetAccount({username, setSelectedAccount}: UseGetAccountProps)
+{
+    useEffect(() =>
+    {
+        if (!username) return;
+
+        async function getAccount()
+        {
+            try
+            {
+                const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
+                    { params: { requestedUser: username, username: username }});
+                if (response.data.success)
+                    setSelectedAccount(response.data.user);
+            }
+            catch (error: any)
+            {
+                console.log(error.response);
+            }
+        }
+        getAccount();
+    }, [username, setSelectedAccount]);
+}
 
 interface HandleAccountRemovalProps
 {
@@ -110,5 +140,29 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 	{
 		console.log(error.response.data);
 	}
+}
+
+interface cancelEditProps
+{
+	setEditProfile: React.Dispatch<React.SetStateAction<boolean>>;
+	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>;
+	setConfirmDisable2Fa: React.Dispatch<React.SetStateAction<boolean>>;
+	setFormData: React.Dispatch<React.SetStateAction<SignUpFormType>>;
+	selectedAccount: PlayerType | undefined;
+}
+
+export function cancelEdit({setEditProfile, setSettingUp2FA, setConfirmDisable2Fa, setFormData, selectedAccount}: cancelEditProps)
+{
+	setEditProfile(false);
+	setSettingUp2FA(false);
+	setConfirmDisable2Fa(false);
+	setFormData( prev => (
+	{
+			...prev,
+			username: selectedAccount?.username ?? '',
+			email: selectedAccount?.email ?? '',
+			password: '',
+			confirmPassword: ''
+	}))
 }
 

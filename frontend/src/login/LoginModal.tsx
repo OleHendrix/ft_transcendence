@@ -10,14 +10,13 @@ import { checkLogin, check2FA, resetValidation, InputField, ValidationMessage, L
 function LoginModal()
 {
 	const { loggedInAccounts, setLoggedInAccounts } = useAccountContext();
-	const [show2FA, setShow2FA] = useState(false);
-	const [token, setToken] = useState('');
-	const [tempJwt, setTempJwt] = useState('');
-	const [formData, setFormData] = useState<LoginFormType>({ username: '', password: '' });
-	const [emptyForm, setEmptyForm] = useState(true);
-	const [validation, setValidation] = useState(defaultLoginValidation);
-
-	const navigate = useNavigate();
+	const [show2FA, setShow2FA] 					= useState(false);
+	const [token, setToken] 						= useState('');
+	const [tempJwt, setTempJwt] 					= useState('');
+	const [formData, setFormData] 					= useState<LoginFormType>({ username: '', password: '' });
+	const [emptyForm, setEmptyForm]					= useState(true);
+	const [validation, setValidation] 				= useState(defaultLoginValidation);
+	const navigate 									= useNavigate();
 
 	useEffect(() =>
 	{
