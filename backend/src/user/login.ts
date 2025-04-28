@@ -35,6 +35,9 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 				data:  { online: true }
 		});
 
+		if (account.avatar && account.avatar !== '')
+			account.avatar = `http://${req.hostname}:5001${account.avatar}`;
+
 		const finalToken = fastify.jwt.sign({
 			sub: account.id,
 			username: account.username,
