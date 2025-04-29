@@ -17,6 +17,8 @@ fastify.register(fastifyCors);
 fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
 
+
+// setUpAuth first for the authenticate middleWare
 setUpAuth(fastify, prisma);
 setupChat(fastify, prisma);
 setupPong(fastify, prisma);

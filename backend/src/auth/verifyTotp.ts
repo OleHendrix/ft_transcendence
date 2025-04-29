@@ -45,8 +45,13 @@ export default async function verifyTotp(fastify: FastifyInstance, prisma: Prism
 			twofaRequired: true,
 		},
 		{ expiresIn: '1h' });
-		
+
+		const refreshToken = fastify.jwt.sign({
+			sub: account.id,
+		},
+		{ expiresIn: '7d' });
+
 		console.log("authorized:", userId);
-		return reply.send({ success: true, token: finalToken, account});
+		return reply.send({ success: true, token: finalToken, refreshToken, account});
 	});
 }

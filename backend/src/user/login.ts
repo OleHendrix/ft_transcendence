@@ -46,6 +46,11 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 		},
 		{ expiresIn: '1h' });
 
-		reply.send({ success: true, token: finalToken, account });
+		const refreshToken = fastify.jwt.sign({
+			sub: account.id,
+		},
+		{ expiresIn: '7d' });
+
+		reply.send({ success: true, token: finalToken, refreshToken, account });
 	});
 }

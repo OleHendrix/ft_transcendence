@@ -56,19 +56,20 @@ export interface PlayerType
 
 export interface AuthenticatedAccount extends PlayerType
 {
-	jwt: string;
+	jwt:			string;
+	refreshToken:	string;
 }
 
 export interface Message
 {
 	id: 			number;
 	content:		string;
-	timestamp: 		string;
-	receiverId: 	number;
-	chatSessionId: 	number;
-	senderUsername: string;
-	senderId: 		number;
-	status: 		number;
+	timestamp:		string;
+	receiverId:		number;
+	chatSessionId:	number;
+	senderUsername:	string;
+	senderId:		number;
+	status:			number;
 }
 
 export interface SignUpFormType
@@ -96,10 +97,10 @@ export interface LoginFormType
 
 export interface LoginValidationType
 {
-  'Already logged in': 	boolean;
-  'Username not found': boolean; 
-  'Password incorrect': boolean;
-  '2FA Code incorrect': boolean;
+  'Already logged in':	boolean;
+  'Username not found':	boolean; 
+  'Password incorrect':	boolean;
+  '2FA Code incorrect':	boolean;
 }
 
 export interface Vec2

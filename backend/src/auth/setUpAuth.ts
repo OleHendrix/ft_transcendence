@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify/fastify";
 import { PrismaClient } from ".prisma/client";
 
-import authenticate from "./authenticate";
+import authenticate from "../jwt/authenticate";
 
 import setupTotp from "./setupTotp";
 import verifySetupTotp from "./verifySetupTotp";
