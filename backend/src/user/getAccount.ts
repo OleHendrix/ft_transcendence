@@ -35,7 +35,7 @@ export default async function getAccount(fastify: FastifyInstance, prisma: Prism
 		if (user)
 		{
 			if (user.avatar && user.avatar !== '')
-				user.avatar = `https://${request.hostname}:5001${user.avatar}`;
+				user.avatar = `https://ft-transcendence-6obq.onrender.com${user.avatar}`;
 			reply.send({ success: true, user, friendshipStatus });
 		}
 		else

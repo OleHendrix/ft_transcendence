@@ -53,6 +53,6 @@ export default async function upload(fastify: FastifyInstance, prisma: PrismaCli
 
 		})
 
-		reply.send({ success: true, imageUrl: `http://${request.hostname}:5001${updatedAccount.avatar}`});
+		reply.send({ success: true, imageUrl: `https://ft-transcendence-6obq.onrender.com${updatedAccount.avatar}`});
 	});
 }
