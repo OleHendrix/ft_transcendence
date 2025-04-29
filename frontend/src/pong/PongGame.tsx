@@ -24,7 +24,7 @@ function PongGame()
 	}, [location, navigationType]);
 
 
-	const socketRef = useRef<WebSocket | null>(null);
+	const socketRef   = useRef<WebSocket | null>(null);
 	const keysPressed = useRef<{ [key: string]: boolean }>({});
 
 	useEffect(() =>

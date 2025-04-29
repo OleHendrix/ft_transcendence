@@ -5,14 +5,18 @@ import bcrypt from 'bcrypt';
 interface updateAccountRequest
 {
 	prev_username: string;
-	username: string;
-	email: string;
-	password: string;
+	username:      string;
+	email:         string;
+	password:      string;
 }
 
 export default async function updateAccount(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post('/api/update-account', async (request, reply) =>
+	fastify.post('/api/update-account',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
 		const { prev_username, username, email, password } = request.body as updateAccountRequest;
 		const hashedPassword = await bcrypt.hash(password, 10);

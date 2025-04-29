@@ -111,13 +111,20 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 {
 	try
 	{
+		const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
 		const response = await axios.post(`http://${window.location.hostname}:5001/api/update-account`,
 		{
 			prev_username: selectedAccount?.username,
 			username: formData.username, 
 			email: formData.email, 
 			password: formData.password
-		})
+		},
+		{
+			headers:
+			{
+				Authorization: `Bearer ${jwt}`
+			}
+		});
 		if (response.data.success)
 		{
 			const updatedloggedInAccounts = loggedInAccounts.map((account) =>

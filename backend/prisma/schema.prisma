@@ -19,23 +19,23 @@ model Account {
   admin         Boolean    @default(false)
   online        Boolean    @default(false)
 
-  matchesPlayed   Int             @default(0)
-  wins            Int             @default(0)
-  draws           Int             @default(0)
-  losses          Int             @default(0)
+  matchesPlayed   Int    @default(0)
+  wins            Int    @default(0)
+  draws           Int    @default(0)
+  losses          Int    @default(0)
   winRate         Float?
-  tournamentWins  Int             @default(0)
-  elo             Int             @default(400)
+  tournamentWins  Int    @default(0)
+  elo             Int    @default(400)
 
-  matches         		MatchHistory[]  @relation("matches")
-  sentFriendRequests     Friendship[] @relation("Requester")
-  receivedFriendRequests Friendship[] @relation("Receiver")
-  Blocks                Block[]          @relation("Blocks")
-  BlockedBy             Block[]          @relation("BlockedBy")
-  sentMessages          Message[]        @relation("SentMessages")     // This represents the sender
-  receivedMessages      Message[]        @relation("ReceivedMessages") // This represents the receiver
-  account1ChatSessions  ChatSession[]    @relation("account1ChatSessions")
-  account2ChatSessions  ChatSession[]    @relation("account2ChatSessions")
+  matches                MatchHistory[]   @relation("matches")
+  sentFriendRequests     Friendship[]     @relation("Requester")
+  receivedFriendRequests Friendship[]     @relation("Receiver")
+  Blocks                 Block[]          @relation("Blocks")
+  BlockedBy              Block[]          @relation("BlockedBy")
+  sentMessages           Message[]        @relation("SentMessages")     // This represents the sender
+  receivedMessages       Message[]        @relation("ReceivedMessages") // This represents the receiver
+  account1ChatSessions   ChatSession[]    @relation("account1ChatSessions")
+  account2ChatSessions   ChatSession[]    @relation("account2ChatSessions")
 }
 
 model Message {
