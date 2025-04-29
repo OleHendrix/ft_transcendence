@@ -17,6 +17,7 @@ const getTournamentLobbies_1 = require("./getTournamentLobbies");
 const joinTournament_1 = require("./joinTournament");
 const manageTournament_1 = require("./manageTournament");
 const leaveTournament_1 = require("./leaveTournament");
+const rehostTournament_1 = require("./rehostTournament");
 exports.tournamentLobbies = new Map();
 function setupTournament(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -26,5 +27,6 @@ function setupTournament(fastify) {
         yield (0, joinTournament_1.joinTournament)(fastify);
         yield (0, manageTournament_1.manageTournament)(fastify);
         yield (0, leaveTournament_1.leaveTournament)(fastify);
+        yield (0, rehostTournament_1.rehostTournament)(fastify);
     });
 }

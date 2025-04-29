@@ -3,20 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import { IoMdClose } from 'react-icons/io';
 import axios from 'axios';
 import { useTournamentContext } from '../contexts/TournamentContext';
-import { PlayerData, Result }			from '../types';
+import { PlayerData }			from '../types';
 import { useAccountContext } from '../contexts/AccountContext';
 import { localStorageUpdateTournamentId } from './utils';
+import { useState } from 'react';
 
 //TODO: refresh in tournament waiting room breaks it
 
 export default function TournamentWaitingRoom() {
 	const { loggedInAccounts } = useAccountContext();
 	const { setTournamentId, tournamentId, tournamentData, players, setReadyForNextRound, readyForNextRound } = useTournamentContext();
+	const [isLeaving, setIsLeaving] = useState(false);
 	const navigate = useNavigate();
 
 	const handleClose = async () => {
+		if (isLeaving) return;
+		if (!tournamentData) {
+			console.warn("Tournament data not available yet.");
+			return;
+		}
+		setIsLeaving(true);
 		try {
-			console.log(`TournamentWaitingRoom:handleClose:api/leave-tournament:PlayerID:${loggedInAccounts[0].id}:TournamentId:${tournamentId}`);
+			if (loggedInAccounts[0].id === tournamentData?.hostId && tournamentData.players.length > 1){
+				const response = await axios.post(`http://${window.location.hostname}:5001/api/rehost-tournament`, {
+					tournamentId
+				})
+				if (response.status !== 200)
+					console.log(`TournamentWaitingRoom:handleClose:api/leave-tournament:PlayerID:${loggedInAccounts[0].id}:TournamentId:${tournamentId}`);
+			}
 			await axios.post(`http://${window.location.hostname}:5001/api/leave-tournament`, {
 				playerId: loggedInAccounts[0].id,
 				tournamentId,
@@ -26,6 +40,8 @@ export default function TournamentWaitingRoom() {
 			navigate('/');
 		} catch (error) {
 			console.log(error);
+		} finally {
+			setIsLeaving(false);
 		}
 	};
 
@@ -69,7 +85,7 @@ export default function TournamentWaitingRoom() {
 					{/* Close button */}
 					<button
 						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={handleClose}
+						onClick={handleClose} disabled={isLeaving}
 					>
 						<IoMdClose size={24} />
 					</button>
