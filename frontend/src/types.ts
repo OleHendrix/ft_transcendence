@@ -32,6 +32,7 @@ export interface MatchHistory
 	p2Elo:		number;
 	p1Diff:		number;
 	p2Diff:		number;
+	time:		number;
 };
 
 export interface PlayerType
@@ -150,6 +151,7 @@ export interface PongState
 	lastUpdate:	number;
 	ai:			AI;
 	maxPoints:	number;
+	p1Won:		boolean | null;
 	timer:		number;
 	result:		Result;
 }

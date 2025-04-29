@@ -268,7 +268,7 @@ function MessageList()
 			{isTyping && <IsTypingBubble isTyping={isTyping} />}
 			<div ref={messagesEndRef} />
 		</div>
-		<MessageInput isBlocked={isBlocked} />
+		<MessageInput />
 		</div>
 	);
 }
