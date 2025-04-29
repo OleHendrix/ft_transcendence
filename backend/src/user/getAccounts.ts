@@ -1,8 +1,27 @@
 import { FastifyInstance } from "fastify";
 import { PrismaClient } from '@prisma/client';
+import { PlayerType } from "./../types/types"
 
 export default async function getAccounts(fastify: FastifyInstance, prisma: PrismaClient)
 {
+	fastify.post('/api/checkloggedinaccounts', async (request, reply) =>
+	{
+		const body = request.body as { savedLoggedInAccounts: string}
+		const savedLoggedInAccountsParse = JSON.parse(body.savedLoggedInAccounts) as { id: number}[]
+		const matchedAccounts = await prisma.account.findMany(
+		{
+			where: 
+			{
+				id: { in: savedLoggedInAccountsParse.map(acc => acc.id) }
+			}
+		});
+		if (matchedAccounts.length === savedLoggedInAccountsParse.length)
+			return reply.send({success: true});
+		else
+			return reply.send({succes: false});
+	})
+
+
 	fastify.get('/api/get-accounts', async (request, reply) => 
 	{
 		try

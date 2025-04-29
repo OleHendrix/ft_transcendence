@@ -25,9 +25,25 @@ export function AccountProvider({ children }: {children: ReactNode})
 	
 	useEffect(() =>
 	{
-		const savedLoggedInAccounts = localStorage.getItem('loggedInAccounts');
-		if (savedLoggedInAccounts)
-			setLoggedInAccounts(JSON.parse(savedLoggedInAccounts));
+		async function checkLoggedInAccounts()
+		{
+			const savedLoggedInAccounts = localStorage.getItem('loggedInAccounts');
+			if (savedLoggedInAccounts && savedLoggedInAccounts.length > 0)
+			{
+				try
+				{
+					const response = await axios.post(`http://${window.location.hostname}:5001/api/checkloggedinaccounts`, {savedLoggedInAccounts})
+					if (response.data.success)
+						setLoggedInAccounts(JSON.parse(savedLoggedInAccounts));
+					else
+						localStorage.removeItem('loggedInAccounts');
+				}
+				catch (error: any)
+				{
+					console.error("error validating loggedinaccounts", error.response?.data || error.message);
+				}
+			}
+		}; checkLoggedInAccounts()
 
 		async function fetchAccounts()
 		{
