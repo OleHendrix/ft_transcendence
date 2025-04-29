@@ -1,43 +1,35 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { IoMdClose } from 'react-icons/io';
-import axios from 'axios';
-import { useTournamentContext } from '../contexts/TournamentContext';
-import { PlayerData }			from '../types';
-import { useAccountContext } from '../contexts/AccountContext';
-import { localStorageUpdateTournamentId } from './utils';
-import { useState } from 'react';
-
-//TODO: refresh in tournament waiting room breaks it
+import { useState } 						from 'react';
+import axios 								from 'axios';
+import { motion, AnimatePresence } 			from 'framer-motion';
+import { useNavigate } 						from 'react-router-dom';
+import { IoMdClose } 						from 'react-icons/io';
+import { useTournamentContext } 			from '../contexts/TournamentContext';
+import { PlayerData }						from '../types';
+import { useAccountContext } 				from '../contexts/AccountContext';
+import { localStorageUpdateTournamentId } 	from './utils';
 
 export default function TournamentWaitingRoom() {
-	const { loggedInAccounts } = useAccountContext();
-	const { setTournamentId, tournamentId, tournamentData, players, setReadyForNextRound, readyForNextRound } = useTournamentContext();
-	const [isLeaving, setIsLeaving] = useState(false);
-	const navigate = useNavigate();
+	const { loggedInAccounts } 											= useAccountContext();
+	const { setTournamentId, setReadyForNextRound }						= useTournamentContext();
+	const { tournamentId, tournamentData, players, readyForNextRound } 	= useTournamentContext();
+	const [ isLeaving, setIsLeaving ] 									= useState(false);
+	const navigate 														= useNavigate();
 
 	const handleClose = async () => {
-		if (isLeaving) return;
-		if (!tournamentData) {
-			console.warn("Tournament data not available yet.");
-			return;
-		}
+		if (isLeaving) return; //protection agains double clicks
+		if (!tournamentData) return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
+
 		setIsLeaving(true);
 		try {
 			if (loggedInAccounts[0].id === tournamentData?.hostId && tournamentData.players.length > 1){
-				const response = await axios.post(`http://${window.location.hostname}:5001/api/rehost-tournament`, {
-					tournamentId
-				})
-				if (response.status !== 200)
-					console.log(`TournamentWaitingRoom:handleClose:api/leave-tournament:PlayerID:${loggedInAccounts[0].id}:TournamentId:${tournamentId}`);
+				await axios.post(`http://${window.location.hostname}:5001/api/rehost-tournament`, {tournamentId })
 			}
-			await axios.post(`http://${window.location.hostname}:5001/api/leave-tournament`, {
-				playerId: loggedInAccounts[0].id,
-				tournamentId,
-			});
+			await axios.post(`http://${window.location.hostname}:5001/api/leave-tournament`, { playerId: loggedInAccounts[0].id, tournamentId, });
+
 			setTournamentId(-1);
 			localStorageUpdateTournamentId(-1);
 			navigate('/');
+
 		} catch (error) {
 			console.log(error);
 		} finally {
@@ -68,109 +60,110 @@ export default function TournamentWaitingRoom() {
 	const rounds = tournamentData ? generateBracket(players, tournamentData.maxPlayers) : [];
 
 	return (
-		<AnimatePresence>
+		<motion.div
+			className="absolute top-[8vh] w-screen h-[calc(100vh-8vh)] backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			exit={{ opacity: 0 }}
+		>
 			<motion.div
-				className="absolute top-[8vh] w-screen h-[calc(100vh-8vh)] backdrop-blur-sm flex items-center justify-center bg-[#1a1a1a] z-50"
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				exit={{ opacity: 0 }}
+				className="relative bg-[#1e1e1e]/90 text-white rounded-2xl shadow-2xl p-10 w-[90vw] max-w-5xl h-[90vh] overflow-hidden flex flex-col"
+				initial={{ scale: 0.95, y: 20 }}
+				animate={{ scale: 1, y: 0 }}
+				exit={{ scale: 0.95, y: 20 }}
+				transition={{ type: "spring", stiffness: 300, damping: 25 }}
 			>
-				<motion.div
-					className="flex flex-col items-center bg-[#2a2a2a]/90 text-white p-8 gap-8 rounded-none w-full h-full relative shadow-xl overflow-auto"
-					initial={{ scale: 0.9, y: 20 }}
-					animate={{ scale: 1, y: 0 }}
-					exit={{ scale: 0.9, y: 20 }}
-					transition={{ type: "spring", stiffness: 300, damping: 25 }}
+				{/* Close Button */}
+				<button
+					className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+					onClick={handleClose}
+					disabled={isLeaving}
 				>
-					{/* Close button */}
-					<button
-						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={handleClose} disabled={isLeaving}
-					>
-						<IoMdClose size={24} />
-					</button>
+					<IoMdClose size={28} />
+				</button>
 
-					{/* Tournament Info */}
-					<section className="w-full text-center">
-						<h1 className="text-4xl font-black mb-6">Tournament Waiting Room</h1>
-						{tournamentData ? (
-							<div>
-								<p className="text-lg font-semibold">Host: {tournamentData.hostUsername}</p>
-								<p className="text-lg font-semibold">Max Players: {tournamentData.maxPlayers}</p>
-								<p className="text-lg font-semibold">Current Players: {players.length}</p>
-							</div>
+				{/* Title */}
+				<h1 className="text-3xl font-bold mb-6 text-center uppercase tracking-wide">
+					Tournament Waiting Room
+				</h1>
+
+				{/* Host Info */}
+				{tournamentData && (
+					<div className="flex justify-center gap-10 mb-6 text-lg font-medium text-gray-300">
+						<p>🎯 Host: <span className="text-white">{tournamentData.hostUsername}</span></p>
+						<p>👥 Players: <span className="text-white">{players.length}/{tournamentData.maxPlayers}</span></p>
+					</div>
+				)}
+
+				{/* Players List */}
+				<div className="flex-1 overflow-auto px-4">
+					<h2 className="text-2xl font-semibold mb-4">Players in Lobby</h2>
+					<ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+						{players.length > 0 ? (
+							players.map((player: PlayerData, index: number) => (
+								<li
+									key={index}
+									className="bg-gray-700/80 rounded-xl p-3 text-center text-white font-medium shadow-md"
+								>
+									👤 {player.username}
+								</li>
+							))
 						) : (
-							<p>Loading tournament details...</p>
+							<li className="text-gray-400">No players yet...</li>
 						)}
-					</section>
+					</ul>
+				</div>
 
-					{/* Player List */}
-					<section className="w-full mt-6">
-						<h2 className="text-2xl font-semibold mb-4">Players in Lobby</h2>
-						<ul className="list-disc pl-6">
-							{players.length > 0 ? (
-								players.map((player: any, index: number) => (
-									<li key={index} className="text-lg">{player.username}</li>
-								))
-							) : (
-								<li>No players yet...</li>
-							)}
-						</ul>
-					</section>
-
-					{/* Start Tournament Button (Only for Host) */}
+				{/* Host Controls */}
+				<div className="mt-6 flex justify-center gap-6 flex-wrap">
 					{tournamentData &&
 						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
 						players.length === tournamentData.maxPlayers && (
 							<button
 								onClick={async () => {
 									try {
-										await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, {
-											tournamentId,
-										});
+										await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { tournamentId });
 									} catch (error) {
-										console.error('Failed to start tournament:', error);
+										console.error('tournamentWaitingRoom:ON_CLICK:start-tournament:ERROR:', error);
 									}
 								}}
-								className="mt-6 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded shadow"
+								className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition"
 							>
 								Start Tournament
 							</button>
-					)}
-					{/* Start next round button (Only for Host) */}
+						)}
+
 					{tournamentData &&
-						loggedInAccounts[0]?.username === tournamentData.hostUsername && 
+						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
 						readyForNextRound && (
 							<button
 								onClick={async () => {
 									try {
-										await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, {
-											tournamentId,
-										});
+										await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { tournamentId });
 										setReadyForNextRound(false);
-									} catch (err) {
-										console.error('Failed to start tournament:', err);
+									} catch (error) {
+										console.error('tournamentWaitingRoom:ON_CLICK:start-next-round:ERROR:', error);
 									}
 								}}
-								className="mt-6 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded shadow"
+								className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition"
 							>
 								Start Next Round
 							</button>
-					)}
+						)}
+				</div>
 
-					{/* Bracket Section */}
-					{rounds.length > 0 && (
-						<section className="w-full overflow-auto mt-8 flex justify-center">
-							<div className="flex items-center gap-8 min-h-[500px]">
+				{/* Bracket View */}
+				{rounds.length > 0 && (
+					<div className="flex-1 flex items-center justify-center mt-8 overflow-auto">
+						<div className="flex flex-col items-center w-full">
+							<h2 className="text-2xl font-semibold mb-6 text-center">Bracket</h2>
+							<div className="flex gap-6 justify-start items-center w-fit px-4">
 								{rounds.map((round, roundIndex) => (
-									<div
-										key={roundIndex}
-										className="flex flex-col justify-center items-center gap-8"
-									>
+									<div key={roundIndex} className="flex flex-col gap-6 min-w-[200px]">
 										{round.map((match, matchIndex) => (
 											<div
 												key={matchIndex}
-												className="bg-gray-700 text-white px-4 py-2 rounded shadow text-center min-w-[160px]"
+												className="bg-gray-800 text-white px-4 py-2 rounded-xl text-center shadow"
 											>
 												{match}
 											</div>
@@ -178,11 +171,10 @@ export default function TournamentWaitingRoom() {
 									</div>
 								))}
 							</div>
-						</section>
-					)}
-
-				</motion.div>
+						</div>
+					</div>
+				)}
 			</motion.div>
-		</AnimatePresence>
+		</motion.div>
 	);
 }
