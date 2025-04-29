@@ -36,7 +36,7 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		username: playerUsername,
 	};
 
-	connection.playerId = playerId; // useless??? 
+	connection.playerId = playerId;
 
 	tournament.players.push(player);
 	tournament.sockets.add(connection);
