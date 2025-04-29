@@ -84,7 +84,7 @@ export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, sele
 {
 	try
 	{
-		const response = await axios.post('http://localhost:5001/api/delete-account',
+		const response = await axios.post(`${API_URL}/api/delete-account`,
 		{
 			username: selectedAccount?.username
 		});
