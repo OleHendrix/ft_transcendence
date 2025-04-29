@@ -7,6 +7,8 @@ import { useAccountContext } from '../contexts/AccountContext';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 interface MessageProps
 {
@@ -23,7 +25,7 @@ export function GameInvite( {message, isSender} : MessageProps)
 	async function handleGameInviteResponse(messageId: number, status: number)
 	{
 		async function changeMsgStatus(newStatus: number) {
-			await axios.post(`http://${window.location.hostname}:5001/api/change-msg-status`, {
+			await axios.post(`${API_URL}/api/change-msg-status`, {
 					senderId: loggedInAccounts[0]?.id,
 					receiverId,
 					status: newStatus,
@@ -34,7 +36,7 @@ export function GameInvite( {message, isSender} : MessageProps)
 		try {
 			changeMsgStatus(status);
 			if (status === 2) {
-				const result = await axios.post(`http://${window.location.hostname}:5001/invite/accept`, { msgID: messageId, user: {id: loggedInAccounts[0].id , username: loggedInAccounts[0].username}});
+				const result = await axios.post(`${API_URL}/invite/accept`, { msgID: messageId, user: {id: loggedInAccounts[0].id , username: loggedInAccounts[0].username}});
 				if (result.data === true) {
 					setIsPlaying(PlayerState.playing);
 					navigate('/pong-game');
@@ -42,7 +44,7 @@ export function GameInvite( {message, isSender} : MessageProps)
 					changeMsgStatus(5);
 				}
 			} else if (status >= 3) {
-				await axios.post(`http://${window.location.hostname}:5001/invite/decline`, { msgID: messageId });
+				await axios.post(`${API_URL}/invite/decline`, { msgID: messageId });
 			}
 
 			setChatMessages((prevMessages) => // update localstorage 
@@ -107,7 +109,7 @@ export function FriendRequest( {message, isSender} : MessageProps)
 	{
 		try
 		{
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/update-friendship`,
+			const response = await axios.post(`${API_URL}/api/update-friendship`,
 			{
 				senderId: loggedInAccounts[0]?.id,
 				receiverId,

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { FiCamera } from 'react-icons/fi';
 import { PlayerType } from '../types';
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface HandleCropCompleteProps
 {	
@@ -31,7 +32,7 @@ async function handleCropComplete({croppedImage, selectedAccount, loggedInAccoun
 		formData.append('username', selectedAccount?.username)
 	try
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/upload`, formData,
+		const response = await axios.post(`${API_URL}/api/upload`, formData,
 		{
 			headers:
 			{

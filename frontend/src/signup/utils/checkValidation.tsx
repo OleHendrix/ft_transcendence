@@ -1,5 +1,6 @@
 import { SignUpFormType, PlayerType, SignUpValidatonType } from "../../types";
 import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface CheckValidationProps
 {
@@ -24,7 +25,7 @@ export async function checkValidation({formData, loggedInAccounts, setValidation
 			payload.prevUsername = prevUsername;
 		if (prevEmail)
 			payload.prevEmail = prevEmail;
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/check-validation`, payload);
+		const response = await axios.post(`${API_URL}/api/check-validation`, payload);
 		if (!response.data.success)
 		{
 			setValidation(prev => (

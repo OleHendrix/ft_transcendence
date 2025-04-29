@@ -9,7 +9,7 @@
 // 	const player = loggedInAccounts[0];
 // 	if (!socket)
 // 	{
-// 		socket =  new WebSocket(`ws://${window.location.hostname}:5001/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
+// 		socket =  new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
 // 	}
 // 	return socket;
 // };

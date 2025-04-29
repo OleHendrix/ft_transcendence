@@ -33,7 +33,7 @@ export const prisma = new PrismaClient();
 
 fastify.register(fastifyCors);
 
-fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
+fastify.register(fastifyJwt, { secret: process.env.JWT_SECRET || 'balzak '});
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
 
 // fastify.register(authenticate);
@@ -73,7 +73,7 @@ const start = async () =>
 	initMatchMaking(fastify);
 	initInvite(fastify)
 
-	fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) =>
+	fastify.listen({ port: Number(process.env.PORT || 5001), host: '0.0.0.0' }, (err, address) =>
 	{
 		if (err)
 		{

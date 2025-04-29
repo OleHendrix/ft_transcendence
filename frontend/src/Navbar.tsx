@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAccountContext } from "./contexts/AccountContext";
 import { PlayerState } from "./types";
 import { PiUserListLight } from "react-icons/pi";
+const API_URL = import.meta.env.VITE_API_URL;
 
 function Navbar()
 {
@@ -20,8 +21,8 @@ function Navbar()
 		setIsPlaying(PlayerState.idle)
 		try
 		{
-			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
-			await axios.post(`http://${window.location.hostname}:5001/pong/delete`,   { userID: loggedInAccounts[0].id });
+			await axios.post(`${API_URL}/pong/end-game`, { userID: loggedInAccounts[0].id });
+			await axios.post(`${API_URL}/pong/delete`,   { userID: loggedInAccounts[0].id });
 		}
 		catch (error)
 		{

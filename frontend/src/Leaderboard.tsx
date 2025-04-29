@@ -9,6 +9,7 @@ import { useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export function toPercentage(n: number, decimals: number): number
 {
@@ -29,7 +30,7 @@ export default function Leaderboard()
 		{
 			try
 			{
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
+				const response = await axios.get(`${API_URL}/api/get-accounts`);
 				setAccounts(response.data.accounts);
 			}
 			catch (error: any)

@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
 import { PlayerType, PlayerState, AuthenticatedAccount } from "../types";
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
 type AccountContextType = 
 {
@@ -33,7 +34,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 		{
 			try
 			{
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
+				const response = await axios.get(`${API_URL}/api/get-accounts`);
 				setAccounts(response.data.accounts);
 			}
 			catch (error: any)

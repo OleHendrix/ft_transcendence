@@ -4,6 +4,7 @@ import { IoMdClose } 				from 'react-icons/io';
 import axios 						from 'axios';
 import { useTournamentContext } 	from '../contexts/TournamentContext';
 import { useAccountContext } 		from '../contexts/AccountContext';
+const API_URL = import.meta.env.VITE_API_URL;
 
 
 export default function TournamentWaitingRoom() {
@@ -13,7 +14,7 @@ export default function TournamentWaitingRoom() {
 
 	const handleClose = async () => {
 		try {
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/leave-tournament`, {
+			const response = await axios.post(`${API_URL}/api/leave-tournament`, {
 				playerId: loggedInAccounts[0].id,
 				tournamentId,
 			});

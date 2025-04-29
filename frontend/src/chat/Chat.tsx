@@ -18,6 +18,8 @@ import { useAccountContext } from ".././contexts/AccountContext";
 import { useChatContext } from ".././contexts/ChatContext";
 import "../css/TypingLoader.css";
 import { AddGame } from "../Hero";
+const API_URL = import.meta.env.VITE_API_URL;
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 function Chat()
 {
@@ -31,7 +33,7 @@ function Chat()
 		{
 			try
 			{
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-messages`,
+				const response = await axios.get(`${API_URL}/api/get-messages`,
 				{
 					params:
 					{
@@ -62,7 +64,7 @@ function Chat()
 		if (!chatSessionId) return;
 
 		console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
-		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/chat?chatSessionId=${chatSessionId}`);
+		const socket = new WebSocket(`${WS_URL}/ws/chat?chatSessionId=${chatSessionId}`);
 
 		socket.onmessage = function(event)
 		{
@@ -190,7 +192,7 @@ function MessageList()
 		{
 			try
 			{
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/is-blocked`, 
+				const response = await axios.get(`${API_URL}/api/is-blocked`, 
 				{
 					params:
 					{
@@ -214,7 +216,7 @@ function MessageList()
 	{
 		try
 		{
-			const unblock = await axios.post(`http://${window.location.hostname}:5001/api/unblock-user`, 
+			const unblock = await axios.post(`${API_URL}/api/unblock-user`, 
 			{
 				receiverId,
 				senderId: loggedInAccounts[0]?.id
@@ -281,7 +283,7 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 
 	function inviteSocket(msgID: number) {
 		console.log("in invite socket", msgID);
-		const socket = new WebSocket(`ws://${window.location.hostname}:5001/invite/send`);
+		const socket = new WebSocket(`${WS_URL}/invite/send`);
 
 		socket.addEventListener("open", () => {
 			socket.send(JSON.stringify({ ID: msgID, senderID: loggedInAccounts[0].id }));
@@ -311,7 +313,7 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 	const sendGameInvite = async () => 
 	{
 		try {
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-message`, {
+			const response = await axios.post(`${API_URL}/api/send-message`, {
 					content: "::gameInvite::",
 					senderId: loggedInAccounts[0]?.id,
 					receiverId: receiverId,
@@ -333,7 +335,7 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 	{
 		try
 		{
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-friendship`,
+			const response = await axios.post(`${API_URL}/api/send-friendship`,
 			{
 				requesterId: loggedInAccounts[0].id,
 				receiverId: receiverId
@@ -352,7 +354,7 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 
 	const blockUser = async () => {
 		try {
-			const block = await axios.post(`http://${window.location.hostname}:5001/api/block-user`, {
+			const block = await axios.post(`${API_URL}/api/block-user`, {
 				receiverId,
 				senderId: loggedInAccounts[0]?.id
 			})
@@ -368,7 +370,7 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 
 	const unblockUser = async () => {
 		try {
-			const unblock = await axios.post(`http://${window.location.hostname}:5001/api/unblock-user`, {
+			const unblock = await axios.post(`${API_URL}/api/unblock-user`, {
 				receiverId,
 				senderId: loggedInAccounts[0]?.id
 			})
@@ -421,7 +423,7 @@ function MessageInput()
 		if (!message) return;
 
 		try {
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-message`,
+			const response = await axios.post(`${API_URL}/api/send-message`,
 			{
 				senderId: loggedInAccounts[0]?.id,
 				receiverId: receiverId,
@@ -443,7 +445,7 @@ function MessageInput()
 	{
 		try
 		{
-			await axios.post(`http://${window.location.hostname}:5001/api/send-istyping`,
+			await axios.post(`${API_URL}/api/send-istyping`,
 			{
 				senderId: loggedInAccounts[0]?.id,
 				receiverId: receiverId
