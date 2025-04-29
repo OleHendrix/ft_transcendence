@@ -14,7 +14,7 @@ export default async function addAccount(fastify: FastifyInstance, prisma: Prism
 	fastify.post('/api/add-account', async (request, reply) =>
 	{
 		const { username, email, password }: AddAccountRequest = request.body as AddAccountRequest;
-		const hashedPassword = await bcrypt.hash(password, 10);
+		const hashedPassword  = await bcrypt.hash(password, 10);
 		const existingAccount = await prisma.account.findFirst(
 		{
 			where:

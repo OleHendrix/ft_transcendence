@@ -9,10 +9,10 @@ RUN apt-get update && apt-get install -y openssl
 
 COPY . .
 
-RUN npx prisma migrate dev --name init; npx prisma generate; npx prisma db seed
+RUN npx prisma generate
 
 RUN npm run build
 
 EXPOSE 5001
 
-CMD ["npm", "run", "dev"]
+CMD npx prisma migrate deploy && npm run dev

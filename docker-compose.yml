@@ -5,7 +5,6 @@ services:
       - "5001:5001"
     volumes:
       - ./backend:/app
-      - ./backend/prisma/dev.db:/app/prisma/dev.db
     depends_on:
       - frontend
 

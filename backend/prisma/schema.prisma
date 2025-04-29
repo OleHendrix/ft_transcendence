@@ -13,7 +13,7 @@ model Account {
   email         String     @unique
   username      String     @unique
   password      String
-  avatar		String?    @default("")
+  avatar        String?    @default("")
   totpSecret    String?
   twofa         Boolean    @default(false)
   admin         Boolean    @default(false)
