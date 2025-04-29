@@ -1,5 +1,5 @@
 import { tournamentLobbies } from "./tournament";
-import { WebSocket } from "ws";
+import { WebSocket }		from "ws";
 
 
 export function broadcastTournamentUpdate(tournamentId: number, type: string) {
@@ -34,7 +34,17 @@ export function broadcastTournamentUpdate(tournamentId: number, type: string) {
 				start: true,
 			}
 		};
-	} 
+	}
+
+	else if (type === "READY_FOR_NEXT_ROUND")
+	{
+		payload = {
+			type,
+			data: {
+				ready: true,
+			}
+		}
+	}
 	else {
 		console.warn("Unknown broadcast type:", type);
 		return;

@@ -1,5 +1,7 @@
 import { Result } 				from "../types/types";
 import { tournamentLobbies } 	from "./tournament";
+import { allMatchesFinished } from "./manageTournament";
+import { broadcastTournamentUpdate } from "./broadcastTournamentUpdates";
 
 export function setResults(tournamentId: number, p1: number, p1score: number, p2score: number, result: Result)
 {
@@ -16,4 +18,6 @@ export function setResults(tournamentId: number, p1: number, p1score: number, p2
 	round.state.p1Score = p1score;
 	round.state.p2Score = p2score;
 	round.state.result = result;
+	if (allMatchesFinished(tournament))
+		broadcastTournamentUpdate(tournamentId, "READY_FOR_NEXT_ROUND");
 }

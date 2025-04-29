@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setResults = setResults;
 const tournament_1 = require("./tournament");
+const manageTournament_1 = require("./manageTournament");
+const broadcastTournamentUpdates_1 = require("./broadcastTournamentUpdates");
 function setResults(tournamentId, p1, p1score, p2score, result) {
     var _a;
     let tournament = tournament_1.tournamentLobbies.get(tournamentId);
@@ -18,4 +20,6 @@ function setResults(tournamentId, p1, p1score, p2score, result) {
     round.state.p1Score = p1score;
     round.state.p2Score = p2score;
     round.state.result = result;
+    if ((0, manageTournament_1.allMatchesFinished)(tournament))
+        (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "READY_FOR_NEXT_ROUND");
 }

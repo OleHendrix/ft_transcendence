@@ -35,5 +35,4 @@ export function setMatches(tournament: TournamentData)
 			tournamentId: tournament.tournamentId
 		});
 	}
-	broadcastTournamentUpdate(tournament.tournamentId, "UPDATE");
 }

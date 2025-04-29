@@ -17,8 +17,10 @@ function handleJoinTournament(connection, playerId, playerUsername, tournamentId
         connection.close();
         return;
     }
-    if (tournament.players.find(p => p.id === playerId))
+    if (tournament.players.find(p => p.id === playerId)) {
+        tournament.sockets.add(connection);
         return console.log(`handleJoinTournament:Player${playerId}:TRIED_TO_JOIN:tournament${tournamentId}:ALLREADY_IN`);
+    }
     const player = {
         id: playerId,
         username: playerUsername,
@@ -27,9 +29,4 @@ function handleJoinTournament(connection, playerId, playerUsername, tournamentId
     tournament.players.push(player);
     tournament.sockets.add(connection);
     (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "UPDATE");
-    // connection.on("close", () => { //DONT PUT THIS SHIT HERE??? its in context 
-    // 	tournament.players = tournament.players.filter(p => p.id !== playerId);
-    // 	tournament.sockets.delete(connection);
-    // 	broadcastTournamentUpdate(tournamentId, "UPDATE");
-    // });
 }

@@ -32,6 +32,14 @@ function broadcastTournamentUpdate(tournamentId, type) {
             }
         };
     }
+    else if (type === "READY_FOR_NEXT_ROUND") {
+        payload = {
+            type,
+            data: {
+                ready: true,
+            }
+        };
+    }
     else {
         console.warn("Unknown broadcast type:", type);
         return;

@@ -5,12 +5,13 @@ import axios from 'axios';
 import { useTournamentContext } from '../contexts/TournamentContext';
 import { PlayerData, Result }			from '../types';
 import { useAccountContext } from '../contexts/AccountContext';
+import { localStorageUpdateTournamentId } from './utils';
 
 //TODO: refresh in tournament waiting room breaks it
 
 export default function TournamentWaitingRoom() {
 	const { loggedInAccounts } = useAccountContext();
-	const { setTournamentId, tournamentId, tournamentData, players } = useTournamentContext();
+	const { setTournamentId, tournamentId, tournamentData, players, setReadyForNextRound, readyForNextRound } = useTournamentContext();
 	const navigate = useNavigate();
 
 	const handleClose = async () => {
@@ -21,6 +22,7 @@ export default function TournamentWaitingRoom() {
 				tournamentId,
 			});
 			setTournamentId(-1);
+			localStorageUpdateTournamentId(-1);
 			navigate('/');
 		} catch (error) {
 			console.log(error);
@@ -46,46 +48,6 @@ export default function TournamentWaitingRoom() {
 		}
 		return rounds;
 	}
-
-	function readyForNextRound() {
-		console.log("Checking if ready for next round...");
-	
-		if (!tournamentData) {
-			console.log("No tournament data.");
-			return false;
-		}
-	
-		if (!tournamentData.rounds) {
-			console.log("No rounds found in tournamentData.");
-			return false;
-		}
-	
-		console.log(`Current roundIdx: ${tournamentData.roundIdx}`);
-	
-		if (tournamentData.roundIdx === 0) {
-			console.log("First round hasn't been completed yet.");
-			return false;
-		}
-	
-		const currentRound = tournamentData.rounds[tournamentData.roundIdx - 1];
-		if (!currentRound) {
-			console.log("No current round found.");
-			return false;
-		}
-	
-		console.log("Checking all matches in current round...");
-		for (const match of currentRound) {
-			console.log(`Match result: ${match.state.result}`);
-			if (match.state.result === Result.PLAYING) {
-				console.log("At least one match still playing.");
-				return false;
-			}
-		}
-	
-		console.log("All matches finished. Ready for next round.");
-		return true;
-	}
-	
 
 	const rounds = tournamentData ? generateBracket(players, tournamentData.maxPlayers) : [];
 
@@ -162,13 +124,14 @@ export default function TournamentWaitingRoom() {
 					{/* Start next round button (Only for Host) */}
 					{tournamentData &&
 						loggedInAccounts[0]?.username === tournamentData.hostUsername && 
-						readyForNextRound() && (
+						readyForNextRound && (
 							<button
 								onClick={async () => {
 									try {
 										await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, {
 											tournamentId,
 										});
+										setReadyForNextRound(false);
 									} catch (err) {
 										console.error('Failed to start tournament:', err);
 									}

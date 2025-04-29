@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setMatches = setMatches;
 const pongLogic_1 = require("../pong/pongLogic");
-const broadcastTournamentUpdates_1 = require("./broadcastTournamentUpdates");
 function setMatches(tournament) {
     var _a, _b;
     if (!tournament.rounds)
@@ -32,5 +31,4 @@ function setMatches(tournament) {
             tournamentId: tournament.tournamentId
         });
     }
-    (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournament.tournamentId, "UPDATE");
 }

@@ -3,10 +3,11 @@ import axios 					from "axios";
 import { useAccountContext } 	from "./AccountContext";
 import { useNavigate } 			from "react-router-dom";
 import { PlayerState, TournamentData, Result }			from '../types';
+import { localStorageUpdateTournamentId } from "../tournament/utils";
 
 type TournamentContextType = {
 	tournamentId: 		number | null;
-	setTournamentId: 	Dispatch<SetStateAction<number | null>>;
+	setTournamentId: 	Dispatch<SetStateAction<number>>;
 
 	showTournamentWaitingRoom: 	boolean;
 	setShowTournamentWaitingRoom: Dispatch<SetStateAction<boolean>>;
@@ -17,6 +18,9 @@ type TournamentContextType = {
 	tournamentData: 	TournamentData | null;
 	setTournamentData:	Dispatch<SetStateAction<TournamentData | null>>;
 
+	readyForNextRound: 	boolean;
+	setReadyForNextRound: Dispatch<SetStateAction<boolean>>;
+
 	socket: WebSocket | null;
 };
 
@@ -25,13 +29,13 @@ const TournamentContext = createContext<TournamentContextType | null>(null);
 
 export function TournamentProvider({ children }: {children: ReactNode})
 {
-	const [ tournamentId, setTournamentId ] 							= useState<number | null>(null);
+	const [ tournamentId, setTournamentId ] 							= useState<number>(-1);
 	const [ showTournamentWaitingRoom, setShowTournamentWaitingRoom] 	= useState(false);
 	const [players, setPlayers] 										= useState<any[]>([]);
 	const [tournamentData, setTournamentData]							= useState<TournamentData | null>(null);
 	const { loggedInAccounts, setIsPlaying, isPlaying } 				= useAccountContext();
 	const navigate 														= useNavigate();
-
+	const [readyForNextRound, setReadyForNextRound]	 					= useState(false);
 	const socketRef = useRef<WebSocket | null>(null);
 
 
@@ -44,47 +48,39 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		}
 	}
 
-	async function startNextRound() {
-		try {
-			console.log("FRONTEND - tournament game finished checking to start next round", tournamentId);
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { tournamentId, });
-			if (response.data.roundFinished)
-			{
-				setIsPlaying(PlayerState.playing);
-				navigate('/pong-game');
-			}
-		} catch (error) {
-			console.log(error);
-		}
-	}
+	useEffect(() => { //on mount (for refresh) set TournamentID back
+		const storedId = localStorage.getItem("tournamentId");
+		console.log("REFRESH/???");
+		if (storedId) {
+			console.log(`setting tournament id to localstorage stored Id : ${storedId}`);
+			setTournamentId(JSON.parse(storedId));
 
-	function allMatchesFinished()
-	{
-		if (!tournamentData) return;
-		if (!tournamentData.rounds) return;
-		const currentRound = tournamentData?.rounds[tournamentData.roundIdx];
-		for (const match of currentRound)
-		{
-			if (match.state.result === Result.PLAYING)
-				return false;
+			(async () => {
+				try {
+					const response = await axios.get(`http://${window.location.hostname}:5001/api/tournament-data/${storedId}`);
+					console.log("setting TournamentData:", response.data);
+					setTournamentData(response.data);
+					setPlayers(response.data.players);
+				} catch (error) {
+					console.error("Failed to fetch tournament data:", error);
+				}
+			})();
+		} else {
+			setTournamentId(-1);
 		}
-		return true;
-	}
+	}, []);
+	
 
 	useEffect(() => {
-		if (isPlaying !== PlayerState.playing && tournamentId !== null) {
-			if (allMatchesFinished())
-			{
-				startNextRound();
-			}
-		}
-	}, [isPlaying]);
-
-	useEffect(() => {
-		if (tournamentId === null || !loggedInAccounts.length)
-			return;
-
 		const player = loggedInAccounts[0];
+		if (
+			tournamentId === -1 ||
+			!player?.id || !player?.username
+		) return;
+
+		localStorageUpdateTournamentId(tournamentId);
+
+		// const player = loggedInAccounts[0];
 		if (socketRef.current) {
 			socketRef.current.close();
 		}
@@ -92,7 +88,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
 		socketRef.current = socket;
 		socket.onopen = () => {
-			console.log("WebSocket connected");
+			console.log(`TournamentContext:WebsocketCreated:PlayerId:${player.id}:TournamentId:${tournamentId}`);
 		};
 	
 		socket.onmessage = (event) => {
@@ -107,19 +103,23 @@ export function TournamentProvider({ children }: {children: ReactNode})
 				{
 					startTournament();
 				}
+				if (data.type === "READY_FOR_NEXT_ROUND")
+				{
+					setReadyForNextRound(true);
+				}
 			} catch (err) {
 				console.error("Failed to parse WebSocket message", err);
 			}
 		};
 	
 		socket.onerror = (err) => {
-			navigate('/');
-			console.error("WebSocket error:", err);
+			// navigate('/');
+			console.error(`TournamentContext:WebSocket:ERROR:`, err);
 		};
 	
 		socket.onclose = () => {
-			navigate('/');
-			console.log("WebSocket tournament waiting room closed");
+			// navigate('/');
+			// console.log("WebSocket tournament waiting room closed");
 		};
 	
 		return () => {
@@ -133,13 +133,15 @@ export function TournamentProvider({ children }: {children: ReactNode})
 			showTournamentWaitingRoom, setShowTournamentWaitingRoom,
 			players, setPlayers,
 			tournamentData, setTournamentData,
-			socket: socketRef.current
+			socket: socketRef.current,
+			readyForNextRound, setReadyForNextRound
 		}
 	), [
 		tournamentId, setTournamentId,
 		showTournamentWaitingRoom, setShowTournamentWaitingRoom,
 		players, setPlayers,
 		tournamentData, setTournamentData,
+		readyForNextRound, setReadyForNextRound
 	]);
 	
 	return (
