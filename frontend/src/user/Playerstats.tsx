@@ -12,6 +12,7 @@ import { FaUserCheck } from "react-icons/fa";
 import { toPercentage } from "../Leaderboard";
 import { format } from 'date-fns';
 import OnlineStatus from "../utils/OnlineStatus";
+import ModalWrapper from "../utils/ModalWrapper";
 import axios from "axios";
 
 function ShowMatchHistory({selectedAccount} : {selectedAccount: PlayerType})
@@ -202,75 +203,69 @@ function PlayerStats()
 	}
 
 	return (
-		<AnimatePresence>
+		<ModalWrapper>
 			<motion.div
-				className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 bg-[#1a1a1a]/90"
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				exit={{ opacity: 0 }}>
-				<motion.div
-					className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-4 md:p-8 gap-4 md:gap-8 
-                     w-full max-w-xl md:max-w-3xl mx-2 md:mx-8 lg:mx-16 
-                     h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto md:overflow-hidden 
-                     rounded-xl relative shadow-xl"
-					initial={{ scale: 0.9, y: 20 }}
-					animate={{ scale: 1, y: 0 }}
-					exit={{ scale: 0.9, y: 20 }}
-					transition={{ type: "spring", stiffness: 300, damping: 25 }}>
-					
-					<button
-						className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
-						onClick={() => navigate(-1)}>
-						<IoMdClose size={24} />
-					</button>
+				className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-4 md:p-8 gap-4 md:gap-8 
+					w-full max-w-xl md:max-w-3xl mx-2 md:mx-8 lg:mx-16 
+					h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto md:overflow-hidden 
+					rounded-xl relative shadow-2xl border border-[#383838]"
+				initial={{ scale: 0.9, y: 20 }}
+				animate={{ scale: 1, y: 0 }}
+				exit={{ scale: 0.9, y: 20 }}
+				transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+				
+				<button
+					className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
+					onClick={() => navigate(-1)}>
+					<IoMdClose size={24} />
+				</button>
 
-					<div className="flex w-full flex-col items-center gap-2">
-						<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
-						  <div className="relative">
-							<img src={selectedAccount?.avatar !== '' ? selectedAccount?.avatar : Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
-							{selectedAccount?.avatar && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
-							{!friendStatus  && loggedInAccounts[0].username !== username &&
-							(
-								<motion.div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors" whileHover={ {scale: 1.10}}
-									onClick={() => sendFriendRequest()}>
-									<HiUserAdd size={16} className="text-[#ff914d]" />
-								</motion.div>
-							)}
-							{friendStatus && loggedInAccounts[0].username !== username &&
-							(
-								<div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full">
-									<FaUserCheck size={16} className="text-green-800" />
-								</div>
-							)}
-						  </div>
-						{selectedAccount?.online &&
+				<div className="flex w-full flex-col items-center gap-2">
+					<h2 className="text-2xl font-bold text-center">{selectedAccount?.username}</h2>
+						<div className="relative">
+						<img src={selectedAccount?.avatar !== '' ? selectedAccount?.avatar : Player} className="h-16 w-16 rounded-full object-cover shadow-2xl"/>
+						{selectedAccount?.avatar && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
+						{!friendStatus  && loggedInAccounts[0].username !== username &&
 						(
-							<div className="flex justify-center items-baseline gap-2">
-								<h1>Online</h1>
-								<OnlineStatus />
+							<motion.div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full cursor-pointer hover:bg-[#3a3a3a] transition-colors" whileHover={ {scale: 1.10}}
+								onClick={() => sendFriendRequest()}>
+								<HiUserAdd size={16} className="text-[#ff914d]" />
+							</motion.div>
+						)}
+						{friendStatus && loggedInAccounts[0].username !== username &&
+						(
+							<div className="absolute bottom-0 right-0 bg-[#2a2a2a] p-1 rounded-full">
+								<FaUserCheck size={16} className="text-green-800" />
 							</div>
 						)}
-						<div className="flex flex-col p-2 items-center text-white">
-							<div className="flex flex-col justify-center items-center">
-								<p className="font-light text-s">Rank:</p>
-								<h2 className="font-semibold text-3xl font-mono" style={{ fontFamily: '"Droid Sans Mon0o", monospace' }}>{"#" + playerRank}</h2>
-							</div>
+						</div>
+					{selectedAccount?.online &&
+					(
+						<div className="flex justify-center items-baseline gap-2">
+							<h1>Online</h1>
+							<OnlineStatus />
+						</div>
+					)}
+					<div className="flex flex-col p-2 items-center text-white">
+						<div className="flex flex-col justify-center items-center">
+							<p className="font-light text-s">Rank:</p>
+							<h2 className="font-semibold text-3xl font-mono" style={{ fontFamily: '"Droid Sans Mon0o", monospace' }}>{"#" + playerRank}</h2>
 						</div>
 					</div>
-					<div className="flex-1 w-full">
-					<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
-						<div className="w-full md:w-2/5 flex-shrink-0">
-							{selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType}/>}
-						</div>
+				</div>
+				<div className="flex-1 w-full">
+				<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
+					<div className="w-full md:w-2/5 flex-shrink-0">
+						{selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType}/>}
+					</div>
 
-						<div className="w-full md:w-3/5 flex-grow">
-							{selectedAccount && <ShowMatchHistory selectedAccount={selectedAccount  as PlayerType}/>}
-						</div>
+					<div className="w-full md:w-3/5 flex-grow">
+						{selectedAccount && <ShowMatchHistory selectedAccount={selectedAccount  as PlayerType}/>}
 					</div>
-					</div>
-				</motion.div>
+				</div>
+				</div>
 			</motion.div>
-		</AnimatePresence>
+		</ModalWrapper>
 	);
 }
 

@@ -28,8 +28,9 @@ function getMatch(userID: number | undefined): Match | null
 	return matchTable.get(key) as Match;
 }
 
-export function isInGame(userID: number): boolean
+export function isInGame(userID: number | undefined): boolean
 {
+	if (!userID) return false;
 	return matchIDTable.has(userID);
 }
 

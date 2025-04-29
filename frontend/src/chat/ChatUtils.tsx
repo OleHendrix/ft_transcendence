@@ -20,35 +20,37 @@ export function GameInvite( {message, isSender} : MessageProps)
 	const { receiverId, setChatMessages } = useChatContext();
 	const navigate = useNavigate();
  
-	async function handleGameInviteResponse(messageId: number, newStatus: number)
+	async function handleGameInviteResponse(messageId: number, status: number)
 	{
-		try
-		{
-			await axios.post(`http://${window.location.hostname}:5001/api/change-msg-status`,
-			{
-				senderId: loggedInAccounts[0]?.id,
-				receiverId,
-				status: newStatus,
-				messageId,
-			});
-			if (newStatus === 2) {
+		async function changeMsgStatus(newStatus: number) {
+			await axios.post(`http://${window.location.hostname}:5001/api/change-msg-status`, {
+					senderId: loggedInAccounts[0]?.id,
+					receiverId,
+					status: newStatus,
+					messageId,
+				});
+		}
+
+		try {
+			changeMsgStatus(status);
+			if (status === 2) {
 				const result = await axios.post(`http://${window.location.hostname}:5001/invite/accept`, { msgID: messageId, user: {id: loggedInAccounts[0].id , username: loggedInAccounts[0].username}});
 				if (result.data === true) {
 					setIsPlaying(PlayerState.playing);
 					navigate('/pong-game');
+				} else {
+					changeMsgStatus(5);
 				}
-			} else if (newStatus >= 3) {
+			} else if (status >= 3) {
 				await axios.post(`http://${window.location.hostname}:5001/invite/decline`, { msgID: messageId });
 			}
 
 			setChatMessages((prevMessages) => // update localstorage 
 				prevMessages.map((msg) =>
-					msg.id === messageId ? { ...msg, status: newStatus } : msg
+					msg.id === messageId ? { ...msg, status: status } : msg
 				)
 			);
-		}
-		catch (error)
-		{
+		} catch (error) {
 			console.log("Error occurred when changing msg status:", error);
 		}
 	};
@@ -88,8 +90,9 @@ export function GameInvite( {message, isSender} : MessageProps)
 				</div>
 			)}
 			{message.status === 2 && <p className="text-xs font-light opacity-70 text-green-400 mt-2">{isSender ? "Your invite was accepted!" : "You accepted the game invite"}</p>}
-		 	{message.status === 3 && <p className="text-xs font-light opacity-70 text-red-400 mt-2">{isSender ? "Your invite was declined" : "You declined the game invite"}</p>}
-		 	{message.status === 4 && <p className="text-xs font-light opacity-70 text-red-400 mt-2"> {"The invite was cancelled"}</p>}
+			{message.status === 3 && <p className="text-xs font-light opacity-70 text-red-400 mt-2">{isSender ? "Your invite was declined" : "You declined the game invite"}</p>}
+			{message.status === 4 && <p className="text-xs font-light opacity-70 text-red-400 mt-2">{"The invite was cancelled"}</p>}
+			{message.status === 5 && <p className="text-xs font-light opacity-70 text-red-400 mt-2">{isSender ? "The invite was accepted while you were unavailable": "The sender is currently unavailable"}</p>}
 		</div>
 	)
 }
@@ -209,7 +212,3 @@ export function IsTypingBubble( { isTyping }: {isTyping: string})
 		</div>
 	)
 }
-
-
-
-

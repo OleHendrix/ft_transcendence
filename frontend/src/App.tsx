@@ -7,6 +7,7 @@ import { PlayerState } from "./types"
 import { ChatProvider } from "./contexts/ChatContext";
 import { AccountProvider, useAccountContext } from './contexts/AccountContext';
 import { TournamentProvider, useTournamentContext } from "./contexts/TournamentContext";
+import { PlayerinfoProvider } from './contexts/PlayerinfoContext';
 import { PongProvider } from './contexts/PongContext';
 
 function MainContent()
@@ -29,6 +30,7 @@ function App()
 		<div className='h-screen min-h-screen w-screen overflow-x-hidden bg-[#222222] font-satoshi text-white'>
 			<div className="flex flex-col w-full h-full bg-[#222222]">
 			<AccountProvider>
+				<PlayerinfoProvider>
 				<PongProvider>
 				<TournamentProvider>
 					<ChatProvider>
@@ -37,6 +39,7 @@ function App()
 					</ChatProvider>
 				</TournamentProvider>
 				</PongProvider>
+				</PlayerinfoProvider>
 			</AccountProvider>
 			</div>
 		</div>

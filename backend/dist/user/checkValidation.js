@@ -13,12 +13,12 @@ exports.default = checkValidation;
 function checkValidation(fastify, prisma) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/check-validation', (req, reply) => __awaiter(this, void 0, void 0, function* () {
-            const { username, email } = req.body;
+            const { username, email, prevUsername, prevEmail } = req.body;
             const usernameExist = yield prisma.account.findUnique({ where: { username } });
-            if (usernameExist !== null)
+            if (usernameExist !== null && usernameExist.username !== prevUsername)
                 return reply.status(200).send({ success: false, type: 'Username exists' });
             const emailExist = yield prisma.account.findUnique({ where: { email } });
-            if (emailExist !== null)
+            if (emailExist !== null && emailExist.email !== prevEmail)
                 return reply.status(200).send({ success: false, type: 'Email exists' });
             return reply.status(200).send({ success: true });
         }));
