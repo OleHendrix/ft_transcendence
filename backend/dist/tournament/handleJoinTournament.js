@@ -4,36 +4,29 @@ exports.handleJoinTournament = handleJoinTournament;
 const tournament_1 = require("./tournament");
 const broadcastTournamentUpdates_1 = require("./broadcastTournamentUpdates");
 function handleJoinTournament(connection, playerId, playerUsername, tournamentId) {
+    if (tournamentId === -1)
+        return;
     const tournament = tournament_1.tournamentLobbies.get(tournamentId);
     if (!tournament) {
-        console.log(`Tournament ${tournamentId} not found`);
+        console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_NOT_FOUND`);
         connection.close();
         return;
     }
     if (tournament.players.length >= tournament.maxPlayers) {
-        console.log(`Tournament ${tournamentId} already full`);
+        console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`); //TODO test this
         connection.close();
         return;
     }
     if (tournament.players.find(p => p.id === playerId)) {
-        console.log(`Player ${playerId} already in tournament`);
-        return;
+        tournament.sockets.add(connection);
+        return console.log(`handleJoinTournament:Player${playerId}:TRIED_TO_JOIN:tournament${tournamentId}:ALLREADY_IN`);
     }
     const player = {
         id: playerId,
         username: playerUsername,
     };
-    connection.playerId = playerId;
+    connection.playerId = playerId; // useless??? 
     tournament.players.push(player);
     tournament.sockets.add(connection);
-    (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "PLAYER_UPDATE");
-    if (tournament.players.length >= tournament.maxPlayers) {
-        (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "START_SIGNAL");
-    }
-    connection.on("close", () => {
-        tournament.players = tournament.players.filter(p => p.id !== playerId);
-        tournament.sockets.delete(connection);
-        // console.log("ON CLOSE PLAYERUPDATE");
-        (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "PLAYER_UPDATE");
-    });
+    (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "UPDATE");
 }

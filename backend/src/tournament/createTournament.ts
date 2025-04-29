@@ -1,5 +1,5 @@
 import { FastifyInstance } 		from "fastify/fastify";
-import { PlayerData } 			from "../types/types";
+import { PlayerData, Match } 	from "../types/types";
 import { tournamentLobbies } 	from "./tournament";
 import { WebSocket } 			from 'ws';
 
@@ -10,7 +10,7 @@ export async function createTournament(fastify: FastifyInstance)
 		fastify.post('/api/create-tournament', (request, reply) => {
 			try {
 				const { hostId, hostUsername, maxPlayers } = request.body as {
-					hostId: string;
+					hostId: number;
 					hostUsername: string;
 					maxPlayers: string;
 				};
@@ -20,19 +20,22 @@ export async function createTournament(fastify: FastifyInstance)
 				
 				const sockets = new Set<WebSocket>();
 				const players: PlayerData[] = [];
+				const winners: PlayerData[][] = [];
+				const rounds: Match[][] = [];
 				
 				const tournamentData = {
 					tournamentId,
-					// hostId,
+					hostId,
 					hostUsername,
 					players,
+					winners,
+					roundIdx: 0,
 					maxPlayers: Number(maxPlayers),
-					rounds: null,
+					rounds,
 					sockets,
 				};
 
 				tournamentLobbies.set(tournamentId, tournamentData);
-				// console.log(tournamentLobbies);
 				reply.send( { tournamentId: tournamentId } );
 			} catch (error){
 				console.log(error);

@@ -16,10 +16,9 @@ function leaveTournament(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
         fastify.post('/api/leave-tournament', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { playerId, tournamentId } = request.body;
-            // console.log(`player ${playerId} LEAVING tournament ${tournamentId}`);
             let tournament = tournament_1.tournamentLobbies.get(tournamentId);
             if (!tournament)
-                return reply.status(400).send({ error: "Invalid tournament ID" });
+                return reply.status(500).send({ error: `player ${playerId} tried to leave invalid tournamentid: ${tournamentId}` });
             for (let socket of tournament.sockets) {
                 if (socket.playerId === playerId) {
                     socket.close();
@@ -27,9 +26,11 @@ function leaveTournament(fastify) {
                 }
             }
             tournament.players = tournament.players.filter(player => player.id !== playerId);
-            if (tournament.players.length === 0)
+            if (tournament.players.length === 0) {
                 tournament_1.tournamentLobbies.delete(tournamentId);
-            (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "PLAYER_UPDATE");
+                return;
+            }
+            (0, broadcastTournamentUpdates_1.broadcastTournamentUpdate)(tournamentId, "UPDATE");
         }));
     });
 }

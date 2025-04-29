@@ -13,26 +13,17 @@ exports.getTournamentById = getTournamentById;
 const tournament_1 = require("./tournament");
 function getTournamentById(fastify) {
     return __awaiter(this, void 0, void 0, function* () {
-        fastify.get('/api/get-tournament/:id', (request, reply) => __awaiter(this, void 0, void 0, function* () {
-            var _a;
+        fastify.get('/api/tournament-data/:id', (request, reply) => __awaiter(this, void 0, void 0, function* () {
             const { id } = request.params;
             const tournamentId = parseInt(id, 10);
-            if (isNaN(tournamentId)) {
+            if (isNaN(tournamentId) || tournamentId === -1) {
                 return reply.status(400).send({ error: "Invalid tournament ID" });
             }
             const tournament = tournament_1.tournamentLobbies.get(tournamentId);
             if (!tournament) {
                 return reply.status(404).send({ error: "Tournament not found" });
             }
-            const tournamentInfo = {
-                tournamentId,
-                hostUsername: ((_a = tournament.players[0]) === null || _a === void 0 ? void 0 : _a.username) || "Unknown",
-                players: tournament.players.map(player => player.username),
-                maxPlayers: tournament.maxPlayers,
-                currentPlayers: tournament.players.length,
-                roundsStarted: tournament.rounds !== null,
-            };
-            reply.send(tournamentInfo);
+            return reply.send(tournament);
         }));
     });
 }

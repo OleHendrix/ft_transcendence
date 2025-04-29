@@ -2,7 +2,6 @@
 // |               WARNING: is a duplicate of frontend/types.ts               |
 // +--------------------------------------------------------------------------+
 
-
 export interface PlayerData
 {
 	id:			number;
@@ -11,7 +10,7 @@ export interface PlayerData
 
 export enum Opponent
 {
-	AI = -1,
+	AI 	= -1,
 	ANY = -2,
 }
 
@@ -21,28 +20,56 @@ export interface QueueData
 	opponentID:	number | Opponent;
 }
 
-export interface PlayerType
+export interface MatchHistory
 {
 	id:			number;
-	username:	string;
-	email:		string;
-	password:	string;
+	winner:		string;
+	p1:			string;
+	p2:			string;
+	p1score:	number;
+	p2score:	number;
+	p1Elo:		number;
+	p2Elo:		number;
+	p1Diff:		number;
+	p2Diff:		number;
+};
+
+export interface PlayerType
+{
+	id:				number;
+	admin:			boolean;
+	online:			boolean;
+	username:		string;
+	email:			string;
+	matchesPlayed:	number;
 	avater:		string;
-	wins:		number;
-	draws:		number;
-	losses:		number;
-	elo:		number;
-	totpSecret:	boolean;
-	admin: boolean;
+	wins:			number;
+	draws:			number;
+	losses:			number;
+	winRate:		number;
+	elo:			number;
+	twofa:			boolean;
 	matches:		MatchHistory[];
+}
+
+export interface Message
+{
+	id: 			number;
+	content:		string;
+	timestamp: 		string;
+	receiverId: 	number;
+	chatSessionId: 	number;
+	senderUsername: string;
+	senderId: 		number;
+	status: 		number;
 }
 
 export interface SignUpFormType
 {
-	username: string;
-	email: string;
-	password: string;
-	confirmPassword: string;
+	username: 			string;
+	email: 				string;
+	password: 			string;
+	confirmPassword: 	string;
 };
 
 export interface LoginFormType
@@ -53,7 +80,7 @@ export interface LoginFormType
 
 export interface LoginValidationType
 {
-  'Already logged in': boolean;
+  'Already logged in': 	boolean;
   'Username not found': boolean; 
   'Password incorrect': boolean;
   '2FA Code incorrect': boolean;
@@ -129,27 +156,11 @@ export interface Match
 	tournamentId:	number;
 };
 
-export interface MatchHistory
+export enum PlayerState
 {
-	id:			number;
-	winner:		string;
-	p1:			string;
-	p2:			string;
-	p1score:	number;
-	p2score:	number;
-	p1Elo:		number;
-	p2Elo:		number;
-	p1Diff:		number;
-	p2Diff:		number;
-};
-
-export interface Round
-{
-	p1:			PlayerData;
-	p2:			PlayerData;
-	p1score:	number;
-	p2score:	number;
-	result:		Result;
+	idle,
+	playing,
+	queueing
 }
 
 import type { WebSocket } from 'ws';
@@ -157,10 +168,12 @@ import type { WebSocket } from 'ws';
 export interface TournamentData
 {
 	tournamentId:	number;
-	// hostId:			number;
+	hostId:			number;
 	hostUsername: 	string;
-	players:		PlayerData[];
 	maxPlayers:		number;
-	rounds:			Round[] | null;
+	players:		PlayerData[];
+	winners:		PlayerData[][];
+	roundIdx:		number;
+	rounds:			Match[][] | null;
 	sockets:		Set<WebSocket>;
 };

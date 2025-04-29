@@ -10,7 +10,7 @@ export interface PlayerData
 
 export enum Opponent
 {
-	AI = -1,
+	AI 	= -1,
 	ANY = -2,
 }
 
@@ -61,22 +61,22 @@ export interface AuthenticatedAccount extends PlayerType
 
 export interface Message
 {
-	id: number;
-	content: string;
-	timestamp: string;
-	receiverId: number;
-	chatSessionId: number;
+	id: 			number;
+	content:		string;
+	timestamp: 		string;
+	receiverId: 	number;
+	chatSessionId: 	number;
 	senderUsername: string;
-	senderId: number;
-	status: number;
+	senderId: 		number;
+	status: 		number;
 }
 
 export interface SignUpFormType
 {
-	username: string;
-	email: string;
-	password: string;
-	confirmPassword: string;
+	username: 			string;
+	email: 				string;
+	password: 			string;
+	confirmPassword: 	string;
 };
 
 export interface SignUpValidatonType
@@ -96,7 +96,7 @@ export interface LoginFormType
 
 export interface LoginValidationType
 {
-  'Already logged in': boolean;
+  'Already logged in': 	boolean;
   'Username not found': boolean; 
   'Password incorrect': boolean;
   '2FA Code incorrect': boolean;
@@ -129,6 +129,14 @@ export interface AI
 {
 	lastActivation:	number;
 	desiredY:		number;
+}
+
+export interface Statics
+{
+	BOUNCE:		Vec2;
+	CARRYOVER:	number,
+	VELOCITY:	number,
+	FRICTION:	number,
 }
 
 export enum Result
@@ -171,3 +179,18 @@ export enum PlayerState
 	playing,
 	queueing
 }
+
+import type { WebSocket } from 'ws';
+
+export interface TournamentData
+{
+	tournamentId:	number;
+	hostId:			number;
+	hostUsername: 	string;
+	maxPlayers:		number;
+	players:		PlayerData[];
+	winners:		PlayerData[][];
+	roundIdx:		number;
+	rounds:			Match[][] | null;
+	sockets:		Set<WebSocket>;
+};
