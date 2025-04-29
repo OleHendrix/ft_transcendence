@@ -50,7 +50,6 @@ export function TournamentProvider({ children }: {children: ReactNode})
 
 	useEffect(() => { //on mount (for refresh) set TournamentID back
 		const storedId = localStorage.getItem("tournamentId");
-		console.log("REFRESH/???");
 		if (storedId) {
 			console.log(`setting tournament id to localstorage stored Id : ${storedId}`);
 			setTournamentId(JSON.parse(storedId));
@@ -58,7 +57,6 @@ export function TournamentProvider({ children }: {children: ReactNode})
 			(async () => {
 				try {
 					const response = await axios.get(`http://${window.location.hostname}:5001/api/tournament-data/${storedId}`);
-					console.log("setting TournamentData:", response.data);
 					setTournamentData(response.data);
 					setPlayers(response.data.players);
 				} catch (error) {
@@ -73,14 +71,10 @@ export function TournamentProvider({ children }: {children: ReactNode})
 
 	useEffect(() => {
 		const player = loggedInAccounts[0];
-		if (
-			tournamentId === -1 ||
-			!player?.id || !player?.username
-		) return;
+		if ( tournamentId === -1 || !player?.id || !player?.username ) return;
 
 		localStorageUpdateTournamentId(tournamentId);
 
-		// const player = loggedInAccounts[0];
 		if (socketRef.current) {
 			socketRef.current.close();
 		}

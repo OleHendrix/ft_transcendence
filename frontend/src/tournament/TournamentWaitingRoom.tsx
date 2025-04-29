@@ -1,4 +1,4 @@
-import { useState } 						from 'react';
+import { useMemo, useState } 				from 'react';
 import axios 								from 'axios';
 import { motion, AnimatePresence } 			from 'framer-motion';
 import { useNavigate } 						from 'react-router-dom';
@@ -37,10 +37,11 @@ export default function TournamentWaitingRoom() {
 		}
 	};
 
-	function generateBracket(players: PlayerData[], maxPlayers: number) {
+	function generateBracket(players: PlayerData[], maxPlayers: number, winners: PlayerData[][]) {
 		const totalRounds = Math.log2(maxPlayers);
 		const rounds: string[][] = [];
-
+	
+		// First round: use actual player usernames
 		let currentRound: string[] = [];
 		for (let i = 0; i < maxPlayers; i += 2) {
 			const p1 = players[i]?.username || `TBD`;
@@ -48,16 +49,34 @@ export default function TournamentWaitingRoom() {
 			currentRound.push(`${p1} vs ${p2}`);
 		}
 		rounds.push(currentRound);
-
+	
+		// Following rounds: use winner names if available
 		for (let r = 1; r < totalRounds; r++) {
 			const matchesInRound = maxPlayers / Math.pow(2, r + 1);
-			const nextRound = Array.from({ length: matchesInRound }, (_, i) => `Winner ${i * 2 + 1} vs Winner ${i * 2 + 2}`);
+			const nextRound: string[] = [];
+	
+			for (let i = 0; i < matchesInRound; i++) {
+				const w1 = winners[r - 1]?.[i * 2]?.username;
+				const w2 = winners[r - 1]?.[i * 2 + 1]?.username;
+	
+				if (w1 && w2) {
+					nextRound.push(`${w1} vs ${w2}`);
+				} else {
+					nextRound.push(`Winner ${i * 2 + 1} vs Winner ${i * 2 + 2}`);
+				}
+			}
+	
 			rounds.push(nextRound);
 		}
 		return rounds;
 	}
 
-	const rounds = tournamentData ? generateBracket(players, tournamentData.maxPlayers) : [];
+
+	const rounds = useMemo(() => {
+		if (!tournamentData) return [];
+		return generateBracket(players, tournamentData.maxPlayers, tournamentData.winners);
+	}, [players, tournamentData?.maxPlayers, tournamentData?.winners]);
+	
 
 	return (
 		<motion.div
@@ -118,6 +137,7 @@ export default function TournamentWaitingRoom() {
 				<div className="mt-6 flex justify-center gap-6 flex-wrap">
 					{tournamentData &&
 						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
+						!readyForNextRound &&
 						players.length === tournamentData.maxPlayers && (
 							<button
 								onClick={async () => {
