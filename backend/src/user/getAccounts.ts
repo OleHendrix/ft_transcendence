@@ -13,7 +13,7 @@ export default async function getAccounts(fastify: FastifyInstance, prisma: Pris
 			{
   				return 	{
     				...account,
-    				avatar: account.avatar ? `http://${request.hostname}:5001${account.avatar}` : account.avatar
+    				avatar: account.avatar ? `https://${request.hostname}:5001${account.avatar}` : account.avatar
   						};
 			});
 			return reply.send({ accounts: accountsWithAvatarPath });
