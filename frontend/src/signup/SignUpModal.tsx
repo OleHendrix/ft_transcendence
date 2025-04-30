@@ -52,7 +52,7 @@ function SignUpModal()
 					{validation['Already logged in'] && <AlreadyLoggedInMessage />}
 					{((validation['Username exists'] || validation['Email exists'])) && !validation['Already logged in'] && <AccountExistsMessage />}
 					<SignUpButton validation={validation} emptyForm={emptyForm} />
-					{!(validation['Already logged in'] && validation['Username exists'] || validation['Email exists']) && <LoginMessage />}
+					{!(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) && <LoginMessage />}
 				</form>
 			</motion.div>
 		</ModalWrapper>
