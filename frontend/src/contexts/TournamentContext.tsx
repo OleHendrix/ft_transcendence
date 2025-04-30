@@ -68,7 +68,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		} else {
 			setTournamentId(-1);
 		}
-	}, []
+	}, []);
 	
 
 	useEffect(() => {
@@ -114,8 +114,8 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		};
 	
 		socket.onclose = () => {
-			navigate('/');
-			console.log("WebSocket tournament waiting room closed");
+			// navigate('/');
+			// console.log("WebSocket tournament waiting room closed");
 		};
 	
 		return () => {
