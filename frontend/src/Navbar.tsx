@@ -31,6 +31,12 @@ function Navbar()
 
 	return (
 		<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+			<div className="flex-grow flex justify-center">
+				<button onClick={() => toMenu()}>
+					<img src={logo} alt="Logo" className="h-16 w-auto" />
+				</button>
+			</div>
+
 			<div className="absolute left-[6vw] md:left-[4vw]">
 				<motion.button 
 					className="hover:cursor-pointer" 
@@ -43,12 +49,6 @@ function Navbar()
 					}}>
 					<PiUserListLight className="h-10 w-auto"/>
 				</motion.button>
-			</div>
-
-			<div className="flex-grow flex justify-center">
-				<button onClick={() => toMenu()}>
-					<img src={logo} alt="Logo" className="h-16 w-auto" />
-				</button>
 			</div>
 			
 			<div className="absolute right-[6vw] md:right-[4vw] hidden md:block">

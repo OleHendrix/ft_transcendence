@@ -114,8 +114,6 @@ export default function Leaderboard()
 					transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 					<div className='flex flex-col items-center font-bold'>
 						<img src={logo} className='h-16 w-auto'/>
-						{/* <p className='text-2xl'>Top Players</p>
-						<GoTrophy size={18} className='text-[#ff914d] mt-2'/> */}
 					</div>
 
 					
@@ -126,30 +124,30 @@ export default function Leaderboard()
 					</button>
 
 					<div className='flex flex-col w-full max-h-[80vh] overflow-y-auto rounded-lg gap-2'>
-					<div className='w-full flex justify-end'>
-						<SearchBar setSearchInput={setSearchInput} backGroundColor={'bg-[#1a1a1a]/20'}/>
-					</div>
+						<div className='w-full flex justify-end'>
+							<SearchBar setSearchInput={setSearchInput} backGroundColor={'bg-[#1a1a1a]/20'}/>
+						</div>
 
-					<div className="w-full max-h-[80vh] overflow-y-auto rounded-lg border border-base-content/5 bg-transparent">
-						<table className="table w-full text-center">
-							<thead className="sticky top-0 z-10 bg-black shadow-2xl">
-								<tr className="text-m md:text-lg font-light bg-[#303030]/90 text-lightgrey">
-									<th className="text-m text-left">#</th>
-									<th className="text-left">Name</th>
-									<th>ELO</th>
-									<th>Wins</th>
-									<th>Losses</th>
-									<th>Win Rate</th>
-								</tr>
-							</thead>
-							<tbody>
-								{sortedAccounts
-									.filter(account => account.username.toLowerCase().includes(searchInput.toLowerCase()))
-									.map((account, index) => GetPositionFormatting(account, accounts, index))
-								}
-							</tbody>
-						</table>
-					</div>
+						<div className="w-full max-h-[80vh] overflow-y-auto rounded-lg border border-base-content/5 bg-transparent">
+							<table className="table w-full text-center">
+								<thead className="sticky top-0 z-10 bg-black shadow-2xl">
+									<tr className="text-m md:text-lg font-light bg-[#303030]/90 text-lightgrey">
+										<th className="text-m text-left">#</th>
+										<th className="text-left">Name</th>
+										<th>ELO</th>
+										<th>Wins</th>
+										<th>Losses</th>
+										<th>Win Rate</th>
+									</tr>
+								</thead>
+								<tbody>
+									{sortedAccounts
+										.filter(account => account.username.toLowerCase().includes(searchInput.toLowerCase()))
+										.map((account, index) => GetPositionFormatting(account, accounts, index))
+									}
+								</tbody>
+							</table>
+						</div>
 					</div>
 					<Outlet />
 				</motion.div>

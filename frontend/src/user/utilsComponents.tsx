@@ -19,7 +19,7 @@ export function StyledButton({ onClick, variant, width = 'w-full', text, disable
 {
 	return (
 		<motion.button
-			className={`${width} ${variant === 'primary' ? 'bg-[#ff914d] hover:bg-[#ab5a28]' : 'bg-red-900 hover:bg-red-700'} ${disabled ? 'opacity-30' : 'hover:cursor-pointer'} 
+			className={`${width} ${variant === 'primary' ? 'bg-[#ff914d] hover:bg-[#ab5a28]' : 'bg-[#134588] hover:bg-[#103568]'} ${disabled ? 'opacity-30' : 'hover:cursor-pointer'} 
                 text-white text-xs py-2 px-2 rounded-3xl font-bold transition-colors shadow-2xl`}
 			whileHover={!disabled ? { scale: 1.03 } : {}} whileTap={!disabled ? { scale: 0.97 } : {}}
 			onClick={onClick} disabled={disabled}>
