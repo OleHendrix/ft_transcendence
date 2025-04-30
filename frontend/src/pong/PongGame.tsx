@@ -8,17 +8,19 @@ import { formatTime, ParseResult } from './pongUtils';
 import { usePongContext } from '../contexts/PongContext';
 import { useNavigate, useNavigationType } from 'react-router-dom';
 import { IoArrowUndoOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
-import { isBrowser } from "react-device-detect";
+import { isBrowser, isMobile, isTablet } from "react-device-detect";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
 
 function PongGame() {
 	const { loggedInAccounts, setIsPlaying } 					= useAccountContext();
-	const { pongState: pong, setPongState, match, setMatch } 	= usePongContext();
+	const { pongState: pong, setPongState, match, setMatch }	= usePongContext();
 
 	const navigate = useNavigate();
 	const navigationType = useNavigationType();
+	const usesBrowser = !(isMobile || isTablet);
+	console.log(usesBrowser);
 
 	useEffect(() => {
 		if (navigationType === "POP") {
@@ -69,7 +71,7 @@ function PongGame() {
 			if (socketRef.current?.readyState === WebSocket.OPEN) {
 				socketRef.current.send(JSON.stringify({
 					userID: loggedInAccounts[0].id,
-					keysPressed: isBrowser ? keysPressed.current : mobileKeysPressed.current,
+					keysPressed: usesBrowser ? keysPressed.current : mobileKeysPressed.current,
 				}));
 			}
 		};
@@ -95,14 +97,22 @@ function PongGame() {
 	}, []);
 
 	function leaveMatch(userID: number) {
+		if (match.tournamentId !== -1) {
+			navigate('/tournament/waiting-room', { replace: true });
+		} else {
+			navigate('/', { replace: true });
+		}
 		setIsPlaying(PlayerState.idle);
 		axios.post(`${API_URL}/pong/delete`, { userID: userID });
-		// console.log(`PongGame:leaveMatch:api/pong/delete:userId${userID}:tournamentId${match.tournamentId}`);
+	}
 
-		if (match.tournamentId !== -1)
-			navigate('/tournament/waiting-room');
-		else
-			navigate('/');
+	async function forfeitMatch() {
+		try {
+			await axios.post(`${API_URL}/pong/end-game`, { userID: loggedInAccounts[0].id });
+			leaveMatch(loggedInAccounts[0].id)
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
@@ -126,20 +136,11 @@ function PongGame() {
 		return (<div className='text-2xl italic'>loading...</div>);
 	}
 
-	function toMenu() {
-		try {
-			axios.post(`${API_URL}/pong/end-game`, { userID: loggedInAccounts[0].id });
-			leaveMatch(loggedInAccounts[0].id)
-		} catch (error) {
-			console.log(error);
-		}
-	}
-
 	function CreateMotionButton( pos: Vec2, output: string, isUp: boolean) {
-		console.log("button")
 		return (
 			<motion.button
-				className="rounded-lg bg-white/10 hover:cursor-pointer absolute -translate-x-1/2 -translate-y-1/2 shadow-xl"
+				className="flex items-center justify-center rounded-lg bg-white/10 hover:cursor-pointer absolute -translate-x-1/2 -translate-y-1/2 shadow-xl text-5xl text-center text-gray-400"
+				whileHover={{ scale: 1.00 }}
 				whileTap={{ scale: 0.94 }}
 				style={{ width: '10vh', height: '10vh', top: `${pos.y}vh`, left: `${pos.x}vw` }}
 				onPointerDown={() => { mobileKeysPressed.current[output] = true; }}
@@ -151,7 +152,7 @@ function PongGame() {
 	}
 
 	function RenderButtons() {
-		if (isBrowser) {
+		if (usesBrowser) {
 			return (<></>);
 		}
 		return (
@@ -178,7 +179,7 @@ function PongGame() {
 		<>
 			<div className='w-screen h-screen flex flex-col'>
 				<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
-					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => toMenu()}>
+					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => forfeitMatch()}>
 						<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-30 hover:opacity-70" />
 					</motion.button>
 					<div className='absolute left-[25%] text-2xl opacity-50'>
