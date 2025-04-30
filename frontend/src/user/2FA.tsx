@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { PlayerType } from "../types";
 import { EditIcon, StyledButton } from "./utilsComponents";
-import { motion } from "framer-motion";
 import { secureApiCall } from "../jwt/secureApiCall";
 const API_URL = import.meta.env.VITE_API_URL;
 

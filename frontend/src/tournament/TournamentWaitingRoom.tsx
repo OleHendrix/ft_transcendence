@@ -12,7 +12,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function TournamentWaitingRoom() {
 	const { loggedInAccounts } 											= useAccountContext();
 	const { setTournamentId, setReadyForNextRound }						= useTournamentContext();
-	const { tournamentId, tournamentData, readyForNextRound } 			= useTournamentContext();
+	const { tournamentId, tournamentData, readyForNextRound }			= useTournamentContext();
 	const [ isLeaving, setIsLeaving ]									= useState(false);
 	const { countdown, setCountdown }									= useTournamentContext();
 	const navigate 														= useNavigate();
