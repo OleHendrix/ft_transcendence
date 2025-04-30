@@ -22,6 +22,7 @@ export async function createTournament(fastify: FastifyInstance)
 				const players: PlayerData[] = [];
 				const winners: PlayerData[][] = [];
 				const rounds: Match[][] = [];
+				const winner = null;
 				
 				const tournamentData = {
 					tournamentId,
@@ -29,6 +30,7 @@ export async function createTournament(fastify: FastifyInstance)
 					hostUsername,
 					players,
 					winners,
+					winner,
 					roundIdx: 0,
 					maxPlayers: Number(maxPlayers),
 					rounds,
