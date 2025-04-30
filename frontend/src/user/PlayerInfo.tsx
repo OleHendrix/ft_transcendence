@@ -50,24 +50,6 @@ function ShowInfo( {editProfile, setEditProfile, selectedAccount, setSelectedAcc
 
 	return (
 		<div className="flex flex-col w-full text-left space-y-4 items-center">
-			{ editProfile &&
-			(
-			<div className="w-full flex text-xs justify-between whitespace-nowrap gap-2">
-				{!confirmDelete && <LogoutDeleteButton keyword="delete" onClick={() => setConfirmDelete(true)}/>}
-				{confirmDelete ?
-				<>
-					<StyledButton onClick={() => {setConfirmDelete(false)}} variant="primary" text="Cancel"/>
-					<StyledButton onClick={() => {deleteAccount({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}); navigate('/')}} variant="secondary" text="Delete account"/>
-					</>
-				: 
-				<>
-					<StyledButton disabled={(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password does not match'])} 
-						onClick={() => {updateAccount({formData, loggedInAccounts, setLoggedInAccounts, selectedAccount, setEditProfile, setTriggerFetchAccounts, navigate})}} variant="primary" text="Save changes"/>
-					<StyledButton
-						onClick={() => {cancelEdit({setEditProfile, setSettingUp2FA, setConfirmDisable2Fa, setFormData, selectedAccount})}} variant="secondary" text="Cancel"/>
-				</>}
-			</div>
-			)}
 			{!confirmDelete && !editProfile &&
 			<>
 				<DisplayInfo keyword="Username" value={selectedAccount?.username}/>
@@ -85,6 +67,26 @@ function ShowInfo( {editProfile, setEditProfile, selectedAccount, setSelectedAcc
 			{!confirmDelete && <Display2FA loggedInAccounts={loggedInAccounts} selectedAccount={selectedAccount} setLoggedInAccounts={setLoggedInAccounts} setSelectedAccount={setSelectedAccount} setTriggerFetchAccounts={setTriggerFetchAccounts} editProfile={editProfile} setEditProfile={setEditProfile} confirmDisable2Fa={confirmDisable2Fa} setConfirmDisable2Fa={setConfirmDisable2Fa} settingUp2FA={settingUp2FA} setSettingUp2FA={setSettingUp2FA}/>}
 			{validation['Already logged in'] && <AlreadyLoggedInMessage />}
 			{((validation['Username exists'] || validation['Email exists']) && !validation['Already logged in']) && <AccountExistsMessage />}
+			{ editProfile &&
+			(
+			<div className="w-full flex text-xs justify-between whitespace-nowrap gap-2">
+				{!confirmDelete && <LogoutDeleteButton keyword="delete" onClick={() => setConfirmDelete(true)}/>}
+				{confirmDelete ?
+				<>
+					<StyledButton
+						onClick={() => {deleteAccount({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}); navigate('/')}} variant="primary" text="Delete account"/>
+					<StyledButton 
+						onClick={() => {setConfirmDelete(false)}} variant="secondary" text="Cancel"/>
+				</>
+				: 
+				<>
+					<StyledButton disabled={(emptyForm|| validation['Already logged in'] || validation['Username exists'] || validation['Email exists'] || validation['Password does not match'])} 
+						onClick={() => {updateAccount({formData, loggedInAccounts, setLoggedInAccounts, selectedAccount, setEditProfile, setTriggerFetchAccounts, navigate})}} variant="primary" text="Save changes"/>
+					<StyledButton
+						onClick={() => {cancelEdit({setEditProfile, setSettingUp2FA, setConfirmDisable2Fa, setFormData, selectedAccount})}} variant="secondary" text="Cancel"/>
+				</>}
+			</div>
+			)}
 		</div>
 	);
 }

@@ -144,20 +144,16 @@ function manageAI(game: PongState): void
 
 function updateInput(match: Match, userID: number, game: PongState, keysPressed: {[key: string]: boolean})
 {
-	if (match.isLocalGame === true)
-	{
-		game.p1Input = Number(keysPressed['s'] ?? false) - Number(keysPressed['w'] ?? false);
-		if (match.p2.id !== -1)
-		{
+	if (match.isLocalGame === true) {
+		if (match.p2.id === -1) {
+			game.p1Input = Number((keysPressed['s'] ?? false) || (keysPressed['ArrowDown'] ?? false)) - Number((keysPressed['w'] ?? false) || (keysPressed['ArrowUp'] ?? false));
+		} else {
+			game.p1Input = Number(keysPressed['s'] ?? false) - Number(keysPressed['w'] ?? false);
 			game.p2Input = Number(keysPressed['ArrowDown'] ?? false) - Number(keysPressed['ArrowUp'] ?? false);
 		}
-	}
-	else if (match.p1.id === userID)
-	{
+	} else if (match.p1.id === userID) {
 		game.p1Input = Number((keysPressed['s'] ?? false) || (keysPressed['ArrowDown'] ?? false)) - Number((keysPressed['w'] ?? false) || (keysPressed['ArrowUp'] ?? false));
-	}
-	else if (match.p2.id === userID)
-	{
+	} else if (match.p2.id === userID) {
 		game.p2Input = Number((keysPressed['s'] ?? false) || (keysPressed['ArrowDown'] ?? false)) - Number((keysPressed['w'] ?? false) || (keysPressed['ArrowUp'] ?? false));
 	}	
 }
