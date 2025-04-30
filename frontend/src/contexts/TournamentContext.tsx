@@ -114,8 +114,8 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		};
 	
 		socket.onclose = () => {
-			// navigate('/');
-			// console.log("WebSocket tournament waiting room closed");
+			navigate('/');
+			console.log("WebSocket tournament waiting room closed");
 		};
 	
 		return () => {
