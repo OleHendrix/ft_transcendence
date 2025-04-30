@@ -68,7 +68,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		} else {
 			setTournamentId(-1);
 		}
-	}, []);
+	}, []
 	
 
 	useEffect(() => {
