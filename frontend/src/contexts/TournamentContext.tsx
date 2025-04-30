@@ -9,7 +9,7 @@ const WS_URL = import.meta.env.VITE_WS_URL;
 
 type TournamentContextType = {
 	tournamentId: 		number | null;
-	setTournamentId: 	Dispatch<SetStateAction<number>>;
+	setTournamentId: 	Dispatch<SetStateAction<number | null>>;
 
 	showTournamentWaitingRoom: 	boolean;
 	setShowTournamentWaitingRoom: Dispatch<SetStateAction<boolean>>;

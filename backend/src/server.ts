@@ -38,14 +38,13 @@ fastify.get('/', async (request, reply) =>
 	return { message: 'Server is running!' };
 });
 
-	fastify.listen({ port: Number(process.env.PORT || 5001), host: '0.0.0.0' }, (err, address) =>
+fastify.listen({ port: Number(process.env.PORT || 5001), host: '0.0.0.0' }, (err, address) =>
+{
+	if (err)
 	{
-		if (err)
-		{
-			console.error(err);
-			process.exit(1);
-		}
-		console.log(`Server running at ${address}`);
-	});
-
+		console.error(err);
+		process.exit(1);
+	}
+	console.log(`Server running at ${address}`);
+});
 // start();
