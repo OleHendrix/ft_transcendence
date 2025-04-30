@@ -101,14 +101,14 @@ export default function TournamentWaitingRoom() {
 	
 
 	return (
-		// <motion.div
-		// 	className="absolute top-[8vh] w-screen h-[calc(100vh-8vh)] backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
-		// 	initial={{ opacity: 0 }}
-		// 	animate={{ opacity: 1 }}
-		// 	exit={{ opacity: 0 }}
-		// >
+	<motion.div
+			className="absolute top-[8vh] w-screen h-[calc(100vh-8vh)] backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			exit={{ opacity: 0 }}
+		>
 			<motion.div
-				className="absolute bg-[#1e1e1e] text-white top-[8vh] w-screen h-[calc(100vh-8vh)] rounded-2xl shadow-2xl p-10 overflow-hidden flex flex-col z-50"
+				className="relative bg-[#1e1e1e]/90 text-white shadow-2xl p-10 w-screen h-[calc(100vh-8vh)] overflow-hidden flex flex-col"
 				initial={{ scale: 0.95, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.95, y: 20 }}
@@ -124,29 +124,34 @@ export default function TournamentWaitingRoom() {
 				</button>
 
 				{/* Title */}
-				<h1 className="text-3xl font-bold mb-6 text-center uppercase tracking-wide">
+				<h1 className="text-3xl font-bold mb-6 text-center tracking-wide">
 					Tournament Waiting Room
 				</h1>
 
 				{/* Host Info */}
 				{tournamentData && (
 					<div className="flex justify-center gap-10 mb-6 text-lg font-medium text-gray-300">
-						<p>Host: <span className="text-white">{tournamentData.hostUsername}</span></p>
-						<p>Players: <span className="text-white">{tournamentData.players.length}/{tournamentData.maxPlayers}</span></p>
+						<p>🎯 Host: <span className="text-white">{tournamentData.hostUsername}</span></p>
+						<p>👥 Players: <span className="text-white">{tournamentData?.players.length}/{tournamentData.maxPlayers}</span></p>
 					</div>
 				)}
+				
+				
+				
+				<div className='w-full h-full flex'>
+				<div className="w-full lg:w-1/8 flex flex-col justify-start p-6 space-y-12">
+				
 
 				{/* Players List */}
-				<div className="flex-1 overflow-auto px-4">
 					<h2 className="text-2xl font-semibold mb-4">Players in Lobby</h2>
-					<ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-						{tournamentData && tournamentData.players.length > 0 ? (
-							tournamentData.players.map((player: PlayerData, index: number) => (
+					<ul className="flex flex-col gap-2">
+						{(tournamentData?.players && tournamentData?.players.length > 0) ? (
+							tournamentData?.players.map((player: PlayerData, index: number) => (
 								<li
 									key={index}
 									className="bg-gray-700/80 rounded-xl p-3 text-center text-white font-medium shadow-md"
-								>
-									{player.username}
+									>
+									👤 {player.username}
 								</li>
 							))
 						) : (
@@ -154,72 +159,11 @@ export default function TournamentWaitingRoom() {
 						)}
 					</ul>
 				</div>
-
-				{/* Host Controls */}
-				<div className="mt-6 flex justify-center gap-6 flex-wrap">
-					{tournamentData &&
-					loggedInAccounts[0]?.username === tournamentData.hostUsername &&
-					!readyForNextRound &&
-					tournamentData.winners?.[tournamentData.winners.length - 1]?.length !== 1 && 
-					tournamentData.players.length === tournamentData.maxPlayers && (
-						<button
-							onClick={async () => {
-								try {
-									await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { tournamentId });
-									await axios.post(`http://${window.location.hostname}:5001/api/send-message`, {
-										content: `Tournament ${tournamentId}: starting!! WAUAHAHAHAUW`,
-										senderId: 1,
-										receiverId: 1,
-									})
-								} catch (error) {
-									console.error('tournamentWaitingRoom:ON_CLICK:start-tournament:ERROR:', error);
-								}
-							}}
-							className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition"
-						>
-							Start Tournament
-						</button>
-					)}
-
-					{tournamentData &&
-					loggedInAccounts[0]?.username === tournamentData.hostUsername &&
-					tournamentData.winners?.[tournamentData.winners.length - 1]?.length !== 1 && 
-					readyForNextRound && (
-						<button
-							onClick={async () => {
-								try {
-									runCountdown(async() => {
-										await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { tournamentId });
-									})
-									setReadyForNextRound(false);
-								} catch (error) {
-									console.error('tournamentWaitingRoom:ON_CLICK:start-next-round:ERROR:', error);
-								}
-							}}
-							className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition"
-						>
-							Start Next Round
-						</button>
-					)}
-				</div>
-
-
-				{/* Final Winner Section */}
-				{tournamentData &&
-				tournamentData.winner && (
-					<section className="mt-12 w-full flex justify-center">
-						<div className="bg-gradient-to-br from-yellow-400 to-red-500 text-white rounded-2xl shadow-2xl p-8 w-[320px] text-center animate-pulse border-4 border-yellow-300">
-							<h2 className="text-2xl font-bold mb-2">🏆 Tournament Winner</h2>
-							<p className="text-3xl font-black tracking-wide">
-								{tournamentData.winner.username}
-							</p>
-						</div>
-					</section>
-				)}
+				
 
 				{/* Bracket View */}
 				{rounds.length > 0 && (
-					<div className="flex-1 flex items-center justify-center mt-8 overflow-auto">
+				<div className="w-full lg:w-6/8 flex flex-col p-6 justify-start space-y-12">
 						<div className="flex flex-col items-center w-full">
 							<h2 className="text-2xl font-semibold mb-6 text-center">Bracket</h2>
 							<div className="flex gap-6 justify-start items-center w-fit px-4">
@@ -227,8 +171,8 @@ export default function TournamentWaitingRoom() {
 									<div key={roundIndex} className="flex flex-col gap-6 min-w-[200px]">
 										{round.map((match, matchIndex) => (
 											<div
-												key={matchIndex}
-												className="bg-gray-800 text-white px-4 py-2 rounded-xl text-center shadow"
+											key={matchIndex}
+											className="bg-gray-800 text-white px-4 py-2 rounded-xl text-center shadow"
 											>
 												{match}
 											</div>
@@ -239,14 +183,60 @@ export default function TournamentWaitingRoom() {
 						</div>
 					</div>
 				)}
+				</div>
+				<div className='w-full lg:w-1/8'>
+				</div>
 
-				{countdown !== null && (
-					<div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
-						<h1 className="text-white text-9xl font-extrabold animate-pulse">{countdown > 0 ? countdown : 'START!'}</h1>
-					</div>
-				)}
-				<Chat />
+				{/* Host Controls */}
+				<div className="mt-6 flex justify-center gap-6 flex-wrap">
+					{tournamentData &&
+						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
+						!readyForNextRound &&
+						tournamentData?.players.length === tournamentData.maxPlayers && (
+							<button
+								onClick={async () => {
+									try {
+										await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { tournamentId });
+										await axios.post(`http://${window.location.hostname}:5001/api/send-message`, {
+										content: `Tournament ${tournamentId} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
+										senderId: 1,
+										receiverId: 1,
+									})
+									} catch (error) {
+										console.error('tournamentWaitingRoom:ON_CLICK:start-tournament:ERROR:', error);
+									}
+								}}
+								className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition"
+							>
+								Start Tournament
+							</button>
+						)}
+
+					{tournamentData &&
+						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
+						readyForNextRound && (
+							<button
+							onClick={async () => {
+									try {
+										await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { tournamentId });
+										await axios.post(`http://${window.location.hostname}:5001/api/send-message`, {
+										content: `The next round of tournament ${tournamentId} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
+										senderId: 1,
+										receiverId: 1,
+									})
+										setReadyForNextRound(false);
+									} catch (error) {
+										console.error('tournamentWaitingRoom:ON_CLICK:start-next-round:ERROR:', error);
+									}
+								}}
+								className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition"
+							>
+								Start Next Round
+							</button>
+						)}
+				</div>
 			</motion.div>
-		// </motion.div>
+			<Chat />
+		</motion.div>
 	);
 }
