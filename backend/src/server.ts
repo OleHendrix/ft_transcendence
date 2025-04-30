@@ -31,7 +31,14 @@ import verifySetupTotp from './auth/verifySetupTotp';
 const fastify = Fastify();
 export const prisma = new PrismaClient();
 
-fastify.register(fastifyCors);
+fastify.register(fastifyCors, 
+	{
+		origin: [
+			'http://localhost:5173'
+		],
+		credentials: true
+	}
+);
 
 fastify.register(fastifyJwt, { secret: process.env.JWT_SECRET || 'balzak '});
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});

@@ -36,8 +36,10 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 		});
 
 		if (account.avatar && account.avatar !== '')
-			account.avatar = `https://ft-transcendence-6obq.onrender.com${account.avatar}`;
-
+		{
+			// const hostUrl = `${req.protocol}://${req.hostname}`;
+			account.avatar = `${process.env.BACKEND_URL}${account.avatar}`;
+		}
 		const finalToken = fastify.jwt.sign({
 			sub: account.id,
 			username: account.username,
