@@ -123,7 +123,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		};
 	}, [tournamentId]);
 	
-	const value: TournamentContextType = useMemo(() => (
+	const value = useMemo(() => (
 	{
 		tournamentId, setTournamentId,
 		showTournamentWaitingRoom, setShowTournamentWaitingRoom,
