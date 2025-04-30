@@ -8,6 +8,8 @@ import { formatTime, ParseResult } from './pongUtils';
 import { usePongContext } from '../contexts/PongContext';
 import { useNavigate, useNavigationType } from 'react-router-dom';
 import { IoArrowUndoOutline } from "react-icons/io5";
+const API_URL = import.meta.env.VITE_API_URL;
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 function PongGame()
 {
@@ -29,7 +31,7 @@ function PongGame()
 
 	useEffect(() =>
 	{
-		const socket = new WebSocket(`ws://${window.location.hostname}:5001/pong`);
+		const socket = new WebSocket(`${WS_URL}/pong`);
 		socketRef.current = socket;
 
 		socket.addEventListener("message", (event) =>
@@ -46,7 +48,7 @@ function PongGame()
 		const handleUnload = () =>
 		{
 			try {
-				axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { 
+				axios.post(`${API_URL}/pong/end-game`, { 
 					userID: loggedInAccounts[0].id 
 				});
 				socket.close();
@@ -104,7 +106,7 @@ function PongGame()
 	{
 		// navigate("/");
 		setIsPlaying(PlayerState.idle);
-		axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: userID });
+		axios.post(`${API_URL}/pong/delete`, { userID: userID });
 		console.log(`PongGame:leaveMatch:api/pong/delete:userId${userID}:tournamentId${match.tournamentId}`);
 
 		if (match.tournamentId !== -1)
@@ -115,11 +117,11 @@ function PongGame()
 
 	async function rematch(user1: PlayerData, user2: PlayerData)
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/pong/is-local`, { userID: user1.id });
+		const response = await axios.post(`${API_URL}/pong/is-local`, { userID: user1.id });
 		const isLocal: boolean = response.data;
 
 		if (isLocal === true && user2.id !== -1)
-			await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1 , user2, isLocalGame: true, tournament: -1 });
+			await axios.post(`${API_URL}/pong/add`, { user1 , user2, isLocalGame: true, tournament: -1 });
 		else
 			startQueue({ player: user1, opponentID: user2.id }, setIsPlaying, navigate)
 	}
@@ -154,8 +156,8 @@ function PongGame()
 		setIsPlaying(PlayerState.idle)
 		try
 		{
-			await axios.post(`http://${window.location.hostname}:5001/pong/end-game`, { userID: loggedInAccounts[0].id });
-			await axios.post(`http://${window.location.hostname}:5001/pong/delete`, { userID: loggedInAccounts[0].id });
+			await axios.post(`${API_URL}/pong/end-game`, { userID: loggedInAccounts[0].id });
+			await axios.post(`${API_URL}/pong/delete`, { userID: loggedInAccounts[0].id });
 		}
 		catch (error)
 		{

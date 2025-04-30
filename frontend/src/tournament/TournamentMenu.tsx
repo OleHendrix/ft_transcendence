@@ -6,6 +6,7 @@ import axios 						from 'axios';
 import { useTournamentContext } 	from '../contexts/TournamentContext';
 import { useEffect, useState } 		from 'react';
 import ModalWrapper 				from "../utils/ModalWrapper";
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface TournamentLobby {
 	tournamentId: 	number;
@@ -24,7 +25,7 @@ export default function TournamentMenu() {
 	{
 		try {
 			const host = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/create-tournament`, {
+			const response = await axios.post(`${API_URL}/api/create-tournament`, {
 				hostId: host.id,
 				hostUsername: host.username,
 				maxPlayers,
@@ -48,7 +49,7 @@ export default function TournamentMenu() {
 
 	async function fetchLobbies() {
 		try {
-			const response = await axios.get(`http://${window.location.hostname}:5001/api/get-tournament-lobbies`);
+			const response = await axios.get(`${API_URL}/api/get-tournament-lobbies`);
 			setLobbies(response.data);
 		} catch (error: any) {
 			console.log(error);

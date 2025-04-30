@@ -3,6 +3,7 @@ import axios from "axios";
 import { PlayerType } from "../types";
 import { EditIcon, StyledButton } from "./utilsComponents";
 import { motion } from "framer-motion";
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface UpdateLoggedInAccounts2FAProps
 {
@@ -42,7 +43,7 @@ export async function disable2FA({loggedInAccounts, selectedAccount, setLoggedIn
     try
     {
         const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-        const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`, {},
+        const response = await axios.post(`${API_URL}/api/auth/delete-totp`, {},
             {
                 headers:
                 {
@@ -87,7 +88,7 @@ export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, s
 			try
 			{
 				const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-				const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/setup-totp`, {},
+				const response = await axios.post(`${API_URL}/api/auth/setup-totp`, {},
 				{
 					headers:
 					{
@@ -109,7 +110,7 @@ export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, s
 		try
 		{
 			const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-setup-totp`, {token},
+			const response = await axios.post(`${API_URL}/api/auth/verify-setup-totp`, {token},
 			{
 				headers:
 				{

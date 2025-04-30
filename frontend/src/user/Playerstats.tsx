@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import OnlineStatus from "../utils/OnlineStatus";
 import ModalWrapper from "../utils/ModalWrapper";
 import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL;
 
 function ShowMatchHistory({selectedAccount} : {selectedAccount: PlayerType})
 {
@@ -154,7 +155,7 @@ function PlayerStats()
 		{
 			try
 			{
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
+				const response = await axios.get(`${API_URL}/api/get-account`,
 					{
 						params:
 						{ 
@@ -183,7 +184,7 @@ function PlayerStats()
 	{
 		try
 		{
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/send-friendship`,
+			const response = await axios.post(`${API_URL}/api/send-friendship`,
 				{
 					requesterId: loggedInAccounts[0].id,
 					receiverId: selectedAccount?.id

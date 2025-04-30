@@ -50,9 +50,9 @@ export default async function upload(fastify: FastifyInstance, prisma: PrismaCli
 			{
 				avatar: `/uploads/${path.basename(filepath)}`
 			}
-
 		})
 
-		reply.send({ success: true, imageUrl: `http://${request.hostname}:5001${updatedAccount.avatar}`});
+		// const hostUrl = `${request.protocol}://${request.hostname}`;
+		reply.send({ success: true, imageUrl: `${process.env.BACKEND_URL}${updatedAccount.avatar}`});
 	});
 }

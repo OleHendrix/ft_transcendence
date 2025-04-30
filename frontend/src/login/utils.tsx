@@ -3,6 +3,7 @@ import React from "react";
 import { PlayerType, LoginFormType, LoginValidationType } from "../types";
 import { motion } from 'framer-motion';
 import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL;
 
 //Helper Functions
 
@@ -21,7 +22,7 @@ export async function check2FA({ token = '', tempJwt = '', setLoggedInAccounts, 
 {
 	try
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-totp`,
+		const response = await axios.post(`${API_URL}/api/auth/verify-totp`,
 		{
 			token
 		},
@@ -50,7 +51,7 @@ export async function checkLogin({ formData, setShow2FA, setTempJwt, setValidati
 	const { username, password } = formData;
 	try
 	{
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/login`, { username, password });
+		const response = await axios.post(`${API_URL}/api/login`, { username, password });
 		const twofaRequired = response.data.twofaRequired;
 
 		if (twofaRequired)

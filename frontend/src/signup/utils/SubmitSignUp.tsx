@@ -1,5 +1,6 @@
 import { SignUpFormType } from "../../types";
 import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function SubmitSignUp(formData: SignUpFormType)
 {
@@ -9,7 +10,7 @@ export async function SubmitSignUp(formData: SignUpFormType)
 		console.log("Submitting form...");
 		try
 		{
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/add-account`, { username, email, password });
+			const response = await axios.post(`${API_URL}/api/add-account`, { username, email, password });
 
 			if (response.data.success)
 				return (true);

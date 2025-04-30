@@ -45,14 +45,14 @@ function SignUpModal()
 							setTriggerFetchAccounts(true)
 						}
 					}}>
-					<UsernameField validation={validation} formData={formData} setFormData={setFormData} />
-					<EmailField validation={validation} formData={formData} setFormData={setFormData} />
-					<PasswordField validation={validation} formData={formData} setFormData={setFormData} />
+					<UsernameField 	validation={validation} formData={formData} setFormData={setFormData} />
+					<EmailField		validation={validation} formData={formData} setFormData={setFormData} />
+					<PasswordField 	validation={validation} formData={formData} setFormData={setFormData} />
 					<ConfirmPasswordField validation={validation} formData={formData} setFormData={setFormData} />
 					{validation['Already logged in'] && <AlreadyLoggedInMessage />}
 					{((validation['Username exists'] || validation['Email exists'])) && !validation['Already logged in'] && <AccountExistsMessage />}
 					<SignUpButton validation={validation} emptyForm={emptyForm} />
-					{!(validation['Already logged in'] && validation['Username exists'] || validation['Email exists']) && <LoginMessage />}
+					{!(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) && <LoginMessage />}
 				</form>
 			</motion.div>
 		</ModalWrapper>

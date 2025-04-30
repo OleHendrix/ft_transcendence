@@ -13,8 +13,18 @@ import { setupTournament } from './tournament/tournament';
 const fastify = Fastify();
 export const prisma = new PrismaClient();
 
-fastify.register(fastifyCors);
-fastify.register(fastifyJwt, { secret: process.env.SECRET_KEY || "balzak"});
+fastify.register(fastifyCors, 
+	{
+		origin: [
+			'http://localhost:5173',
+			'https://ft-transcendence-three.vercel.app',
+			'https://nextball.online'
+		],
+		credentials: true
+	}
+);
+
+fastify.register(fastifyJwt, { secret: process.env.JWT_SECRET || 'balzak '});
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
 
 setUpAuth(fastify, prisma);
@@ -28,12 +38,15 @@ fastify.get('/', async (request, reply) =>
 	return { message: 'Server is running!' };
 });
 
-fastify.listen({ port: 5001, host: '0.0.0.0' }, (err, address) =>
-{
-	if (err)
+	fastify.listen({ port: Number(process.env.PORT || 5001), host: '0.0.0.0' }, (err, address) =>
 	{
-		console.error(err);
-		process.exit(1);
-	}
-	console.log(`Server running at ${address}`);
-});
+		if (err)
+		{
+			console.error(err);
+			process.exit(1);
+		}
+		console.log(`Server running at ${address}`);
+	});
+}
+
+start();

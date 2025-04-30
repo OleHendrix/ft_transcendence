@@ -10,6 +10,8 @@ import { useAccountContext } from "./contexts/AccountContext";
 import "./css/ponganimation.css";
 import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
+const API_URL = import.meta.env.VITE_API_URL;
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 function SimplePong()
 {
@@ -29,7 +31,7 @@ let queueStartTime = 0;
 
 export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) => void, navigate: ReturnType<typeof useNavigate>)
 {
-	socket = new WebSocket(`ws://${window.location.hostname}:5001/matchmake`);
+	socket = new WebSocket(`${WS_URL}/matchmake`);
 
 	navigate('/queue');
 	if (socket === null)
@@ -111,7 +113,7 @@ export async function AddGame(
 	navigate: ReturnType<typeof useNavigate>
 )
 {
-	const response = await axios.post(`http://${window.location.hostname}:5001/pong/add`, { user1, user2, isLocalGame, tournamentId: -1 });
+	const response = await axios.post(`${API_URL}/pong/add`, { user1, user2, isLocalGame, tournamentId: -1 });
 	if (response.status >= 400)
 	{
 		console.log("Failed to create match");

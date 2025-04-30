@@ -4,6 +4,8 @@ import { useAccountContext } 	from "./AccountContext";
 import { useNavigate } 			from "react-router-dom";
 import { PlayerState, TournamentData, Result }			from '../types';
 import { localStorageUpdateTournamentId } from "../tournament/utils";
+const API_URL = import.meta.env.VITE_API_URL;
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 type TournamentContextType = {
 	tournamentId: 		number | null;
@@ -41,6 +43,8 @@ export function TournamentProvider({ children }: {children: ReactNode})
 
 	async function startTournament() {
 		try {
+			console.log("FRONTEND - starting tournament", tournamentId);
+			await axios.post(`${API_URL}/api/start-tournament`, { tournamentId, });
 			setIsPlaying(PlayerState.playing);
 			navigate('/pong-game');
 		} catch (error) {
@@ -56,15 +60,33 @@ export function TournamentProvider({ children }: {children: ReactNode})
 
 			(async () => {
 				try {
-					const response = await axios.get(`http://${window.location.hostname}:5001/api/tournament-data/${storedId}`);
+					const response = await axios.get(`${API_URL}/api/tournament-data/${storedId}`);
 					setTournamentData(response.data);
 					setPlayers(response.data.players);
 				} catch (error) {
 					console.error("Failed to fetch tournament data:", error);
 				}
 			})();
-		} else {
+		} else 
 			setTournamentId(-1);
+	async function startNextRound() {
+		try {
+			console.log("FRONTEND - tournament game finished checking to start next round", tournamentId);
+			const response = await axios.post(`${API_URL}/api/start-next-round`, { tournamentId, });
+			if (response.data.roundFinished)
+			{
+				setIsPlaying(PlayerState.playing);
+				navigate('/pong-game');
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	}
+	useEffect(() => {
+		if (tournamentId !== null && isPlaying !== PlayerState.playing) {
+			console.log("Game finished");
+			navigate('/tournament/waiting-room');
+			startNextRound();
 		}
 	}, []);
 	
@@ -79,7 +101,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 			socketRef.current.close();
 		}
 		
-		const socket = new WebSocket(`ws://${window.location.hostname}:5001/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
+		const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
 		socketRef.current = socket;
 		socket.onopen = () => {
 			console.log(`TournamentContext:WebsocketCreated:PlayerId:${player.id}:TournamentId:${tournamentId}`);

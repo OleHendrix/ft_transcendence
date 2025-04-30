@@ -7,6 +7,7 @@ import { useTournamentContext } 			from '../contexts/TournamentContext';
 import { PlayerData }						from '../types';
 import { useAccountContext } 				from '../contexts/AccountContext';
 import { localStorageUpdateTournamentId } 	from './utils';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function TournamentWaitingRoom() {
 	const { loggedInAccounts } 											= useAccountContext();
@@ -22,9 +23,9 @@ export default function TournamentWaitingRoom() {
 		setIsLeaving(true);
 		try {
 			if (loggedInAccounts[0].id === tournamentData?.hostId && tournamentData.players.length > 1){
-				await axios.post(`http://${window.location.hostname}:5001/api/rehost-tournament`, {tournamentId })
+				await axios.post(`${API_URL}/api/rehost-tournament`, {tournamentId })
 			}
-			await axios.post(`http://${window.location.hostname}:5001/api/leave-tournament`, { playerId: loggedInAccounts[0].id, tournamentId, });
+			await axios.post(`${API_URL}/api/leave-tournament`, { playerId: loggedInAccounts[0].id, tournamentId, });
 
 			setTournamentId(-1);
 			localStorageUpdateTournamentId(-1);

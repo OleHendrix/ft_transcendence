@@ -2,6 +2,7 @@ import { NavigateFunction } from "react-router-dom";
 import { PlayerType, SignUpFormType } from "../types";
 import axios from "axios";
 import { useEffect } from "react";
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface UseGetAccountProps
 {
@@ -19,7 +20,7 @@ export function useGetAccount({username, setSelectedAccount}: UseGetAccountProps
         {
             try
             {
-                const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
+                const response = await axios.get(`${API_URL}/api/get-account`,
                     { params: { requestedUser: username, username: username }});
                 if (response.data.success)
                     setSelectedAccount(response.data.user);
@@ -63,7 +64,7 @@ export async function logout({loggedInAccounts, setLoggedInAccounts, selectedAcc
 	{
 		const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
 		console.log(jwt);
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/logout`, {},
+		const response = await axios.post(`${API_URL}/api/logout`, {},
 		{
 			headers:
 			{
@@ -83,7 +84,7 @@ export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, sele
 {
 	try
 	{
-		const response = await axios.post('http://localhost:5001/api/delete-account',
+		const response = await axios.post(`${API_URL}/api/delete-account`,
 		{
 			username: selectedAccount?.username
 		});
@@ -112,7 +113,7 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 	try
 	{
 		const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/update-account`,
+		const response = await axios.post(`${API_URL}/api/update-account`,
 		{
 			prev_username: selectedAccount?.username,
 			username: formData.username, 
