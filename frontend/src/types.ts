@@ -190,6 +190,7 @@ export interface TournamentData
 	maxPlayers:		number;
 	players:		PlayerData[];
 	winners:		PlayerData[][];
+	winner: 		PlayerData;
 	roundIdx:		number;
 	rounds:			Match[][] | null;
 	sockets:		Set<WebSocket>;

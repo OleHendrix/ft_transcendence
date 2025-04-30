@@ -26,6 +26,6 @@ export async function leaveTournament(fastify: FastifyInstance)
 			return ;
 		}
 
-		broadcastTournamentUpdate(tournamentId, "UPDATE");
+		broadcastTournamentUpdate(tournamentId, "DATA");
 	})
 }

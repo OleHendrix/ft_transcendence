@@ -1,28 +1,25 @@
 import { tournamentLobbies } from "./tournament";
 import { WebSocket }		from "ws";
+import { TournamentData } from "../types/types";
 
+interface SerializableTournamentData extends Omit<TournamentData, "sockets"> {}
+
+function sanitizeTournament(tournament: TournamentData): SerializableTournamentData {
+	const { sockets, ...sanitized } = tournament;
+	return sanitized;
+}
 
 export function broadcastTournamentUpdate(tournamentId: number, type: string) {
 	const tournament = tournamentLobbies.get(tournamentId);
-	if (!tournament) return;
+	if (!tournament) return console.log(`broadcastTournamentUpdate:ERROR_WHEN_GETTING_TOURNAMENT:ID:${tournamentId}`);
 	
 	let payload;
-	if (type === "UPDATE")
+	if (type === "DATA")
 	{
 		payload = 
 		{
 			type,
-			tournament:
-			{
-				tournamentId: 	tournament.tournamentId,
-				hostId: 		tournament.hostId,
-				hostUsername: 	tournament.hostUsername,
-				maxPlayers:	 	tournament.maxPlayers,
-				players: 		tournament.players,
-				winners: 		tournament.winners,
-				roundIdx: 		tournament.roundIdx,
-				rounds: 		tournament.rounds
-			}
+			tournament: sanitizeTournament(tournament)
 		};
 	}
 
@@ -30,9 +27,7 @@ export function broadcastTournamentUpdate(tournamentId: number, type: string) {
 	{
 		payload = {
 			type,
-			data: {
-				start: true,
-			}
+			data: { start: true }
 		};
 	}
 
@@ -40,9 +35,7 @@ export function broadcastTournamentUpdate(tournamentId: number, type: string) {
 	{
 		payload = {
 			type,
-			data: {
-				ready: true,
-			}
+			data: { ready: true }
 		}
 	}
 	else {

@@ -5,8 +5,8 @@ import { getTournamentById } 	from "./getTournamentById";
 import { getTournamentLobbies } from "./getTournamentLobbies";
 import { joinTournament } 		from "./joinTournament";
 import { manageTournament } 	from "./manageTournament";
-import { leaveTournament } from "./leaveTournament";
-import { rehostTournament } from "./rehostTournament";
+import { leaveTournament } 		from "./leaveTournament";
+import { rehostTournament } 	from "./rehostTournament";
 
 export let tournamentLobbies = new Map<number, TournamentData>();
 

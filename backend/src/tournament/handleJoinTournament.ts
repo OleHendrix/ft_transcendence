@@ -40,6 +40,11 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 
 	tournament.players.push(player);
 	tournament.sockets.add(connection);
-  
-	broadcastTournamentUpdate(tournamentId, "UPDATE");
+
+	connection.on("close", () => {
+		console.log(`Cleaning up closed socket for player ${connection.playerId}`);
+		tournament.sockets.delete(connection);
+	});
+
+	broadcastTournamentUpdate(tournamentId, "DATA");
 }

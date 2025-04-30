@@ -9,6 +9,7 @@ import { usePongContext } from '../contexts/PongContext';
 import { useNavigate, useNavigationType } from 'react-router-dom';
 import { IoArrowUndoOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
 import { isBrowser } from "react-device-detect";
+
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
 

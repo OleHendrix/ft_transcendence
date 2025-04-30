@@ -18,7 +18,7 @@ export async function rehostTournament(fastify: FastifyInstance){
 			tournament.hostId = tournament.players[1].id;
 			tournament.hostUsername = tournament.players[1].username;
 
-			broadcastTournamentUpdate(tournamentId, "UPDATE");
+			broadcastTournamentUpdate(tournamentId, "DATA");
 			return reply.status(200).send({ message: "Rehost successful" });
 
 
