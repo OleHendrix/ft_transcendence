@@ -1,6 +1,6 @@
-import { tournamentLobbies } from "./tournament";
-import { WebSocket }		from "ws";
-import { TournamentData } from "../types/types";
+import { tournamentLobbies } 	from "./tournament";
+import { WebSocket }			from "ws";
+import { TournamentData } 		from "../types/types";
 
 interface SerializableTournamentData extends Omit<TournamentData, "sockets"> {}
 
@@ -14,25 +14,19 @@ export function broadcastTournamentUpdate(tournamentId: number, type: string) {
 	if (!tournament) return console.log(`broadcastTournamentUpdate:ERROR_WHEN_GETTING_TOURNAMENT:ID:${tournamentId}`);
 	
 	let payload;
-	if (type === "DATA")
-	{
-		payload = 
-		{
+	if (type === "DATA") {
+		payload = {
 			type,
 			tournament: sanitizeTournament(tournament)
 		};
 	}
-
-	else if (type === "START_SIGNAL")
-	{
+	else if (type === "START_SIGNAL") {
 		payload = {
 			type,
 			data: { start: true }
 		};
 	}
-
-	else if (type === "READY_FOR_NEXT_ROUND")
-	{
+	else if (type === "READY_FOR_NEXT_ROUND") {
 		payload = {
 			type,
 			data: { ready: true }
