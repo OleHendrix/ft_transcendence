@@ -1,7 +1,5 @@
-import { tournamentLobbies } 	from "./tournament";
 import { initGame } 			from "../pong/pongLogic";
 import { TournamentData } 		from "../types/types";
-import { broadcastTournamentUpdate } from "./broadcastTournamentUpdates";
 
 export function setMatches(tournament: TournamentData)
 {
@@ -15,11 +13,11 @@ export function setMatches(tournament: TournamentData)
 		for (let i = 0; i < winners.length; i += 2)
 		{
 			tournament.rounds[idx]?.push({
-				state:		initGame(winners[i], winners[i+1]),
-				p1:			winners[i],
-				p2:			winners[i + 1],
-				isLocalGame: false,
-				tournamentId: tournament.tournamentId
+				state:			initGame(winners[i], winners[i+1]),
+				p1:				winners[i],
+				p2:				winners[i + 1],
+				isLocalGame:	false,
+				tournamentId:	tournament.tournamentId
 			});
 		}
 		return ;
