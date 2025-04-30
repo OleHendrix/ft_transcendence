@@ -1,5 +1,5 @@
 cd backend
-rm -rf node_modules package-lock.json
+rm -rf node_modules package-lock.json prisma/database.db
 npm cache clean --force
 
 cd ../frontend

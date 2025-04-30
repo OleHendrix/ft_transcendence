@@ -50,25 +50,25 @@ export interface PlayerType
 	winRate:		number;
 	elo:			number;
 	twofa:			boolean;
-	jwt:			string;
 	matches:		MatchHistory[];
 }
 
 export interface AuthenticatedAccount extends PlayerType
 {
-	jwt: string;
+	accesToken:		string;
+	refreshToken:	string;
 }
 
 export interface Message
 {
 	id: 			number;
 	content:		string;
-	timestamp: 		string;
-	receiverId: 	number;
-	chatSessionId: 	number;
-	senderUsername: string;
-	senderId: 		number;
-	status: 		number;
+	timestamp:		string;
+	receiverId:		number;
+	chatSessionId:	number;
+	senderUsername:	string;
+	senderId:		number;
+	status:			number;
 }
 
 export interface SignUpFormType
@@ -96,10 +96,10 @@ export interface LoginFormType
 
 export interface LoginValidationType
 {
-  'Already logged in': 	boolean;
-  'Username not found': boolean; 
-  'Password incorrect': boolean;
-  '2FA Code incorrect': boolean;
+  'Already logged in':	boolean;
+  'Username not found':	boolean; 
+  'Password incorrect':	boolean;
+  '2FA Code incorrect':	boolean;
 }
 
 export interface Vec2

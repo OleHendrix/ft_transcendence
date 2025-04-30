@@ -24,33 +24,33 @@ export default async function updateAccount(fastify: FastifyInstance, prisma: Pr
 		{
 			const updateData: any =
 			{ 
-           		username: username,
-            	email: email
+				username: username,
+				email: email
 			};
 
 			if (password && password !== '')
 			{
-            	const hashedPassword = await bcrypt.hash(password, 10);
-            	updateData.password = hashedPassword;
+				const hashedPassword = await bcrypt.hash(password, 10);
+				updateData.password = hashedPassword;
 			}
-            const updatedAccount = await prisma.account.update(
+			const updatedAccount = await prisma.account.update(
 			{
-                where:
+				where:
 				{ 
-                    username: prev_username 
-                },
-                data: updateData
-            });
+					username: prev_username 
+				},
+				data: updateData
+			});
 			return reply.send(
 			{ 
-                success: true,
-                user:
+				success: true,
+				user:
 				{
-                    username: updatedAccount.username,
-                    email: updatedAccount.email,
+					username: updatedAccount.username,
+					email: updatedAccount.email,
 					password: updatedAccount.password
-                }
-            });
+				}
+			});
 		}
 		catch (error)
 		{

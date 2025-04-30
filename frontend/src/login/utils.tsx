@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import React from "react";
-import { PlayerType, LoginFormType, LoginValidationType } from "../types";
+import { PlayerType, LoginFormType, LoginValidationType, AuthenticatedAccount } from "../types";
 import { motion } from 'framer-motion';
 import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL;
@@ -15,7 +15,7 @@ export interface AuthProps
 	setShow2FA: Dispatch<SetStateAction<boolean>>;
 	setTempJwt: Dispatch<SetStateAction<string>>;
 	setValidation: Dispatch<SetStateAction<LoginValidationType>>;
-	setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>;
+	setLoggedInAccounts: Dispatch<SetStateAction<AuthenticatedAccount[]>>;
 }
 
 export async function check2FA({ token = '', tempJwt = '', setLoggedInAccounts, setValidation }: AuthProps)
@@ -34,7 +34,7 @@ export async function check2FA({ token = '', tempJwt = '', setLoggedInAccounts, 
 		});
 		if (response.data.success)
 		{
-			updateLoggedInAccounts(response.data.account, response.data.token, setLoggedInAccounts);
+			updateLoggedInAccounts(response.data.account, response.data.token, response.data.refreshToken, setLoggedInAccounts);
 			return true;
 		}
 	}
@@ -62,7 +62,7 @@ export async function checkLogin({ formData, setShow2FA, setTempJwt, setValidati
 		}
 		if (response.data.success)
 		{
-			updateLoggedInAccounts(response.data.account, response.data.token, setLoggedInAccounts);
+			updateLoggedInAccounts(response.data.account, response.data.token, response.data.refreshToken, setLoggedInAccounts);
 			return true;
 		}
 	}
@@ -73,9 +73,9 @@ export async function checkLogin({ formData, setShow2FA, setTempJwt, setValidati
 	return false;
 }
 
-export function updateLoggedInAccounts(account: PlayerType, jwt: string, setLoggedInAccounts: Dispatch<SetStateAction<PlayerType[]>>)
+export function updateLoggedInAccounts(account: AuthenticatedAccount, accessToken: string, refreshToken: string, setLoggedInAccounts: Dispatch<SetStateAction<AuthenticatedAccount[]>>)
 {
-	const authenticatedAccount = { ...account, jwt };
+	const authenticatedAccount = { ...account, accessToken, refreshToken };
 	setLoggedInAccounts((prev) =>
 	{
 		if (prev.some((p) => p.username === account.username)) return prev;
@@ -83,6 +83,8 @@ export function updateLoggedInAccounts(account: PlayerType, jwt: string, setLogg
 		localStorage.setItem('loggedInAccounts', JSON.stringify(updatedPlayers));
 		return updatedPlayers;
 	});
+	const loggedInAccounts = localStorage.getItem('loggedInAccounts');
+	console.log(loggedInAccounts);
 }
 
 export interface ResetValidationProps
