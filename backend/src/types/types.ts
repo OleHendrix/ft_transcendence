@@ -42,7 +42,7 @@ export interface PlayerType
 	username:		string;
 	email:			string;
 	matchesPlayed:	number;
-	avater:		string;
+	avater:			string;
 	wins:			number;
 	draws:			number;
 	losses:			number;
@@ -173,7 +173,7 @@ export interface TournamentData
 	maxPlayers:		number;
 	players:		PlayerData[];
 	winners:		PlayerData[][];
-	winner: 		PlayerData;
+	winner: 		PlayerData | null;
 	roundIdx:		number;
 	rounds:			Match[][] | null;
 	sockets:		Set<WebSocket>;

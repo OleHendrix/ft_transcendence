@@ -32,21 +32,9 @@ export async function manageTournament(fastify: FastifyInstance)
 		if (!t) 		return reply.status(404).send({ error: 'Tournament not found' });
 		if (!t.rounds) 	return reply.status(500).send({ error: 'NO ROUNDS' });
 
-		// console.log(`manageTournaments:allMatchesFinished:RoundIdx${t.roundIdx}`);
-		// t.winners[t.roundIdx] = [];
-		// for (const match of t.rounds[t.roundIdx])
-		// {
-		// 	t.winners[t.roundIdx].push(match.state.result === Result.P1WON ? match.p1 : match.p2);
-		// }
 		t.roundIdx ++;
 		t.rounds[t.roundIdx] = [];
 		
-		// if (t.players.length === 1)
-		// {
-		// 	tournamentLobbies.delete(tournamentId);
-		// 	broadcastTournamentUpdate(tournamentId, "DATA");
-		// 	return reply.send({ winner: t.players.pop()?.username });
-		// }
 		setMatches(t);
 
 		for(const match of t.rounds[t.roundIdx])
