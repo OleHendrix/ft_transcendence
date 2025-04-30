@@ -1,13 +1,16 @@
+import { FastifyInstance } from "fastify";
 import { tournamentLobbies } 	from "./tournament";
 import { WebSocket }			from "ws";
+import { PrismaClient } from "@prisma/client";
 import { TournamentData } 		from "../types/types";
-
 interface SerializableTournamentData extends Omit<TournamentData, "sockets"> {}
+
 
 function sanitizeTournament(tournament: TournamentData): SerializableTournamentData {
 	const { sockets, ...sanitized } = tournament;
 	return sanitized;
 }
+
 
 export function broadcastTournamentUpdate(tournamentId: number, type: string) {
 	const tournament = tournamentLobbies.get(tournamentId);
@@ -25,6 +28,7 @@ export function broadcastTournamentUpdate(tournamentId: number, type: string) {
 			type,
 			data: { start: true }
 		};
+		// createMessageInGlobalChat(tournamentId, type, prisma)
 	}
 	else if (type === "READY_FOR_NEXT_ROUND") {
 		payload = {

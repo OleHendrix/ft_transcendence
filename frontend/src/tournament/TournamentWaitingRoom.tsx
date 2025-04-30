@@ -7,6 +7,7 @@ import { useTournamentContext } 			from '../contexts/TournamentContext';
 import { PlayerData }						from '../types';
 import { useAccountContext } 				from '../contexts/AccountContext';
 import { localStorageUpdateTournamentId } 	from './utils';
+import Chat 								from "../chat/Chat"
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function TournamentWaitingRoom() {
@@ -100,14 +101,14 @@ export default function TournamentWaitingRoom() {
 	
 
 	return (
-		<motion.div
-			className="absolute top-[8vh] w-screen h-[calc(100vh-8vh)] backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			exit={{ opacity: 0 }}
-		>
+		// <motion.div
+		// 	className="absolute top-[8vh] w-screen h-[calc(100vh-8vh)] backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
+		// 	initial={{ opacity: 0 }}
+		// 	animate={{ opacity: 1 }}
+		// 	exit={{ opacity: 0 }}
+		// >
 			<motion.div
-				className="relative bg-[#1e1e1e]/90 text-white rounded-2xl shadow-2xl p-10 w-[90vw] max-w-5xl h-[90vh] overflow-hidden flex flex-col"
+				className="absolute bg-[#1e1e1e] text-white top-[8vh] w-screen h-[calc(100vh-8vh)] rounded-2xl shadow-2xl p-10 overflow-hidden flex flex-col z-50"
 				initial={{ scale: 0.95, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.95, y: 20 }}
@@ -165,6 +166,11 @@ export default function TournamentWaitingRoom() {
 							onClick={async () => {
 								try {
 									await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { tournamentId });
+									await axios.post(`http://${window.location.hostname}:5001/api/send-message`, {
+										content: `Tournament ${tournamentId}: starting!! WAUAHAHAHAUW`,
+										senderId: 1,
+										receiverId: 1,
+									})
 								} catch (error) {
 									console.error('tournamentWaitingRoom:ON_CLICK:start-tournament:ERROR:', error);
 								}
@@ -239,8 +245,8 @@ export default function TournamentWaitingRoom() {
 						<h1 className="text-white text-9xl font-extrabold animate-pulse">{countdown > 0 ? countdown : 'START!'}</h1>
 					</div>
 				)}
-
+				<Chat />
 			</motion.div>
-		</motion.div>
+		// </motion.div>
 	);
 }

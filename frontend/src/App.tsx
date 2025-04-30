@@ -13,12 +13,12 @@ import { PongProvider } from './contexts/PongContext';
 function MainContent()
 {
 	const { isPlaying } = useAccountContext();
-	const { showTournamentWaitingRoom } = useTournamentContext();
+
 
 	return (
 		<>
 				{isPlaying !== PlayerState.playing && <Navbar />}
-				{isPlaying !== PlayerState.playing && !showTournamentWaitingRoom && <Hero />}
+				{isPlaying !== PlayerState.playing && <Hero />}
 				{isPlaying === PlayerState.idle && <Chat/>}
 		</>
 	)
