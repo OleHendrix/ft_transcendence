@@ -72,9 +72,9 @@ export async function checkLogin({ formData, setShow2FA, setTempJwt, setValidati
 	return false;
 }
 
-export function updateLoggedInAccounts(account: AuthenticatedAccount, jwt: string, refreshToken: string, setLoggedInAccounts: Dispatch<SetStateAction<AuthenticatedAccount[]>>)
+export function updateLoggedInAccounts(account: AuthenticatedAccount, accessToken: string, refreshToken: string, setLoggedInAccounts: Dispatch<SetStateAction<AuthenticatedAccount[]>>)
 {
-	const authenticatedAccount = { ...account, jwt, refreshToken };
+	const authenticatedAccount = { ...account, accessToken, refreshToken };
 	setLoggedInAccounts((prev) =>
 	{
 		if (prev.some((p) => p.username === account.username)) return prev;

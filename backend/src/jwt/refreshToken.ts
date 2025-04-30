@@ -1,15 +1,30 @@
+import { PrismaClient } from '.prisma/client';
 import { FastifyInstance } from 'fastify';
-import { PrismaClient } from '@prisma/client';
 
-export default async function login(fastify: FastifyInstance, prisma: PrismaClient)
+export default async function refreshToken(fastify: FastifyInstance, prisma: PrismaClient)
 {
 	fastify.post('/api/refresh-token', async (request, reply) =>
 	{
-		const userId = request.account.sub;
-		const account = await prisma.account.findUnique({ where: { id: userId } });
+		const { refreshToken } = request.body as { refreshToken: string };
+		if (!refreshToken)
+			return reply.code(401).send({ error: 'no refreshToken provided '});
+
+		let decoded;
+		try
+		{
+			decoded = fastify.jwt.verify<{ sub: number}>(refreshToken);
+		}
+		catch (error)
+		{
+			return reply.code(401).send({ error: 'invalid refreshToken' });
+		}
+
+		const userId = decoded.sub;
+
+		const account = await prisma.account.findUnique({ where: { id: userId }});
 
 		if (!account)
-			return reply.code(404).send({ error: 'user not found' });
+			return reply.code(404).send({ error: 'account not found' });
 
 		const newAccessToken = fastify.jwt.sign({
 			sub: account.id,
@@ -19,6 +34,11 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 		},
 		{ expiresIn: '1h' });
 
-		return reply.send({ newAccessToken });
+		const newRefreshToken = fastify.jwt.sign({
+			sub: account.id,
+		},
+		{ expiresIn: '7d' });
+
+		return reply.send({ newAccessToken, newRefreshToken });
 	});
 }

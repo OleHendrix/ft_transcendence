@@ -2,35 +2,36 @@ import { NavigateFunction } from "react-router-dom";
 import { PlayerType, SignUpFormType } from "../types";
 import axios from "axios";
 import { useEffect } from "react";
+import { secureApiCall } from "../jwt/secureApiCall";
 
 interface UseGetAccountProps
 {
-    username: string | undefined;
-    setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
+	username: string | undefined;
+	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 }
 
 export function useGetAccount({username, setSelectedAccount}: UseGetAccountProps)
 {
-    useEffect(() =>
-    {
-        if (!username) return;
+	useEffect(() =>
+	{
+		if (!username) return;
 
-        async function getAccount()
-        {
-            try
-            {
-                const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
-                    { params: { requestedUser: username, username: username }});
-                if (response.data.success)
-                    setSelectedAccount(response.data.user);
-            }
-            catch (error: any)
-            {
-                console.log(error.response);
-            }
-        }
-        getAccount();
-    }, [username, setSelectedAccount]);
+		async function getAccount()
+		{
+			try
+			{
+				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-account`,
+					{ params: { requestedUser: username, username: username }});
+				if (response.data.success)
+					setSelectedAccount(response.data.user);
+			}
+			catch (error: any)
+			{
+				console.log(error.response);
+			}
+		}
+		getAccount();
+	}, [username, setSelectedAccount]);
 }
 
 interface HandleAccountRemovalProps
@@ -61,15 +62,17 @@ export async function logout({loggedInAccounts, setLoggedInAccounts, selectedAcc
 {
 	try
 	{
-		const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-		console.log(jwt);
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/logout`, {},
-		{
-			headers:
+		const userId = selectedAccount?.id;
+		if (!userId) return;
+		const response = await secureApiCall(userId, (accessToken) =>
+			axios.post(`http://${window.location.hostname}:5001/api/logout`, {},
 			{
-				Authorization: `Bearer ${jwt}`
-			}
-		});
+				headers:
+				{
+					Authorization: `Bearer ${accessToken}`
+				}
+			})
+		);
 		if (response.data.success)
 			handleAccountRemoval({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts});
 	}
@@ -111,20 +114,23 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 {
 	try
 	{
-		const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-		const response = await axios.post(`http://${window.location.hostname}:5001/api/update-account`,
-		{
-			prev_username: selectedAccount?.username,
-			username: formData.username, 
-			email: formData.email, 
-			password: formData.password
-		},
-		{
-			headers:
+		const userId = selectedAccount?.id;
+		if (!userId) return;
+		const response = await secureApiCall(userId, (accessToken) =>
+			axios.post(`http://${window.location.hostname}:5001/api/update-account`,
 			{
-				Authorization: `Bearer ${jwt}`
-			}
-		});
+				prev_username: selectedAccount?.username,
+				username: formData.username, 
+				email: formData.email, 
+				password: formData.password
+			},
+			{
+				headers:
+				{
+					Authorization: `Bearer ${accessToken}`
+				}
+			})
+		);
 		if (response.data.success)
 		{
 			const updatedloggedInAccounts = loggedInAccounts.map((account) =>

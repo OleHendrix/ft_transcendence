@@ -50,13 +50,12 @@ export interface PlayerType
 	winRate:		number;
 	elo:			number;
 	twofa:			boolean;
-	jwt:			string;
 	matches:		MatchHistory[];
 }
 
 export interface AuthenticatedAccount extends PlayerType
 {
-	jwt:			string;
+	accesToken:		string;
 	refreshToken:	string;
 }
 

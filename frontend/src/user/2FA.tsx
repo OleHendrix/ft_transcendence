@@ -3,15 +3,16 @@ import axios from "axios";
 import { PlayerType } from "../types";
 import { EditIcon, StyledButton } from "./utilsComponents";
 import { motion } from "framer-motion";
+import { secureApiCall } from "../jwt/secureApiCall";
 
 interface UpdateLoggedInAccounts2FAProps
 {
-    loggedInAccounts: PlayerType[];
-    setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
-    selectedAccount: PlayerType | undefined;
-    setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
-    setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
-    enabled: boolean;
+	loggedInAccounts: PlayerType[];
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	selectedAccount: PlayerType | undefined;
+	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
+	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
+	enabled: boolean;
 }
 
 function updateLoggedInAccounts_2FA({loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts, selectedAccount, setSelectedAccount, enabled}: UpdateLoggedInAccounts2FAProps)
@@ -30,42 +31,45 @@ function updateLoggedInAccounts_2FA({loggedInAccounts, setLoggedInAccounts, setT
 
 interface Disable2FAProps
 {
-    loggedInAccounts: PlayerType[];
-    selectedAccount: PlayerType | undefined;
-    setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
-    setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
-    setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
+	loggedInAccounts: PlayerType[];
+	selectedAccount: PlayerType | undefined;
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
+	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export async function disable2FA({loggedInAccounts, selectedAccount, setLoggedInAccounts, setSelectedAccount, setTriggerFetchAccounts}: Disable2FAProps)
 {
-    try
-    {
-        const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-        const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`, {},
-            {
-                headers:
-                {
-                    Authorization: `Bearer ${jwt}`
-                }
-            });
-        if (response.data.success)
-            updateLoggedInAccounts_2FA({loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts, selectedAccount, setSelectedAccount, enabled: false});
-    }
-    catch (error)
-    {
-        console.error('Error disabling 2FA:', error);
-    }
+	try
+	{
+		const userId = selectedAccount?.id;
+		if (!userId) return;
+		const response = await secureApiCall(userId, (accessToken) =>
+			axios.post(`http://${window.location.hostname}:5001/api/auth/delete-totp`, {},
+			{
+				headers:
+				{
+					Authorization: `Bearer ${accessToken}`
+				}
+			})
+		);
+		if (response.data.success)
+			updateLoggedInAccounts_2FA({loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts, selectedAccount, setSelectedAccount, enabled: false});
+	}
+	catch (error)
+	{
+		console.error('Error disabling 2FA:', error);
+	}
 }
 
 interface Enable2FAProps
 {
-    loggedInAccounts: PlayerType[];
-    setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>;
-    selectedAccount: PlayerType | undefined;
-    setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
-    setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
-    setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
+	loggedInAccounts: PlayerType[];
+	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>;
+	selectedAccount: PlayerType | undefined;
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
+	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 }
 
 export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, setLoggedInAccounts, setTriggerFetchAccounts, setSelectedAccount}: Enable2FAProps)
@@ -86,14 +90,18 @@ export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, s
 			}
 			try
 			{
-				const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-				const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/setup-totp`, {},
-				{
-					headers:
+				const userId = selectedAccount?.id;
+				if (!userId) return;
+
+				const response = await secureApiCall(userId, (accessToken) =>
+					axios.post(`http://${window.location.hostname}:5001/api/auth/setup-totp`, {},
 					{
-						Authorization: `Bearer ${jwt}`
-					}
-				});
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+					})
+				);
 				setQrCode(response.data.qrCodeUrl);
 			}
 			catch (err)
@@ -108,14 +116,17 @@ export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, s
 	{
 		try
 		{
-			const jwt = loggedInAccounts.find(account => account.id === selectedAccount?.id)?.jwt;
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/auth/verify-setup-totp`, {token},
-			{
-				headers:
+			const userId = selectedAccount?.id;
+			if (!userId) return;
+			const response = await secureApiCall(userId, (accessToken) =>
+				axios.post(`http://${window.location.hostname}:5001/api/auth/verify-setup-totp`, {token},
 				{
-					Authorization: `Bearer ${jwt}`
-				}
-			});
+					headers:
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+				})
+			);
 			if (response.data.success)
 			{
 				updateLoggedInAccounts_2FA({loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts, selectedAccount, setSelectedAccount, enabled: true});
@@ -133,34 +144,34 @@ export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, s
 
 	return (
 		<div className="flex flex-col justify-center items-center w-full h-full">
-  			<div className="rounded-xl bg-[#2a2a2a] text-center w-full">
-    		{!scannedQrCode &&
+			<div className="rounded-xl bg-[#2a2a2a] text-center w-full">
+			{!scannedQrCode &&
 			(
 				<>
-      				<p className="text-sm font-medium mb-2">Scan this QR code with Google Authenticator:</p>
-      				{qrCode && 
+					<p className="text-sm font-medium mb-2">Scan this QR code with Google Authenticator:</p>
+					{qrCode && 
 						<div className="flex justify-center mb-4 ">
 							<img src={qrCode} alt="2FA QR Code" className="rounded-lg shadow-3xl" />
 						</div>
 					}
-      				<div className="flex justify-center">
+					<div className="flex justify-center">
 						<StyledButton onClick={() => {setScannedQrCode(true)}} variant="primary" width="w-[50%]" text="Continue" />
-      				</div>
-    			</>
+					</div>
+				</>
 			)}
-    		{scannedQrCode && 
+			{scannedQrCode && 
 			(
 				<div className="w-full">
-      				<input type="text" maxLength={6} value={token}
-        				onChange={(e) => {setToken(e.target.value); if (falseCode) setFalseCode(false)}}
-        				placeholder="Enter 6-digit code"
-        				className={`w-full p-2 rounded-3xl bg-[#3a3a3a] text-white mb-4 border ${falseCode ? 'border-red-800' :  'border-gray-600 focus:border-white'} focus:outline-none`}/>
-      			<div className="flex justify-center">
+					<input type="text" maxLength={6} value={token}
+						onChange={(e) => {setToken(e.target.value); if (falseCode) setFalseCode(false)}}
+						placeholder="Enter 6-digit code"
+						className={`w-full p-2 rounded-3xl bg-[#3a3a3a] text-white mb-4 border ${falseCode ? 'border-red-800' :  'border-gray-600 focus:border-white'} focus:outline-none`}/>
+				<div className="flex justify-center">
 					<StyledButton onClick={() => {verify2FA()}} variant="primary" text="Verify" />
-      			</div>
-    		</div>
+				</div>
+			</div>
 			)}
-  			</div>
+			</div>
 		</div>
 	);
 }

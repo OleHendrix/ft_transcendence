@@ -1,17 +1,13 @@
 import { FastifyInstance } from "fastify/fastify";
 import { PrismaClient } from ".prisma/client";
 
-import authenticate from "../jwt/authenticate";
-
 import setupTotp from "./setupTotp";
 import verifySetupTotp from "./verifySetupTotp";
 import verifyTotp from "./verifyTotp";
 import deleteTotp from "./deleteTotp";
 
-export async function setUpAuth(fastify: FastifyInstance, prisma: PrismaClient)
+export async function setUpTwofa(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	await authenticate(fastify);
-
 	await setupTotp(fastify, prisma);
 	await verifySetupTotp(fastify, prisma);
 	await verifyTotp(fastify, prisma);
