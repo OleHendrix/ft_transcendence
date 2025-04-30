@@ -34,7 +34,9 @@ export const prisma = new PrismaClient();
 fastify.register(fastifyCors, 
 	{
 		origin: [
-			'http://localhost:5173'
+			'http://localhost:5173',
+			'https://ft-transcendence-three.vercel.app',
+			'https://nextball.online'
 		],
 		credentials: true
 	}
