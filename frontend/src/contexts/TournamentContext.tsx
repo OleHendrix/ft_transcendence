@@ -123,22 +123,22 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		};
 	}, [tournamentId]);
 	
-	const value = useMemo(() => (
-		{
-			tournamentId, setTournamentId,
-			showTournamentWaitingRoom, setShowTournamentWaitingRoom,
-			players, setPlayers,
-			tournamentData, setTournamentData,
-			socket: socketRef.current,
-			readyForNextRound, setReadyForNextRound
-		}
-	), [
+	const value: TournamentContextType = useMemo(() => {
+	return {
 		tournamentId, setTournamentId,
 		showTournamentWaitingRoom, setShowTournamentWaitingRoom,
 		players, setPlayers,
 		tournamentData, setTournamentData,
+		socket: socketRef.current,
 		readyForNextRound, setReadyForNextRound
-	]);
+	};
+}, [
+	tournamentId, setTournamentId,
+	showTournamentWaitingRoom, setShowTournamentWaitingRoom,
+	players, setPlayers,
+	tournamentData, setTournamentData,
+	readyForNextRound, setReadyForNextRound
+]);
 	
 	return (
 		<TournamentContext.Provider value={value}>
