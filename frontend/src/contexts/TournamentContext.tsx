@@ -123,16 +123,15 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		};
 	}, [tournamentId]);
 	
-	const value: TournamentContextType = useMemo(() => {
-	return {
+	const value: TournamentContextType = useMemo(() => (
+	{
 		tournamentId, setTournamentId,
 		showTournamentWaitingRoom, setShowTournamentWaitingRoom,
 		players, setPlayers,
 		tournamentData, setTournamentData,
 		socket: socketRef.current,
 		readyForNextRound, setReadyForNextRound
-	};
-}, [
+	}), [
 	tournamentId, setTournamentId,
 	showTournamentWaitingRoom, setShowTournamentWaitingRoom,
 	players, setPlayers,
