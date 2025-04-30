@@ -130,13 +130,13 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		players, setPlayers,
 		tournamentData, setTournamentData,
 		socket: socketRef.current,
-		readyForNextRound, setReadyForNextRound
+		readyForNextRound, setReadyForNextRound,
 	}), [
 	tournamentId, setTournamentId,
 	showTournamentWaitingRoom, setShowTournamentWaitingRoom,
 	players, setPlayers,
 	tournamentData, setTournamentData,
-	readyForNextRound, setReadyForNextRound
+	readyForNextRound, setReadyForNextRound,
 ]);
 	
 	return (
