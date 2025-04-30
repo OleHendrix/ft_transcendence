@@ -47,6 +47,5 @@ fastify.get('/', async (request, reply) =>
 		}
 		console.log(`Server running at ${address}`);
 	});
-}
 
-start();
+// start();

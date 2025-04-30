@@ -31,7 +31,7 @@ const TournamentContext = createContext<TournamentContextType | null>(null);
 
 export function TournamentProvider({ children }: {children: ReactNode})
 {
-	const [ tournamentId, setTournamentId ] 							= useState<number>(-1);
+	const [ tournamentId, setTournamentId ] 							= useState<number | null>(-1);
 	const [ showTournamentWaitingRoom, setShowTournamentWaitingRoom] 	= useState(false);
 	const [players, setPlayers] 										= useState<any[]>([]);
 	const [tournamentData, setTournamentData]							= useState<TournamentData | null>(null);
@@ -43,8 +43,6 @@ export function TournamentProvider({ children }: {children: ReactNode})
 
 	async function startTournament() {
 		try {
-			console.log("FRONTEND - starting tournament", tournamentId);
-			await axios.post(`${API_URL}/api/start-tournament`, { tournamentId, });
 			setIsPlaying(PlayerState.playing);
 			navigate('/pong-game');
 		} catch (error) {
@@ -67,26 +65,8 @@ export function TournamentProvider({ children }: {children: ReactNode})
 					console.error("Failed to fetch tournament data:", error);
 				}
 			})();
-		} else 
+		} else {
 			setTournamentId(-1);
-	async function startNextRound() {
-		try {
-			console.log("FRONTEND - tournament game finished checking to start next round", tournamentId);
-			const response = await axios.post(`${API_URL}/api/start-next-round`, { tournamentId, });
-			if (response.data.roundFinished)
-			{
-				setIsPlaying(PlayerState.playing);
-				navigate('/pong-game');
-			}
-		} catch (error) {
-			console.log(error);
-		}
-	}
-	useEffect(() => {
-		if (tournamentId !== null && isPlaying !== PlayerState.playing) {
-			console.log("Game finished");
-			navigate('/tournament/waiting-room');
-			startNextRound();
 		}
 	}, []);
 	
