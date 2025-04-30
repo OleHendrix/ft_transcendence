@@ -161,7 +161,10 @@ function PongGame()
 		{
 			console.log(error);
 		}
-		navigate('/');
+		if (match.tournamentId !== -1)
+			navigate('/tournament/waiting-room');
+		else
+			navigate('/');
 	}
 
 	function getOpponent(): PlayerData

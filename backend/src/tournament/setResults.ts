@@ -1,4 +1,4 @@
-import { Result } 				from "../types/types";
+import { Result, PlayerData } 				from "../types/types";
 import { tournamentLobbies } 	from "./tournament";
 import { allMatchesFinished } from "./manageTournament";
 import { broadcastTournamentUpdate } from "./broadcastTournamentUpdates";
@@ -18,6 +18,36 @@ export function setResults(tournamentId: number, p1: number, p1score: number, p2
 	round.state.p1Score = p1score;
 	round.state.p2Score = p2score;
 	round.state.result = result;
+
+	if (!tournament.winners[tournament.roundIdx]) {
+		tournament.winners[tournament.roundIdx] = [];
+	}
+
+	let winner: PlayerData;
+	if (result === Result.P1WON) {
+		winner = round.p1;
+	} else if (result === Result.P2WON) {
+		winner = round.p2;
+	} else {
+		winner = round.p1;
+		return;
+	}
+
+	const alreadyExists = tournament.winners[tournament.roundIdx].some(p => p.id === winner.id);
+	if (!alreadyExists) {
+		tournament.winners[tournament.roundIdx].push(winner);
+		broadcastTournamentUpdate(tournamentId, "DATA");
+	}
+
+	const totalRounds = Math.log2(tournament.maxPlayers);
+	console.log(totalRounds);
+	if (tournament.roundIdx === totalRounds - 1)
+	{
+		console.log("FINAL ROUND WINNNER", winner);
+		tournament.winner = winner;
+		broadcastTournamentUpdate(tournamentId, "DATA");
+	}
+
 	if (allMatchesFinished(tournament))
 		broadcastTournamentUpdate(tournamentId, "READY_FOR_NEXT_ROUND");
 }

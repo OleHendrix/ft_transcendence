@@ -1,6 +1,6 @@
 import { useMemo, useState } 				from 'react';
 import axios 								from 'axios';
-import { motion, AnimatePresence } 			from 'framer-motion';
+import { motion }							from 'framer-motion';
 import { useNavigate } 						from 'react-router-dom';
 import { IoMdClose } 						from 'react-icons/io';
 import { useTournamentContext } 			from '../contexts/TournamentContext';
@@ -11,13 +11,14 @@ import { localStorageUpdateTournamentId } 	from './utils';
 export default function TournamentWaitingRoom() {
 	const { loggedInAccounts } 											= useAccountContext();
 	const { setTournamentId, setReadyForNextRound }						= useTournamentContext();
-	const { tournamentId, tournamentData, players, readyForNextRound } 	= useTournamentContext();
-	const [ isLeaving, setIsLeaving ] 									= useState(false);
+	const { tournamentId, tournamentData, readyForNextRound } 			= useTournamentContext();
+	const [ isLeaving, setIsLeaving ]									= useState(false);
+	const { countdown, setCountdown }									= useTournamentContext();
 	const navigate 														= useNavigate();
 
 	const handleClose = async () => {
-		if (isLeaving) return; //protection agains double clicks
-		if (!tournamentData) return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
+		if (isLeaving) 			return; // protection agains double clicks
+		if (!tournamentData) 	return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
 
 		setIsLeaving(true);
 		try {
@@ -71,11 +72,30 @@ export default function TournamentWaitingRoom() {
 		return rounds;
 	}
 
+	const runCountdown = (callback: () => Promise<void>) => {
+		const sequence = [3, 2, 1, 0];
+		let i = 0;
+	
+		const tick = () => {
+			setCountdown(sequence[i]);
+			if (i < sequence.length - 1) {
+				i++;
+				setTimeout(tick, 1000);
+			} else {
+				setTimeout(async () => {
+					setCountdown(null);
+					await callback();
+				}, 1000);
+			}
+		};
+
+		tick();
+	};
 
 	const rounds = useMemo(() => {
 		if (!tournamentData) return [];
-		return generateBracket(players, tournamentData.maxPlayers, tournamentData.winners);
-	}, [players, tournamentData?.maxPlayers, tournamentData?.winners]);
+		return generateBracket(tournamentData.players, tournamentData.maxPlayers, tournamentData.winners);
+	}, [tournamentData?.players, tournamentData?.winners]);
 	
 
 	return (
@@ -109,8 +129,8 @@ export default function TournamentWaitingRoom() {
 				{/* Host Info */}
 				{tournamentData && (
 					<div className="flex justify-center gap-10 mb-6 text-lg font-medium text-gray-300">
-						<p>🎯 Host: <span className="text-white">{tournamentData.hostUsername}</span></p>
-						<p>👥 Players: <span className="text-white">{players.length}/{tournamentData.maxPlayers}</span></p>
+						<p>Host: <span className="text-white">{tournamentData.hostUsername}</span></p>
+						<p>Players: <span className="text-white">{tournamentData.players.length}/{tournamentData.maxPlayers}</span></p>
 					</div>
 				)}
 
@@ -118,13 +138,13 @@ export default function TournamentWaitingRoom() {
 				<div className="flex-1 overflow-auto px-4">
 					<h2 className="text-2xl font-semibold mb-4">Players in Lobby</h2>
 					<ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-						{players.length > 0 ? (
-							players.map((player: PlayerData, index: number) => (
+						{tournamentData && tournamentData.players.length > 0 ? (
+							tournamentData.players.map((player: PlayerData, index: number) => (
 								<li
 									key={index}
 									className="bg-gray-700/80 rounded-xl p-3 text-center text-white font-medium shadow-md"
 								>
-									👤 {player.username}
+									{player.username}
 								</li>
 							))
 						) : (
@@ -136,41 +156,59 @@ export default function TournamentWaitingRoom() {
 				{/* Host Controls */}
 				<div className="mt-6 flex justify-center gap-6 flex-wrap">
 					{tournamentData &&
-						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
-						!readyForNextRound &&
-						players.length === tournamentData.maxPlayers && (
-							<button
-								onClick={async () => {
-									try {
-										await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { tournamentId });
-									} catch (error) {
-										console.error('tournamentWaitingRoom:ON_CLICK:start-tournament:ERROR:', error);
-									}
-								}}
-								className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition"
-							>
-								Start Tournament
-							</button>
-						)}
+					loggedInAccounts[0]?.username === tournamentData.hostUsername &&
+					!readyForNextRound &&
+					tournamentData.winners?.[tournamentData.winners.length - 1]?.length !== 1 && 
+					tournamentData.players.length === tournamentData.maxPlayers && (
+						<button
+							onClick={async () => {
+								try {
+									await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { tournamentId });
+								} catch (error) {
+									console.error('tournamentWaitingRoom:ON_CLICK:start-tournament:ERROR:', error);
+								}
+							}}
+							className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition"
+						>
+							Start Tournament
+						</button>
+					)}
 
 					{tournamentData &&
-						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
-						readyForNextRound && (
-							<button
-								onClick={async () => {
-									try {
+					loggedInAccounts[0]?.username === tournamentData.hostUsername &&
+					tournamentData.winners?.[tournamentData.winners.length - 1]?.length !== 1 && 
+					readyForNextRound && (
+						<button
+							onClick={async () => {
+								try {
+									runCountdown(async() => {
 										await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { tournamentId });
-										setReadyForNextRound(false);
-									} catch (error) {
-										console.error('tournamentWaitingRoom:ON_CLICK:start-next-round:ERROR:', error);
-									}
-								}}
-								className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition"
-							>
-								Start Next Round
-							</button>
-						)}
+									})
+									setReadyForNextRound(false);
+								} catch (error) {
+									console.error('tournamentWaitingRoom:ON_CLICK:start-next-round:ERROR:', error);
+								}
+							}}
+							className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition"
+						>
+							Start Next Round
+						</button>
+					)}
 				</div>
+
+
+				{/* Final Winner Section */}
+				{tournamentData &&
+				tournamentData.winner && (
+					<section className="mt-12 w-full flex justify-center">
+						<div className="bg-gradient-to-br from-yellow-400 to-red-500 text-white rounded-2xl shadow-2xl p-8 w-[320px] text-center animate-pulse border-4 border-yellow-300">
+							<h2 className="text-2xl font-bold mb-2">🏆 Tournament Winner</h2>
+							<p className="text-3xl font-black tracking-wide">
+								{tournamentData.winner.username}
+							</p>
+						</div>
+					</section>
+				)}
 
 				{/* Bracket View */}
 				{rounds.length > 0 && (
@@ -194,6 +232,13 @@ export default function TournamentWaitingRoom() {
 						</div>
 					</div>
 				)}
+
+				{countdown !== null && (
+					<div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
+						<h1 className="text-white text-9xl font-extrabold animate-pulse">{countdown > 0 ? countdown : 'START!'}</h1>
+					</div>
+				)}
+
 			</motion.div>
 		</motion.div>
 	);

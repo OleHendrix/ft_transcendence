@@ -1,6 +1,6 @@
 import { FastifyInstance } 		from "fastify/fastify";
 import { handleJoinTournament } from "./handleJoinTournament";
-
+import { broadcastTournamentUpdate } from "./broadcastTournamentUpdates";
 
 export async function joinTournament(fastify: FastifyInstance)
 {
@@ -15,7 +15,7 @@ export async function joinTournament(fastify: FastifyInstance)
 				};
 	
 				handleJoinTournament(connection, Number(playerId), playerUsername, Number(tournamentId));
-
+				broadcastTournamentUpdate(Number(tournamentId), "DATA");
 			} catch (error){
 				console.log(error);
 			}
