@@ -100,7 +100,7 @@ function PongGame() {
 		// console.log(`PongGame:leaveMatch:api/pong/delete:userId${userID}:tournamentId${match.tournamentId}`);
 
 		if (match.tournamentId !== -1)
-			navigate('/tournament/waiting-room');
+			navigate(-1);
 		else
 			navigate('/');
 	}

@@ -43,30 +43,30 @@ export function TournamentProvider({ children }: {children: ReactNode})
 	// start next round button available too soon 
 	//on mount (for refresh) set TournamentID back
 
-	useEffect(() => 
-	{
-		const storedId = localStorage.getItem("tournamentId");
-		if (storedId)
-		{
-			console.log(`setting tournament id to localstorage stored Id : ${storedId}`);
-			setTournamentId(JSON.parse(storedId));
+	// useEffect(() => 
+	// {
+	// 	const storedId = localStorage.getItem("tournamentId");
+	// 	if (storedId)
+	// 	{
+	// 		console.log(`setting tournament id to localstorage stored Id : ${storedId}`);
+	// 		setTournamentId(JSON.parse(storedId));
 
-			(async () =>
-			{
-				try
-				{
-					const response = await axios.get(`${API_URL}/api/tournament-data/${storedId}`);
-					setTournamentData(response.data);
-				}
-				catch (error)
-				{
-					console.error("Failed to fetch tournament data:", error);
-				}
-			})();
-		}
-		else
-			setTournamentId(-1);
-	}, []);
+	// 		(async () =>
+	// 		{
+	// 			try
+	// 			{
+	// 				const response = await axios.get(`${API_URL}/api/tournament-data/${storedId}`);
+	// 				setTournamentData(response.data);
+	// 			}
+	// 			catch (error)
+	// 			{
+	// 				console.error("Failed to fetch tournament data:", error);
+	// 			}
+	// 		})();
+	// 	}
+	// 	else
+	// 		setTournamentId(-1);
+	// }, []);
 
 	
 
@@ -76,7 +76,7 @@ export function TournamentProvider({ children }: {children: ReactNode})
 		if ( tournamentId === -1 || !player?.id || !player?.username )
 			return;
 
-		localStorageUpdateTournamentId(tournamentId);
+		// localStorageUpdateTournamentId(tournamentId);
 
 		if (socketRef.current)
 			socketRef.current.close();

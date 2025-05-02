@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } 				from 'react';
 import axios 								from 'axios';
 import { motion }							from 'framer-motion';
-import { useNavigate } 						from 'react-router-dom';
+import { useNavigate, useParams } 						from 'react-router-dom';
 import { IoMdClose } 						from 'react-icons/io';
 import { useTournamentContext } 			from '../contexts/TournamentContext';
 import { PlayerData }						from '../types';
@@ -16,10 +16,11 @@ export default function TournamentWaitingRoom()
 {
 	const { loggedInAccounts } 											= useAccountContext();
 	const { setTournamentId, setReadyForNextRound }						= useTournamentContext();
-	const { tournamentId, tournamentData, readyForNextRound } 			= useTournamentContext();
+	const { tournamentId, tournamentData, setTournamentData, readyForNextRound } 			= useTournamentContext();
 	const [ isLeaving, setIsLeaving ]									= useState(false);
 	const { countdown, setCountdown }									= useTournamentContext();
 	const navigate 														= useNavigate();
+	const { id }														= useParams();
 	let matchCounter = 1;
 
 	const handleClose = async () =>
@@ -34,7 +35,7 @@ export default function TournamentWaitingRoom()
 				await axios.post(`${API_URL}/api/rehost-tournament`, {tournamentId })
 			await axios.post(`${API_URL}/api/leave-tournament`, { playerId: loggedInAccounts[0].id, tournamentId, });
 			setTournamentId(-1);
-			localStorageUpdateTournamentId(-1);
+			// localStorageUpdateTournamentId(-1);
 			navigate('/');
 		}
 		catch (error)
@@ -46,6 +47,22 @@ export default function TournamentWaitingRoom()
 			setIsLeaving(false);
 		}
 	};
+
+	useEffect(() =>
+	{
+		async function getTournamentFromParams()
+		{
+			try
+			{
+				const response = await axios.get(`${API_URL}/api/tournament-data/${id}`)
+				setTournamentData(response.data)
+			}
+			catch (error)
+			{
+				console.error("failed to fetch tournament from params", error)
+			}
+		}; getTournamentFromParams();
+	}, [id])
 
 
 	function generateBracket(players: PlayerData[], maxPlayers: number, winners: PlayerData[][])
