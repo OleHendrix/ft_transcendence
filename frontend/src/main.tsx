@@ -42,7 +42,7 @@ const router = createBrowserRouter([
 			children:
 			[
 				{ path: 'menu', element: <TournamentMenu />},
-				{ path: 'waiting-room', element: <TournamentWaitingRoom />}
+				{ path: 'waiting-room/:id', element: <TournamentWaitingRoom />}
 			]
 		}
 		]

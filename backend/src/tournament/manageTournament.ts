@@ -12,14 +12,15 @@ export async function manageTournament(fastify: FastifyInstance)
 		const { tournamentId } = request.body as { tournamentId: number };
 		const tournament = tournamentLobbies.get(tournamentId);
 		if (!tournament) return reply.status(404).send({ error: 'Tournament not found' });
-
+		
 		setMatches(tournament);
 		if (!tournament.rounds) return reply.status(401).send({ error: "Failed to set matches"});
-
-		for(const match of tournament.rounds[0])
-		{
+		
+		for (const match of tournament.rounds[0])
 			addGame(match.p1, match.p2, false, tournamentId);
-		}
+		
+		tournament.matchRound++;
+		
 		broadcastTournamentUpdate(tournamentId, "DATA");
 		broadcastTournamentUpdate(tournamentId, "START_SIGNAL");
 		return reply.status(200).send({ succes: true });
@@ -37,10 +38,11 @@ export async function manageTournament(fastify: FastifyInstance)
 		
 		setMatches(t);
 
-		for(const match of t.rounds[t.roundIdx])
-		{
+		for (const match of t.rounds[t.roundIdx])
 			addGame(match.p1, match.p2, false, tournamentId);
-		}
+
+		t.matchRound++;
+	
 		broadcastTournamentUpdate(tournamentId, "DATA");
 		broadcastTournamentUpdate(tournamentId, "START_SIGNAL");
 	});

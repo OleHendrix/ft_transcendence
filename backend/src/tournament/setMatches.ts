@@ -12,7 +12,8 @@ export function setMatches(tournament: TournamentData)
 		const winners = tournament.winners[idx - 1];
 		for (let i = 0; i < winners.length; i += 2)
 		{
-			tournament.rounds[idx]?.push({
+			tournament.rounds[idx]?.push(
+			{
 				state:			initGame(winners[i], winners[i+1]),
 				p1:				winners[i],
 				p2:				winners[i + 1],
@@ -25,7 +26,8 @@ export function setMatches(tournament: TournamentData)
 
 	for (let i = 0; i < tournament.players.length; i += 2)
 	{
-		tournament.rounds[0]?.push({
+		tournament.rounds[0]?.push(
+		{
 			state:		initGame(tournament.players[i], tournament.players[i+1]),
 			p1:			tournament.players[i],
 			p2:			tournament.players[i + 1],

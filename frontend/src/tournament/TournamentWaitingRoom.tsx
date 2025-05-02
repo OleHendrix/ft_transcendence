@@ -1,4 +1,4 @@
-import { useMemo, useState } 				from 'react';
+import { useMemo, useState, useEffect } 				from 'react';
 import axios 								from 'axios';
 import { motion }							from 'framer-motion';
 import { useNavigate } 						from 'react-router-dom';
@@ -8,6 +8,8 @@ import { PlayerData }						from '../types';
 import { useAccountContext } 				from '../contexts/AccountContext';
 import { localStorageUpdateTournamentId } 	from './utils';
 import Chat 								from "../chat/Chat"
+import { Match, PongState, Result } from "../types"
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function TournamentWaitingRoom() 
@@ -18,6 +20,7 @@ export default function TournamentWaitingRoom()
 	const [ isLeaving, setIsLeaving ]									= useState(false);
 	const { countdown, setCountdown }									= useTournamentContext();
 	const navigate 														= useNavigate();
+	let matchCounter = 1;
 
 	const handleClose = async () =>
 	{
@@ -43,6 +46,7 @@ export default function TournamentWaitingRoom()
 			setIsLeaving(false);
 		}
 	};
+
 
 	function generateBracket(players: PlayerData[], maxPlayers: number, winners: PlayerData[][])
 	{
@@ -110,16 +114,22 @@ export default function TournamentWaitingRoom()
 		if (!tournamentData) return [];
 		return generateBracket(tournamentData.players, tournamentData.maxPlayers, tournamentData.winners);
 	}, [tournamentData?.players, tournamentData?.winners]);
-	
+
+	function stillPlaying()
+	{
+		const currentRound = tournamentData?.rounds?.[tournamentData.roundIdx] || [];
+		const stillPlaying = currentRound.some(match => match.state.result === Result.PLAYING);
+		return stillPlaying;
+	}
 
 	return (
 		<motion.div
-			className="absolute top-[8vh] w-screen h-[calc(100vh-8vh)] backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
+			className="absolute h-screen min-h-screen w-screen backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}>
 			<motion.div
-				className="relative bg-[#1e1e1e]/90 text-white shadow-2xl p-10 w-screen h-[calc(100vh-8vh)] overflow-hidden flex flex-col"
+				className="relative bg-[#1e1e1e]/90 text-white shadow-2xl p-10 h-screen min-h-screen w-screen overflow-hidden flex flex-col"
 				initial={{ scale: 0.95, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.95, y: 20 }}
@@ -133,8 +143,10 @@ export default function TournamentWaitingRoom()
 					<IoMdClose size={28} />
 				</button>
 
+				<div className='flex-col'>
+
 				{/* Title */}
-				<h1 className="text-3xl font-bold mb-6 text-center tracking-wide">
+				<h1 className="text-3xl font-bold text-center tracking-wide">
 					Tournament Waiting Room
 				</h1>
 
@@ -146,16 +158,18 @@ export default function TournamentWaitingRoom()
 						<p>👥 Players: <span className="text-white">{tournamentData?.players.length}/{tournamentData.maxPlayers}</span></p>
 					</div>
 				)}
+
+				</div>
 				<div className='w-full h-full flex'>
 					{/* Players List */}
-					<div className="w-full lg:w-1/8 flex flex-col justify-start p-6 space-y-12">
-						<h2 className="text-2xl font-semibold mb-4">Players in Lobby</h2>
-						<ul className="flex flex-col gap-2">
+					<div className="w-full lg:w-1/8 flex flex-col justify-start items-center space-y-12">
+						<h2 className="text-m font-semibold mb-4">Players in Lobby</h2>
+						<ul className="flex flex-col w-full gap-2">
 							{(tournamentData?.players && tournamentData?.players.length > 0) ?
 							(
 								tournamentData?.players.map((player: PlayerData, index: number) =>
 								(
-									<li key={index} className="bg-gray-700/80 rounded-xl p-3 text-center text-white font-medium shadow-md">
+									<li key={index} className="bg-gray-700/80 w-full rounded-xl p-3 text-center text-white font-medium shadow-md">
 										👤 {player.username}
 									</li>
 								))
@@ -163,42 +177,59 @@ export default function TournamentWaitingRoom()
 							(
 								<li className="text-gray-400">No players yet...</li>
 							)}
-						</ul>
+							</ul>
 					</div>
-
-				{/* Bracket View */}
-				{rounds.length > 0 &&
+				{stillPlaying() ?
 				(
-					<div className="w-full lg:w-6/8 flex flex-col p-6 justify-start space-y-12">
-							<div className="flex flex-col items-center w-full">
-								<h2 className="text-2xl font-semibold mb-6 text-center">Bracket</h2>
-								<div className="flex gap-6 justify-start items-center w-fit px-4">
-									{rounds.map((round, roundIndex) => (
-										<div key={roundIndex} className="flex flex-col gap-6 min-w-[200px]">
-											{round.map((match, matchIndex) =>
-											(
-												<div key={matchIndex} className="bg-gray-800 text-white px-4 py-2 rounded-xl text-center shadow">
+					<div className="w-full lg:w-6/8 flex flex-col justify-center items-center space-y-12">
+						Matches are still playing...
+					</div>
+				) :
+				tournamentData?.winner ?
+				(
+					<div className="w-full lg:w-6/8 flex flex-col justify-center items-center space-y-12">
+						{`${tournamentData?.winner.username} won the tournament!`}
+					</div>
+				) :
+				rounds.length > 0 ? 
+				(
+					<div className="w-full lg:w-6/8 flex flex-col justify-start space-y-12">
+						<div className="flex flex-col items-center w-full">
+							<div className='flex-col mb-6'>
+							<h2 className="text-m font-semibold text-center">{`Round ${tournamentData!.matchRound}/${Math.log2(tournamentData!.maxPlayers)}`}</h2>
+							<p>Matches to be played</p>
+							</div>
+							<div className="flex flex-col gap-6 justify-start items-center w-fit px-4">
+								{rounds.map((round, roundIndex) =>
+								(
+									<div key={roundIndex} className="flex justify-center gap-6 min-w-[200px]">
+										{round.map((match, matchIndex) => {
+											const currentMatchNumber = matchCounter++;
+											return (
+												<div key={matchIndex} className={`bg-gray-800 text-white text-xs flex-col px-4 py-1 text-center font-bold shadow ${(roundIndex + 1 !== tournamentData?.matchRound || match.includes('TBD')) ? 'opacity-30' : ''}`}>
+													<p className='text-[8px] font-light'>{`Match ${currentMatchNumber}`}</p>	
 													{match}
 												</div>
-											))}
-										</div>
-									))}
-								</div>
+											);
+										})}
+									</div>
+								))}
 							</div>
+						</div>
 					</div>
-				)}
+				) : null}
 				</div>
 					<div className='w-full lg:w-1/8'>
-					</div>
+				</div>
 
 				{/* Host Controls */}
 				<div className="mt-6 flex justify-center gap-6 flex-wrap">
 					{tournamentData &&
 						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
-						!readyForNextRound &&
+						!readyForNextRound && !stillPlaying() &&
 						tournamentData?.players.length === tournamentData.maxPlayers &&
 						(
-							<button className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition"
+							<button className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition cursor-pointer"
 								onClick={async () =>
 								{
 									try
@@ -220,7 +251,7 @@ export default function TournamentWaitingRoom()
 							</button>
 						)}
 
-					{tournamentData && loggedInAccounts[0]?.username === tournamentData.hostUsername && readyForNextRound &&
+					{tournamentData && loggedInAccounts[0]?.username === tournamentData.hostUsername && readyForNextRound && !tournamentData?.winner &&
 					(
 							<button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition"
 								onClick={async () => 

@@ -175,6 +175,7 @@ export interface TournamentData
 	winners:		PlayerData[][];
 	winner: 		PlayerData | null;
 	roundIdx:		number;
+	matchRound:		number;
 	rounds:			Match[][] | null;
 	sockets:		Set<WebSocket>;
 };

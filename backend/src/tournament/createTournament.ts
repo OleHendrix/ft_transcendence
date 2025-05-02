@@ -7,9 +7,12 @@ export async function createTournament(fastify: FastifyInstance)
 {
 	fastify.register(async function (fastify)
 	{
-		fastify.post('/api/create-tournament', (request, reply) => {
-			try {
-				const { hostId, hostUsername, maxPlayers } = request.body as {
+		fastify.post('/api/create-tournament', (request, reply) =>
+		{
+			try
+			{
+				const { hostId, hostUsername, maxPlayers } = request.body as 
+				{
 					hostId: number;
 					hostUsername: string;
 					maxPlayers: string;
@@ -24,7 +27,8 @@ export async function createTournament(fastify: FastifyInstance)
 				const rounds: Match[][] = [];
 				const winner = null;
 				
-				const tournamentData = {
+				const tournamentData = 
+				{
 					tournamentId,
 					hostId,
 					hostUsername,
@@ -32,6 +36,7 @@ export async function createTournament(fastify: FastifyInstance)
 					winners,
 					winner,
 					roundIdx: 0,
+					matchRound: 1,
 					maxPlayers: Number(maxPlayers),
 					rounds,
 					sockets,
@@ -39,7 +44,9 @@ export async function createTournament(fastify: FastifyInstance)
 
 				tournamentLobbies.set(tournamentId, tournamentData);
 				reply.send( { tournamentId: tournamentId } );
-			} catch (error){
+			}
+			catch (error)
+			{
 				console.log(error);
 			}
 		})

@@ -7,7 +7,8 @@ import { localStorageUpdateTournamentId } from "../tournament/utils";
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
 
-type TournamentContextType = {
+type TournamentContextType =
+{
 	tournamentId: 			number | null;
 	setTournamentId: 		Dispatch<SetStateAction<number>>;
 
@@ -40,59 +41,72 @@ export function TournamentProvider({ children }: {children: ReactNode})
 	// TODO: decide what to do for the players who have no game
 	// make the bs where globalchat can announce tournaments 
 	// start next round button available too soon 
+	//on mount (for refresh) set TournamentID back
 
-	useEffect(() => { //on mount (for refresh) set TournamentID back
+	useEffect(() => 
+	{
 		const storedId = localStorage.getItem("tournamentId");
-		if (storedId) {
+		if (storedId)
+		{
 			console.log(`setting tournament id to localstorage stored Id : ${storedId}`);
 			setTournamentId(JSON.parse(storedId));
 
-			(async () => {
-				try {
+			(async () =>
+			{
+				try
+				{
 					const response = await axios.get(`${API_URL}/api/tournament-data/${storedId}`);
 					setTournamentData(response.data);
-				} catch (error) {
+				}
+				catch (error)
+				{
 					console.error("Failed to fetch tournament data:", error);
 				}
 			})();
-		} else {
-			setTournamentId(-1);
 		}
+		else
+			setTournamentId(-1);
 	}, []);
+
 	
 
-	useEffect(() => {
+	useEffect(() =>
+	{
 		const player = loggedInAccounts[0];
-		if ( tournamentId === -1 || !player?.id || !player?.username ) return;
+		if ( tournamentId === -1 || !player?.id || !player?.username )
+			return;
 
 		localStorageUpdateTournamentId(tournamentId);
 
-		if (socketRef.current) {
+		if (socketRef.current)
 			socketRef.current.close();
-		}
 		
 		const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
 		socketRef.current = socket;
-		socket.onopen = () => {
-			console.log(`TournamentContext:WebsocketCreated:PlayerId:${player.id}:TournamentId:${tournamentId}`);
-		};
+		socket.onopen = () => {console.log(`TournamentContext:WebsocketCreated:PlayerId:${player.id}:TournamentId:${tournamentId}`);};
 	
-		socket.onmessage = (event) => {
-			try {
+		socket.onmessage = (event) =>
+		{
+			try
+			{
 				const data = JSON.parse(event.data);
 				if (data.type === "DATA")
-				{
 					setTournamentData(data.tournament);
-				}
-				if (data.type === "START_SIGNAL") {
+				if (data.type === "START_SIGNAL")
+				{
+					const activeIds = data.data.activePlayerIds;
+					if (!activeIds.includes(player.id))
+						return;
 					setCountdown(3); // trigger countdown
 				
 					let count = 3;
-					const interval = setInterval(() => {
+					const interval = setInterval(() =>
+					{
 						count--;
 						setCountdown(count);
 				
-						if (count < 0) {
+						if (count < 0)
+						{
 							clearInterval(interval);
 							setCountdown(null);
 							setIsPlaying(PlayerState.playing); // start game
@@ -100,28 +114,23 @@ export function TournamentProvider({ children }: {children: ReactNode})
 						}
 					}, 1000);
 				}
-				
 				if (data.type === "READY_FOR_NEXT_ROUND")
-				{
 					setReadyForNextRound(true);
-				}
-			} catch (err) {
+			}
+			catch (err)
+			{
 				console.error("Failed to parse WebSocket message", err);
 			}
 		};
 	
-		socket.onerror = (err) => {
-			console.error(`TournamentContext:WebSocket:ERROR:`, err);
-		};
+		socket.onerror = (err) => {console.error(`TournamentContext:WebSocket:ERROR:`, err);};
 	
 		// socket.onclose = () => {
 		// 	// navigate('/');
 		// 	// console.log("WebSocket tournament waiting room closed");
 		// };
 	
-		return () => {
-			socket.close();
-		};
+		return () => {socket.close();};
 	}, [tournamentId]);
 	
 	const value = useMemo(() => (

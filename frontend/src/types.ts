@@ -192,6 +192,7 @@ export interface TournamentData
 	winners:		PlayerData[][];
 	winner: 		PlayerData;
 	roundIdx:		number;
+	matchRound:		number;
 	rounds:			Match[][] | null;
 	sockets:		Set<WebSocket>;
 };

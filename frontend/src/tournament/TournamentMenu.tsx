@@ -8,14 +8,16 @@ import { useEffect, useState } 		from 'react';
 import ModalWrapper 				from "../utils/ModalWrapper";
 const API_URL = import.meta.env.VITE_API_URL;
 
-interface TournamentLobby {
+interface TournamentLobby
+{
 	tournamentId: 	number;
 	hostUsername: 	string;
 	currentPlayers: number;
 	maxPlayers: 	number;
 }
 
-export default function TournamentMenu() {
+export default function TournamentMenu()
+{
 	const { loggedInAccounts } 		= useAccountContext();
 	const { setTournamentId, } 		= useTournamentContext();
 	const [ lobbies, setLobbies ] 	= useState<TournamentLobby[]>([]);
@@ -23,16 +25,20 @@ export default function TournamentMenu() {
 
 	async function createTournament( maxPlayers: number )
 	{
-		try {
+		try
+		{
 			const host = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
-			const response = await axios.post(`${API_URL}/api/create-tournament`, {
+			const response = await axios.post(`${API_URL}/api/create-tournament`,
+			{
 				hostId: host.id,
 				hostUsername: host.username,
 				maxPlayers,
 			});
 			setTournamentId(response.data.tournamentId);
-			navigate('/tournament/waiting-room');
-		} catch (error) {
+			navigate(`/tournament/waiting-room/${response.data.tournamentId}`);
+		}
+		catch (error)
+		{
 			console.log(error);
 		}
 	}
@@ -40,18 +46,23 @@ export default function TournamentMenu() {
 	async function joinTournament(tournamentId: number)
 	{
 		setTournamentId(tournamentId);
-		navigate('/tournament/waiting-room');
+		navigate(`/tournament/waiting-room/${tournamentId}`);
 	}
 
-	useEffect(() => {
+	useEffect(() => 
+	{
 		fetchLobbies();
 	}, [lobbies]);
 
-	async function fetchLobbies() {
-		try {
+	async function fetchLobbies()
+	{
+		try
+		{
 			const response = await axios.get(`${API_URL}/api/get-tournament-lobbies`);
 			setLobbies(response.data);
-		} catch (error: any) {
+		}
+		catch (error: any)
+		{
 			console.log(error);
 		}
 	}
@@ -64,13 +75,11 @@ export default function TournamentMenu() {
 				initial={{ scale: 0.95, y: 30 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.95, y: 30 }}
-				transition={{ type: "spring", stiffness: 250, damping: 25 }}
-			>
+				transition={{ type: "spring", stiffness: 250, damping: 25 }}>
 				{/* Close Button */}
 				<button
 					className="absolute top-4 right-4 text-gray-400 hover:text-white"
-					onClick={() => navigate('/')}
-				>
+					onClick={() => navigate('/')}>
 					<IoMdClose size={28} />
 				</button>
 
@@ -81,14 +90,14 @@ export default function TournamentMenu() {
 				<section className="flex flex-col gap-4">
 					<h2 className="text-xl font-bold">Create a Tournament</h2>
 					<div className="flex gap-4 flex-wrap">
-						{[4, 8, 16, 32].map((count) => (
+						{[4, 8, 16, 32].map((count) =>
+						(
 							<motion.button
 								key={count}
 								className="flex-1 min-w-[90px] py-2 bg-[#134588] hover:bg-[#1960bd] rounded-full text-sm font-semibold transition"
 								whileHover={{ scale: 1.05 }}
 								whileTap={{ scale: 0.95 }}
-								onClick={() => createTournament(count)}
-							>
+								onClick={() => createTournament(count)}>
 								{count} Players
 							</motion.button>
 						))}
@@ -99,17 +108,19 @@ export default function TournamentMenu() {
 				<section className="flex flex-col gap-3 mt-6 flex-grow">
 					<h2 className="text-xl font-bold">Join a Lobby</h2>
 					<div className="flex flex-col gap-3 overflow-y-auto max-h-64 pr-2 scrollbar-thin scrollbar-thumb-[#444] scrollbar-track-transparent">
-						{lobbies.length === 0 ? (
+						{lobbies.length === 0 ?
+						(
 							<p className="text-gray-400 text-center py-8">No lobbies available right now.</p>
-						) : (
-							lobbies.map((lobby) => (
+						) :
+						(
+							lobbies.map((lobby) =>
+							(
 								<motion.div
 									key={lobby.tournamentId}
 									className="bg-[#2a2a2a] p-4 rounded-xl shadow hover:shadow-lg transition flex justify-between items-center"
 									initial={{ opacity: 0, y: 10 }}
 									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.2 }}
-								>
+									transition={{ duration: 0.2 }}>
 									<div className="flex flex-col">
 										<span className="text-lg font-semibold">
 											{lobby.hostUsername}'s Lobby
@@ -120,8 +131,7 @@ export default function TournamentMenu() {
 									</div>
 									<button
 										className="bg-[#ff914d] hover:bg-[#ab5a28] px-4 py-1 rounded-full font-semibold text-sm"
-										onClick={() => joinTournament(lobby.tournamentId)}
-									>
+										onClick={() => joinTournament(lobby.tournamentId)}>
 										Join
 									</button>
 								</motion.div>
