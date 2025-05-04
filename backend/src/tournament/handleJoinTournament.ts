@@ -20,16 +20,16 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		return;
 	}
 
+	if (tournament.players.find(p => p.id === playerId)){
+		tournament.sockets.add(connection);
+		return console.log(`handleJoinTournament:Player${playerId}:TRIED_TO_JOIN:tournament${tournamentId}:ALLREADY_IN`);
+	}
 	if (tournament.players.length >= tournament.maxPlayers) {
 		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`); //TODO test this
 		connection.close();
 		return;
 	}
   
-	if (tournament.players.find(p => p.id === playerId)){
-		tournament.sockets.add(connection);
-		return console.log(`handleJoinTournament:Player${playerId}:TRIED_TO_JOIN:tournament${tournamentId}:ALLREADY_IN`);
-	}
 
 	const player: PlayerData = {
 		id: playerId,

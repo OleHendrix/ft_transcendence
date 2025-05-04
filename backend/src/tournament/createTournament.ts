@@ -26,7 +26,6 @@ export async function createTournament(fastify: FastifyInstance)
 				const winners: PlayerData[][] = [];
 				const rounds: Match[][] = [];
 				const winner = null;
-				
 				const tournamentData = 
 				{
 					tournamentId,
@@ -40,6 +39,7 @@ export async function createTournament(fastify: FastifyInstance)
 					maxPlayers: Number(maxPlayers),
 					rounds,
 					sockets,
+					readyForNextRound: false
 				};
 
 				tournamentLobbies.set(tournamentId, tournamentData);

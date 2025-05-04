@@ -184,15 +184,16 @@ import type { WebSocket } from 'ws';
 
 export interface TournamentData
 {
-	tournamentId:	number;
-	hostId:			number;
-	hostUsername: 	string;
-	maxPlayers:		number;
-	players:		PlayerData[];
-	winners:		PlayerData[][];
-	winner: 		PlayerData;
-	roundIdx:		number;
-	matchRound:		number;
-	rounds:			Match[][] | null;
-	sockets:		Set<WebSocket>;
+	tournamentId:		number;
+	hostId:				number;
+	hostUsername: 		string;
+	maxPlayers:			number;
+	players:			PlayerData[];
+	winners:			PlayerData[][];
+	winner: 			PlayerData;
+	roundIdx:			number;
+	matchRound:			number;
+	rounds:				Match[][] | null;
+	sockets:			Set<WebSocket>;
+	readyForNextRound: 	boolean;
 };

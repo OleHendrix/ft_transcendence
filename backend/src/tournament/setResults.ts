@@ -45,5 +45,8 @@ export function setResults(tournamentId: number, p1: number, p1score: number, p2
 	}
 
 	if (allMatchesFinished(tournament))
-		broadcastTournamentUpdate(tournamentId, "READY_FOR_NEXT_ROUND");
+	{
+		tournament.readyForNextRound = true;
+		broadcastTournamentUpdate(tournamentId, "DATA");
+	}
 }

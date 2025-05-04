@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useRef, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
+import { createContext, useState, useEffect, useRef, useMemo, Dispatch, SetStateAction, ReactNode, useContext, RefObject } from "react";
 import axios 					from "axios";
 import { useAccountContext } 	from "./AccountContext";
 import { useNavigate } 			from "react-router-dom";
@@ -15,13 +15,10 @@ type TournamentContextType =
 	tournamentData: 		TournamentData | null;
 	setTournamentData:		Dispatch<SetStateAction<TournamentData | null>>;
 
-	readyForNextRound: 		boolean;
-	setReadyForNextRound: 	Dispatch<SetStateAction<boolean>>;
-
 	countdown:				number | null;
 	setCountdown:			Dispatch<SetStateAction<number | null>>;
 
-	socket:					WebSocket | null;
+	socketRef:				RefObject<WebSocket | null>;
 };
 
 
@@ -32,7 +29,6 @@ export function TournamentProvider({ children }: {children: ReactNode})
 	const [ tournamentId, 		setTournamentId ] 			= useState<number>(-1);
 	const [ tournamentData, 	setTournamentData ]			= useState<TournamentData | null>(null);
 	const { loggedInAccounts, 	setIsPlaying  } 			= useAccountContext();
-	const [ readyForNextRound, 	setReadyForNextRound]		= useState(false);
 	const [ countdown, 			setCountdown ]				= useState<number | null>(null);
 	const navigate											= useNavigate();
 	const socketRef											= useRef<WebSocket | null>(null);
@@ -68,84 +64,79 @@ export function TournamentProvider({ children }: {children: ReactNode})
 	// 		setTournamentId(-1);
 	// }, []);
 
-	
+	// useEffect(() =>
+	// {
+	// 	const player = loggedInAccounts[0];
+	// 	if ( tournamentId === -1 || !player?.id || !player?.username )
+	// 		return;
 
-	useEffect(() =>
-	{
-		const player = loggedInAccounts[0];
-		if ( tournamentId === -1 || !player?.id || !player?.username )
-			return;
+	// 	// localStorageUpdateTournamentId(tournamentId);
 
-		// localStorageUpdateTournamentId(tournamentId);
-
-		if (socketRef.current)
-			socketRef.current.close();
+	// 	if (socketRef.current)
+	// 		socketRef.current.close();
 		
-		const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
-		socketRef.current = socket;
-		socket.onopen = () => {console.log(`TournamentContext:WebsocketCreated:PlayerId:${player.id}:TournamentId:${tournamentId}`);};
+	// 	const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${tournamentId}`);
+	// 	socketRef.current = socket;
+	// 	socket.onopen = () => {console.log(`TournamentContext:WebsocketCreated:PlayerId:${player.id}:TournamentId:${tournamentId}`);};
 	
-		socket.onmessage = (event) =>
-		{
-			try
-			{
-				const data = JSON.parse(event.data);
-				if (data.type === "DATA")
-					setTournamentData(data.tournament);
-				if (data.type === "START_SIGNAL")
-				{
-					const activeIds = data.data.activePlayerIds;
-					if (!activeIds.includes(player.id))
-						return;
-					setCountdown(3); // trigger countdown
+	// 	socket.onmessage = (event) =>
+	// 	{
+	// 		try
+	// 		{
+	// 			const data = JSON.parse(event.data);
+	// 			if (data.type === "DATA")
+	// 				setTournamentData(data.tournament);
+	// 			if (data.type === "START_SIGNAL")
+	// 			{
+	// 				const activeIds = data.data.activePlayerIds;
+	// 				if (!activeIds.includes(player.id))
+	// 					return;
+	// 				setCountdown(3); // trigger countdown
 				
-					let count = 3;
-					const interval = setInterval(() =>
-					{
-						count--;
-						setCountdown(count);
+	// 				let count = 3;
+	// 				const interval = setInterval(() =>
+	// 				{
+	// 					count--;
+	// 					setCountdown(count);
 				
-						if (count < 0)
-						{
-							clearInterval(interval);
-							setCountdown(null);
-							setIsPlaying(PlayerState.playing); // start game
-							navigate('/pong-game');
-						}
-					}, 1000);
-				}
-				if (data.type === "READY_FOR_NEXT_ROUND")
-					setReadyForNextRound(true);
-			}
-			catch (err)
-			{
-				console.error("Failed to parse WebSocket message", err);
-			}
-		};
+	// 					if (count < 0)
+	// 					{
+	// 						clearInterval(interval);
+	// 						setCountdown(null);
+	// 						setIsPlaying(PlayerState.playing); // start game
+	// 						navigate('/pong-game');	
+	// 					}
+	// 				}, 1000);
+	// 			}
+	// 		}
+	// 		catch (err)
+	// 		{
+	// 			console.error("Failed to parse WebSocket message", err);
+	// 		}
+	// 	};
 	
-		socket.onerror = (err) => {console.error(`TournamentContext:WebSocket:ERROR:`, err);};
+	// 	socket.onerror = (err) => {console.error(`TournamentContext:WebSocket:ERROR:`, err);};
 	
-		// socket.onclose = () => {
-		// 	// navigate('/');
-		// 	// console.log("WebSocket tournament waiting room closed");
-		// };
+	// 	// socket.onclose = () => {
+	// 	// 	// navigate('/');
+	// 	// 	// console.log("WebSocket tournament waiting room closed");
+	// 	// };
 	
-		return () => {socket.close();};
-	}, [tournamentId]);
+	// 	return () => {socket.close();};
+	// }, [tournamentId]);
 	
 	const value = useMemo(() => (
 		{
 			tournamentId,		setTournamentId,
 			tournamentData,		setTournamentData,
-			readyForNextRound,	setReadyForNextRound,
 			countdown, 			setCountdown,
-			socket: 			socketRef.current,
+			socketRef
 		}
 	), [
 		tournamentId, 		setTournamentId,
 		tournamentData, 	setTournamentData,
-		readyForNextRound, 	setReadyForNextRound,
-		countdown, 			setCountdown
+		countdown, 			setCountdown,
+		socketRef
 	]);
 	
 	return (

@@ -9,27 +9,27 @@ export async function manageTournament(fastify: FastifyInstance)
 {
 	fastify.post('/api/start-tournament', async (request, reply) =>
 	{
-		const { tournamentId } = request.body as { tournamentId: number };
-		const tournament = tournamentLobbies.get(tournamentId);
+		const { id } = request.body as { id: number };
+		const tournament = tournamentLobbies.get(id);
 		if (!tournament) return reply.status(404).send({ error: 'Tournament not found' });
 		
 		setMatches(tournament);
 		if (!tournament.rounds) return reply.status(401).send({ error: "Failed to set matches"});
 		
 		for (const match of tournament.rounds[0])
-			addGame(match.p1, match.p2, false, tournamentId);
+			addGame(match.p1, match.p2, false, id);
 		
 		tournament.matchRound++;
 		
-		broadcastTournamentUpdate(tournamentId, "DATA");
-		broadcastTournamentUpdate(tournamentId, "START_SIGNAL");
+		broadcastTournamentUpdate(id, "DATA");
+		broadcastTournamentUpdate(id, "START_SIGNAL");
 		return reply.status(200).send({ succes: true });
 	});
 
 	fastify.post('/api/start-next-round', async (request, reply) => 
 	{
-		const { tournamentId } = request.body as { tournamentId: number };
-		const t = tournamentLobbies.get(tournamentId);
+		const { id } = request.body as { id: number };
+		const t = tournamentLobbies.get(id);
 		if (!t) 		return reply.status(404).send({ error: 'Tournament not found' });
 		if (!t.rounds) 	return reply.status(500).send({ error: 'NO ROUNDS' });
 
@@ -39,12 +39,12 @@ export async function manageTournament(fastify: FastifyInstance)
 		setMatches(t);
 
 		for (const match of t.rounds[t.roundIdx])
-			addGame(match.p1, match.p2, false, tournamentId);
+			addGame(match.p1, match.p2, false, id);
 
 		t.matchRound++;
-	
-		broadcastTournamentUpdate(tournamentId, "DATA");
-		broadcastTournamentUpdate(tournamentId, "START_SIGNAL");
+		t.readyForNextRound = false;
+		broadcastTournamentUpdate(id, "DATA");
+		broadcastTournamentUpdate(id, "START_SIGNAL");
 	});
 }
 

@@ -1,52 +1,92 @@
-import { useMemo, useState, useEffect } 				from 'react';
+import { useMemo, useState, useEffect, useRef, Dispatch, SetStateAction } 				from 'react';
 import axios 								from 'axios';
 import { motion }							from 'framer-motion';
-import { useNavigate, useParams } 						from 'react-router-dom';
+import { useNavigate, useParams, useNavigationType, NavigateFunction} 						from 'react-router-dom';
 import { IoMdClose } 						from 'react-icons/io';
 import { useTournamentContext } 			from '../contexts/TournamentContext';
-import { PlayerData }						from '../types';
+import { PlayerData, PlayerState, PlayerType, TournamentData }						from '../types';
 import { useAccountContext } 				from '../contexts/AccountContext';
 import { localStorageUpdateTournamentId } 	from './utils';
 import Chat 								from "../chat/Chat"
 import { Match, PongState, Result } from "../types"
-
+const WS_URL = import.meta.env.VITE_WS_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function TournamentWaitingRoom() 
 {
-	const { loggedInAccounts } 											= useAccountContext();
-	const { setTournamentId, setReadyForNextRound }						= useTournamentContext();
-	const { tournamentId, tournamentData, setTournamentData, readyForNextRound } 			= useTournamentContext();
-	const [ isLeaving, setIsLeaving ]									= useState(false);
-	const { countdown, setCountdown }									= useTournamentContext();
-	const navigate 														= useNavigate();
-	const { id }														= useParams();
+	const { loggedInAccounts, setIsPlaying, isPlaying } 									= useAccountContext();
+	const { tournamentData, setTournamentData } 											= useTournamentContext();
+	const [ isLeaving, setIsLeaving ]														= useState(false);
+	const { countdown, setCountdown }														= useTournamentContext();
+	const navigate 																			= useNavigate();
+	const { id }																			= useParams();
 	let matchCounter = 1;
+	const isLeavingRef = useRef(isLeaving);
+	const tournamentDataRef = useRef(tournamentData);
+	const setIsLeavingRef = useRef(setIsLeaving);
+	const loggedInAccountsRef = useRef(loggedInAccounts);
+	const navigateRef = useRef(navigate);
+	const isNavigatingToGame = useRef(false);
 
-	const handleClose = async () =>
+
+	useEffect(() =>
 	{
-		if (isLeaving) 			return; // protection agains double clicks
-		if (!tournamentData) 	return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
+		isLeavingRef.current = isLeaving;
+		tournamentDataRef.current = tournamentData;
+		setIsLeavingRef.current = setIsLeaving;
+		loggedInAccountsRef.current = loggedInAccounts;
+		navigateRef.current = navigate;
+	}, [isLeaving, tournamentData, setIsLeaving, loggedInAccounts, navigate]);
 
-		setIsLeaving(true);
-		try
+	useEffect(() =>
+	{
+		const player = loggedInAccounts[0];
+		if (!id || !player?.id || !player?.username)
+			return;
+
+		const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${id}`);
+		socket.onopen = () => console.log("Tournament WS connected");
+
+		socket.onmessage = (event) =>
 		{
-			if (loggedInAccounts[0].id === tournamentData?.hostId && tournamentData.players.length > 1)
-				await axios.post(`${API_URL}/api/rehost-tournament`, {tournamentId })
-			await axios.post(`${API_URL}/api/leave-tournament`, { playerId: loggedInAccounts[0].id, tournamentId, });
-			setTournamentId(-1);
-			// localStorageUpdateTournamentId(-1);
-			navigate('/');
-		}
-		catch (error)
-		{
-			console.log(error);
-		} 
-		finally
-		{
-			setIsLeaving(false);
-		}
-	};
+			try
+			{
+				const data = JSON.parse(event.data);
+				if (data.type === "DATA")
+					setTournamentData(data.tournament);
+				if (data.type === "START_SIGNAL")
+				{
+					const activeIds = data.data.activePlayerIds;
+					if (!activeIds.includes(player.id))
+						return;
+					setCountdown(3); // trigger countdown
+				
+					let count = 3;
+					const interval = setInterval(() =>
+					{
+						count--;
+						setCountdown(count);
+				
+						if (count < 0)
+						{
+							clearInterval(interval);
+							setCountdown(null);
+							setIsPlaying(PlayerState.playing); // start game
+							isNavigatingToGame.current = true;
+							navigate('/pong-game');
+						}
+					}, 1000);
+				}
+			}
+			catch (err)
+			{
+				console.error("Failed to parse WebSocket message", err);
+			}
+		};
+		socket.onerror = (err) => {console.error("Tournament WS error", err);};
+
+		return () => {socket.close();};
+	}, [loggedInAccounts]);
 
 	useEffect(() =>
 	{
@@ -63,6 +103,49 @@ export default function TournamentWaitingRoom()
 			}
 		}; getTournamentFromParams();
 	}, [id])
+
+	// useEffect(() => 
+	// {
+	// 	const handleBeforeUnload = () => {isReloadingRef.current = true;};
+	// 	window.addEventListener("beforeunload", handleBeforeUnload);
+
+	// 	return () => {window.removeEventListener("beforeunload", handleBeforeUnload);};
+	// }, []);
+
+	useEffect(() =>
+	{
+		return () =>
+		{
+			// if (!isReloadingRef.current)
+				handleClose();
+		};
+	}, []);
+
+	const handleClose = async () =>
+	{
+		if (isLeavingRef.current) 			return; // protection agains double clicks
+		if (!tournamentDataRef.current) 	return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
+		if (isNavigatingToGame.current)	return; // protection agains double clicks
+
+		setIsLeavingRef.current(true);
+		try
+		{
+			if (loggedInAccountsRef.current[0].id === tournamentDataRef.current?.hostId && tournamentDataRef.current.players.length > 1)
+				await axios.post(`${API_URL}/api/rehost-tournament`, {id: Number(id)});
+			await axios.post(`${API_URL}/api/leave-tournament`, { playerId: loggedInAccountsRef.current[0].id, id: Number(id)});
+			// setTournamentId(-1);
+			// localStorageUpdateTournamentId(-1);
+			navigateRef.current('/');
+		}
+		catch (error)
+		{
+			console.log(error);
+		} 
+		finally
+		{
+			setIsLeaving(false);
+		}
+	};
 
 
 	function generateBracket(players: PlayerData[], maxPlayers: number, winners: PlayerData[][])
@@ -100,6 +183,8 @@ export default function TournamentWaitingRoom()
 		}
 		return rounds;
 	}
+
+
 
 	const runCountdown = (callback: () => Promise<void>) =>
 	{
@@ -243,18 +328,18 @@ export default function TournamentWaitingRoom()
 				<div className="mt-6 flex justify-center gap-6 flex-wrap">
 					{tournamentData &&
 						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
-						!readyForNextRound && !stillPlaying() &&
 						tournamentData?.players.length === tournamentData.maxPlayers &&
+						tournamentData?.matchRound === 1 &&
 						(
 							<button className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition cursor-pointer"
 								onClick={async () =>
 								{
 									try
 									{
-										await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { tournamentId });
+										await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { id: Number(id) });
 										await axios.post(`http://${window.location.hostname}:5001/api/send-message`,
 										{
-											content: `Tournament ${tournamentId} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
+											content: `Tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
 											senderId: 1,
 											receiverId: 1,
 										})
@@ -268,21 +353,20 @@ export default function TournamentWaitingRoom()
 							</button>
 						)}
 
-					{tournamentData && loggedInAccounts[0]?.username === tournamentData.hostUsername && readyForNextRound && !tournamentData?.winner &&
-					(
+						{tournamentData && loggedInAccounts[0]?.username === tournamentData.hostUsername && tournamentData?.readyForNextRound && !tournamentData?.winner &&
+						(
 							<button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition"
 								onClick={async () => 
 								{
 									try 
 									{
-										await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { tournamentId });
+										await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { id: Number(id) });
 										await axios.post(`http://${window.location.hostname}:5001/api/send-message`,
 										{
-											content: `The next round of tournament ${tournamentId} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
+											content: `The next round of tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
 											senderId: 1,
 											receiverId: 1,
 										})
-										setReadyForNextRound(false);
 									}
 									catch (error) 
 									{
