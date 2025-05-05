@@ -36,8 +36,9 @@ export default function TournamentWaitingRoom()
 	useEffect(() =>
 	{
 		return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
-	}, []);														
-
+	}, []);	
+	
+	//Let hier niet op
 	useEffect(() =>
 	{
 		isLeavingRef.current 		= isLeaving;
