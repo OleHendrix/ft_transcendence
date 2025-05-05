@@ -17,9 +17,14 @@ export async function createTournament(fastify: FastifyInstance)
 					hostUsername: string;
 					maxPlayers: string;
 				};
-				
+
 				let tournamentId = 0;
-				while (tournamentLobbies.has(tournamentId)) tournamentId++;
+				while (1)
+				{
+					tournamentId = Math.floor(1000 + Math.random() * 9000); // 1000-9999
+					if (!tournamentLobbies.has(tournamentId))
+						break;
+				}
 				
 				const sockets = new Set<WebSocket>();
 				const players: PlayerData[] = [];

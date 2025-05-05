@@ -1,10 +1,8 @@
-import axios from "axios";
-import { useRef } from 'react';
-import type { MutableRefObject } from 'react';
+import axios 																			from "axios";
+import type { MutableRefObject } 														from 'react';
 import { PlayerData, PlayerState, PlayerType, Result, TournamentData, TournamentLobby } from "../types";
-import { NavigateFunction } from "react-router-dom";
+import { NavigateFunction } 															from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
-const WS_URL = import.meta.env.VITE_WS_URL;
 
 interface CreateTournamentProps
 {
@@ -50,7 +48,7 @@ export async function useFetchLobbies(setLobbies: (lobbies: TournamentLobby[]) =
 
 interface useGetTournamentDataProps
 {
-	id: string;
+	id: 				string;
 	setTournamentData: (tournamentData: TournamentData) => void;
 }
 
@@ -70,15 +68,15 @@ export async function useGetTournamentData({ id, setTournamentData }: useGetTour
 
 interface socketOnMessageProps
 {
-	playerId: number;
-	playerUsername: string;
-	tournamentId: number;
-	setTournamentData: (tournamentData: TournamentData) => void;
-	setCountdown: (countdown: number) => void;
-	setIsPlaying: (isPlaying: PlayerState) => void;
+	playerId: 			number;
+	playerUsername: 	string;
+	tournamentId: 		number;
+	setTournamentData: 	(tournamentData: TournamentData) => void;
+	setCountdown: 		(countdown: number) => void;
+	setIsPlaying: 		(isPlaying: PlayerState) => void;
 	isNavigatingToGame: React.MutableRefObject<boolean>;
-	navigate: NavigateFunction;
-	event: MessageEvent;
+	navigate: 			NavigateFunction;
+	event: 				MessageEvent;
 }
 
 export function socketOnMessage({ playerId, playerUsername, tournamentId, setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event }: socketOnMessageProps)
@@ -119,20 +117,20 @@ export function socketOnMessage({ playerId, playerUsername, tournamentId, setTou
 
 interface handleCloseProps
 {
-	isLeaving: boolean;
-	setIsLeaving: (isLeaving: boolean) => void;
-	loggedInAccountsRef: React.MutableRefObject<PlayerType[]>;
-	tournamentDataRef: React.MutableRefObject<TournamentData | null>;
-	isNavigatingToGame: React.MutableRefObject<boolean>;
-	setIsLeavingRef: React.MutableRefObject<(isLeaving: boolean) => void>;
-	id: string;
+	isLeaving: 				boolean;
+	setIsLeaving: 			(isLeaving: boolean) => void;
+	loggedInAccountsRef:	React.MutableRefObject<PlayerType[]>;
+	tournamentDataRef: 		React.MutableRefObject<TournamentData | null>;
+	isNavigatingToGame: 	React.MutableRefObject<boolean>;
+	setIsLeavingRef: 		React.MutableRefObject<(isLeaving: boolean) => void>;
+	id: 					string;
 }
 
 export async function handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id }: handleCloseProps)
 {
 	if (isLeaving) 						return; // protection agains double clicks
 	if (!tournamentDataRef.current) 	return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
-	if (isNavigatingToGame.current)		return; // protection agains double clicks
+	if (isNavigatingToGame.current)		return; 
 
 	setIsLeavingRef.current(true);
 	try
@@ -153,9 +151,9 @@ export async function handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef
 
 interface generateBracketProps
 {
-	players: PlayerData[];
+	players: 	PlayerData[];
 	maxPlayers: number;
-	winners: PlayerData[][];
+	winners: 	PlayerData[][];
 }
 
 export function generateBracket({ players, maxPlayers, winners }: generateBracketProps)
@@ -196,8 +194,8 @@ export function generateBracket({ players, maxPlayers, winners }: generateBracke
 
 interface runCountdownProps
 {
-	callback: () => Promise<void>;
-	setCountdown: (countdown: number) => void;
+	callback: 		() => Promise<void>;
+	setCountdown: 	(countdown: number) => void;
 }
 
 export function runCountdown({ callback, setCountdown }: runCountdownProps)

@@ -13,7 +13,7 @@ export default function TournamentMenu()
 	const { loggedInAccounts } 		= useAccountContext();
 	const [ lobbies, setLobbies ] 	= useState<TournamentLobby[]>([]);
 	const navigate					= useNavigate();
-	useFetchLobbies(setLobbies);
+	useFetchLobbies(setLobbies);	//Fetched de lobbies en set het in de state
 
 	return (
 		<ModalWrapper className='bg-black/60'>
@@ -31,9 +31,9 @@ export default function TournamentMenu()
 						{[4, 8, 16].map((count) =>
 							<StyledButton
 								key={count}
-								onClick={() => createTournament({ maxPlayers: count, loggedInAccounts, navigate })}
-								variant="secondary"
-								text={`${count} Players`}/>
+								onClick={() => createTournament({ maxPlayers: count, loggedInAccounts, navigate })}   	//Maakt een tournament aan met een random id
+								variant="secondary"																		//Daarna navigeert naar /waiting-room/{id} (Eerst door Tournamentprotection)
+								text={`${count} Players`}/>																//Er wordt nog NIET gejoined!!, door de host
 						)}
 					</div>
 				</section>
@@ -66,7 +66,7 @@ export default function TournamentMenu()
 									(
 										<button
 											className="bg-[#ff914d] hover:bg-[#ab5a28] px-4 py-1 rounded-full font-semibold text-sm"
-											onClick={() => navigate(`/tournament/waiting-room/${lobby.tournamentId}`)}>
+											onClick={() => navigate(`/tournament/waiting-room/${lobby.tournamentId}`)}>	{/*Navigeert naar waiting room, nog NIET gejoined (Eerst door Tournamentprotection)*/}
 											Join
 										</button>
 									) :
