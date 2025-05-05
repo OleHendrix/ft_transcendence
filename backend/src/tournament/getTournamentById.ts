@@ -12,11 +12,10 @@ export async function getTournamentById(fastify: FastifyInstance)
 			return reply.status(400).send({ error: "Invalid tournament ID" });
 	
 		const tournament = tournamentLobbies.get(tournamentId);
-	
 		if (!tournament)
 			return reply.status(404).send({ error: "Tournament not found" });
 	
-		return reply.send(tournament);
+		return reply.send({success: true, tournament: tournament});
 	});
 	
 }

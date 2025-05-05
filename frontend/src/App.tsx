@@ -1,19 +1,17 @@
 import './css/index.css'
 import { Outlet } from 'react-router-dom';
 import Navbar from "./Navbar";
-import Hero from "./Hero";
+import Hero from "./Hero";	
 import Chat from "./chat/Chat";
 import { PlayerState } from "./types"
 import { ChatProvider } from "./contexts/ChatContext";
 import { AccountProvider, useAccountContext } from './contexts/AccountContext';
-import { TournamentProvider, useTournamentContext } from "./contexts/TournamentContext";
 import { PlayerinfoProvider } from './contexts/PlayerinfoContext';
 import { PongProvider } from './contexts/PongContext';
 
 function MainContent()
 {
 	const { isPlaying } = useAccountContext();
-
 
 	return (
 		<>
@@ -32,12 +30,10 @@ function App()
 			<AccountProvider>
 				<PlayerinfoProvider>
 				<PongProvider>
-				<TournamentProvider>
 					<ChatProvider>
 						<MainContent />
 						<Outlet />
 					</ChatProvider>
-				</TournamentProvider>
 				</PongProvider>
 				</PlayerinfoProvider>
 			</AccountProvider>

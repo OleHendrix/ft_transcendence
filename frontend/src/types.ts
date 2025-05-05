@@ -180,6 +180,14 @@ export enum PlayerState
 	queueing
 }
 
+export interface TournamentLobby
+{
+	tournamentId: 	number;
+	hostUsername: 	string;
+	currentPlayers: number;
+	maxPlayers: 	number;
+}
+
 import type { WebSocket } from 'ws';
 
 export interface TournamentData

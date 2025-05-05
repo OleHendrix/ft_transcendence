@@ -14,6 +14,8 @@ import PlayerInfo from './user/PlayerInfo.tsx';
 import PlayerStats from './user/Playerstats.tsx';
 import { Queue } from './Hero.tsx';
 import ErrorPage from './ErrorPage.tsx';
+import TournamentProtection from './tournament/TournamentProtection.tsx';
+import { TournamentData } from './types.ts';
 
 const router = createBrowserRouter([
 	{
@@ -42,7 +44,11 @@ const router = createBrowserRouter([
 			children:
 			[
 				{ path: 'menu', element: <TournamentMenu />},
-				{ path: 'waiting-room/:id', element: <TournamentWaitingRoom />}
+				{ path: 'waiting-room/:id', element: 
+				<TournamentProtection> 
+						<TournamentWaitingRoom />
+				</TournamentProtection>
+				}
 			]
 		}
 		]

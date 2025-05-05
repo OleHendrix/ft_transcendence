@@ -43,7 +43,7 @@ export async function createTournament(fastify: FastifyInstance)
 				};
 
 				tournamentLobbies.set(tournamentId, tournamentData);
-				reply.send( { tournamentId: tournamentId } );
+				reply.send( {success: true, tournamentId: tournamentId } );
 			}
 			catch (error)
 			{

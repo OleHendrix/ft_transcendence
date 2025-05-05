@@ -1,23 +1,26 @@
-import { useMemo, useState, useEffect, useRef, Dispatch, SetStateAction } 				from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import axios 								from 'axios';
 import { motion }							from 'framer-motion';
-import { useNavigate, useParams, useNavigationType, NavigateFunction} 						from 'react-router-dom';
+import { useNavigate, useParams } 						from 'react-router-dom';
 import { IoMdClose } 						from 'react-icons/io';
-import { useTournamentContext } 			from '../contexts/TournamentContext';
-import { PlayerData, PlayerState, PlayerType, TournamentData }						from '../types';
+import { PlayerData, PlayerState, TournamentData }						from '../types';
 import { useAccountContext } 				from '../contexts/AccountContext';
-import { localStorageUpdateTournamentId } 	from './utils';
 import Chat 								from "../chat/Chat"
-import { Match, PongState, Result } from "../types"
+import { MdAdminPanelSettings } from "react-icons/md";
+import { TbTournament } from "react-icons/tb";
+import { BiRocket } from "react-icons/bi";
+import { Result } from "../types"
+import { generateBracket, handleClose, socketOnMessage, stillPlaying, useGetTournamentData } from './utilsFunctions';
+import CloseButton from '../utils/CloseButton';
 const WS_URL = import.meta.env.VITE_WS_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function TournamentWaitingRoom() 
 {
-	const { loggedInAccounts, setIsPlaying, isPlaying } 									= useAccountContext();
-	const { tournamentData, setTournamentData } 											= useTournamentContext();
+	const { loggedInAccounts, setIsPlaying } 												= useAccountContext();
+	const [ tournamentData, setTournamentData ] 											= useState<TournamentData | null>(null);
 	const [ isLeaving, setIsLeaving ]														= useState(false);
-	const { countdown, setCountdown }														= useTournamentContext();
+	const [ countdown, setCountdown ]														= useState(0);
 	const navigate 																			= useNavigate();
 	const { id }																			= useParams();
 	let matchCounter = 1;
@@ -27,202 +30,40 @@ export default function TournamentWaitingRoom()
 	const loggedInAccountsRef = useRef(loggedInAccounts);
 	const navigateRef = useRef(navigate);
 	const isNavigatingToGame = useRef(false);
-
+	useGetTournamentData({ id: id!, setTournamentData });
 
 	useEffect(() =>
 	{
-		isLeavingRef.current = isLeaving;
-		tournamentDataRef.current = tournamentData;
-		setIsLeavingRef.current = setIsLeaving;
+		return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
+	}, []);														
+
+	useEffect(() =>
+	{
+		isLeavingRef.current 		= isLeaving;
+		tournamentDataRef.current 	= tournamentData;
+		setIsLeavingRef.current 	= setIsLeaving;
 		loggedInAccountsRef.current = loggedInAccounts;
-		navigateRef.current = navigate;
-	}, [isLeaving, tournamentData, setIsLeaving, loggedInAccounts, navigate]);
+		navigateRef.current 		= navigate;
+	}, [isLeaving, tournamentData, setIsPlaying, loggedInAccounts, navigate]);
+	
 
 	useEffect(() =>
 	{
 		const player = loggedInAccounts[0];
 		if (!id || !player?.id || !player?.username)
 			return;
-
-		const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${id}`);
+		const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
 		socket.onopen = () => console.log("Tournament WS connected");
-
-		socket.onmessage = (event) =>
-		{
-			try
-			{
-				const data = JSON.parse(event.data);
-				if (data.type === "DATA")
-					setTournamentData(data.tournament);
-				if (data.type === "START_SIGNAL")
-				{
-					const activeIds = data.data.activePlayerIds;
-					if (!activeIds.includes(player.id))
-						return;
-					setCountdown(3); // trigger countdown
-				
-					let count = 3;
-					const interval = setInterval(() =>
-					{
-						count--;
-						setCountdown(count);
-				
-						if (count < 0)
-						{
-							clearInterval(interval);
-							setCountdown(null);
-							setIsPlaying(PlayerState.playing); // start game
-							isNavigatingToGame.current = true;
-							navigate('/pong-game');
-						}
-					}, 1000);
-				}
-			}
-			catch (err)
-			{
-				console.error("Failed to parse WebSocket message", err);
-			}
-		};
-		socket.onerror = (err) => {console.error("Tournament WS error", err);};
-
-		return () => {socket.close();};
+		socket.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
+		return () => {socket.close()};
 	}, [loggedInAccounts]);
-
-	useEffect(() =>
-	{
-		async function getTournamentFromParams()
-		{
-			try
-			{
-				const response = await axios.get(`${API_URL}/api/tournament-data/${id}`)
-				setTournamentData(response.data)
-			}
-			catch (error)
-			{
-				console.error("failed to fetch tournament from params", error)
-			}
-		}; getTournamentFromParams();
-	}, [id])
-
-	// useEffect(() => 
-	// {
-	// 	const handleBeforeUnload = () => {isReloadingRef.current = true;};
-	// 	window.addEventListener("beforeunload", handleBeforeUnload);
-
-	// 	return () => {window.removeEventListener("beforeunload", handleBeforeUnload);};
-	// }, []);
-
-	useEffect(() =>
-	{
-		return () =>
-		{
-			// if (!isReloadingRef.current)
-				handleClose();
-		};
-	}, []);
-
-	const handleClose = async () =>
-	{
-		if (isLeavingRef.current) 			return; // protection agains double clicks
-		if (!tournamentDataRef.current) 	return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
-		if (isNavigatingToGame.current)	return; // protection agains double clicks
-
-		setIsLeavingRef.current(true);
-		try
-		{
-			if (loggedInAccountsRef.current[0].id === tournamentDataRef.current?.hostId && tournamentDataRef.current.players.length > 1)
-				await axios.post(`${API_URL}/api/rehost-tournament`, {id: Number(id)});
-			await axios.post(`${API_URL}/api/leave-tournament`, { playerId: loggedInAccountsRef.current[0].id, id: Number(id)});
-			// setTournamentId(-1);
-			// localStorageUpdateTournamentId(-1);
-			navigateRef.current('/');
-		}
-		catch (error)
-		{
-			console.log(error);
-		} 
-		finally
-		{
-			setIsLeaving(false);
-		}
-	};
-
-
-	function generateBracket(players: PlayerData[], maxPlayers: number, winners: PlayerData[][])
-	{
-		const totalRounds = Math.log2(maxPlayers);
-		const rounds: string[][] = [];
-	
-		// First round: use actual player usernames
-		let currentRound: string[] = [];
-		for (let i = 0; i < maxPlayers; i += 2)
-		{
-			const p1 = players[i]?.username || `TBD`;
-			const p2 = players[i + 1]?.username || `TBD`;
-			currentRound.push(`${p1} vs ${p2}`);
-		}
-		rounds.push(currentRound);
-	
-		// Following rounds: use winner names if available
-		for (let r = 1; r < totalRounds; r++)
-		{
-			const matchesInRound = maxPlayers / Math.pow(2, r + 1);
-			const nextRound: string[] = [];
-	
-			for (let i = 0; i < matchesInRound; i++)
-			{
-				const w1 = winners[r - 1]?.[i * 2]?.username;
-				const w2 = winners[r - 1]?.[i * 2 + 1]?.username;
-	
-				if (w1 && w2)
-					nextRound.push(`${w1} vs ${w2}`);
-				else
-					nextRound.push(`Winner ${i * 2 + 1} vs Winner ${i * 2 + 2}`);
-			}
-			rounds.push(nextRound);
-		}
-		return rounds;
-	}
-
-
-
-	const runCountdown = (callback: () => Promise<void>) =>
-	{
-		const sequence = [3, 2, 1, 0];
-		let i = 0;
-	
-		const tick = () =>
-		{
-			setCountdown(sequence[i]);
-			if (i < sequence.length - 1)
-			{
-				i++;
-				setTimeout(tick, 1000);
-			}
-			else 
-			{
-				setTimeout(async () =>
-				{
-					setCountdown(null);
-					await callback();
-				}, 1000);
-			}
-		};
-		tick();
-	};
 
 	const rounds = useMemo(() =>
 	{
 		if (!tournamentData) return [];
-		return generateBracket(tournamentData.players, tournamentData.maxPlayers, tournamentData.winners);
+		return generateBracket({ players: tournamentData.players, maxPlayers: tournamentData.maxPlayers, winners: tournamentData.winners });
 	}, [tournamentData?.players, tournamentData?.winners]);
 
-	function stillPlaying()
-	{
-		const currentRound = tournamentData?.rounds?.[tournamentData.roundIdx] || [];
-		const stillPlaying = currentRound.some(match => match.state.result === Result.PLAYING);
-		return stillPlaying;
-	}
 
 	return (
 		<motion.div
@@ -237,42 +78,23 @@ export default function TournamentWaitingRoom()
 				exit={{ scale: 0.95, y: 20 }}
 				transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 
-				{/* Close Button */}
-				<button
-					className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
-					onClick={handleClose}
-					disabled={isLeaving}>
-					<IoMdClose size={28} />
-				</button>
-
-				<div className='flex-col'>
-
-				{/* Title */}
-				<h1 className="text-3xl font-bold text-center tracking-wide">
-					Tournament Waiting Room
-				</h1>
-
-				{/* Host Info */}
-				{tournamentData &&
-				(
-					<div className="flex justify-center gap-10 mb-6 text-lg font-medium text-gray-300">
-						<p>🎯 Host: <span className="text-white">{tournamentData.hostUsername}</span></p>
-						<p>👥 Players: <span className="text-white">{tournamentData?.players.length}/{tournamentData.maxPlayers}</span></p>
-					</div>
-				)}
-
+				<CloseButton onClick={async () => {await handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! }); navigate('/')}} />
+				<div className='flex-col mb-6'>
+					<h1 className="text-3xl font-bold text-center tracking-wide">Tournament Waiting Room</h1>
+					<p className='text-center text-[#ff914d] font-bold'>#{id}</p>
 				</div>
+
 				<div className='w-full h-full flex'>
-					{/* Players List */}
 					<div className="w-full lg:w-1/8 flex flex-col justify-start items-center space-y-12">
-						<h2 className="text-m font-semibold mb-4">Players in Lobby</h2>
+						<h2 className="text-m font-medium mb-4">Players: <span className={`text-white font-bold ${tournamentData?.players.length !== tournamentData?.maxPlayers ? 'opacity-50' : ''}`}>{tournamentData?.players.length}/{tournamentData?.maxPlayers}</span></h2>
 						<ul className="flex flex-col w-full gap-2">
 							{(tournamentData?.players && tournamentData?.players.length > 0) ?
 							(
 								tournamentData?.players.map((player: PlayerData, index: number) =>
 								(
-									<li key={index} className="bg-gray-700/80 w-full rounded-xl p-3 text-center text-white font-medium shadow-md">
-										👤 {player.username}
+									<li key={index} className={`bg-black/40 w-full flex justify-between items-center p-2 text-center text-white font-black ${tournamentData?.players.length !== tournamentData?.maxPlayers ? 'opacity-50' : ''}`}>
+										{player.username}
+										{player.id === tournamentData?.hostId && <MdAdminPanelSettings className='text-white' />}
 									</li>
 								))
 							) :
@@ -281,7 +103,7 @@ export default function TournamentWaitingRoom()
 							)}
 							</ul>
 					</div>
-				{stillPlaying() ?
+				{stillPlaying({ tournamentData }) ?
 				(
 					<div className="w-full lg:w-6/8 flex flex-col justify-center items-center space-y-12">
 						Matches are still playing...
@@ -299,7 +121,7 @@ export default function TournamentWaitingRoom()
 						<div className="flex flex-col items-center w-full">
 							<div className='flex-col mb-6'>
 							<h2 className="text-m font-semibold text-center">{`Round ${tournamentData!.matchRound}/${Math.log2(tournamentData!.maxPlayers)}`}</h2>
-							<p>Matches to be played</p>
+							<p className='flex items-center gap-2'>Matches to be played <TbTournament className='text-[#ff914d]' /></p>
 							</div>
 							<div className="flex flex-col gap-6 justify-start items-center w-fit px-4">
 								{rounds.map((round, roundIndex) =>
@@ -308,7 +130,7 @@ export default function TournamentWaitingRoom()
 										{round.map((match, matchIndex) => {
 											const currentMatchNumber = matchCounter++;
 											return (
-												<div key={matchIndex} className={`bg-gray-800 text-white text-xs flex-col px-4 py-1 text-center font-bold shadow ${(roundIndex + 1 !== tournamentData?.matchRound || match.includes('TBD')) ? 'opacity-30' : ''}`}>
+												<div key={matchIndex} className={`bg-[#134588] text-white text-xs flex-col px-4 py-1 text-center font-bold shadow-2xl ${(roundIndex + 1 !== tournamentData?.matchRound || match.includes('TBD')) ? 'opacity-30' : ''}`}>
 													<p className='text-[8px] font-light'>{`Match ${currentMatchNumber}`}</p>	
 													{match}
 												</div>
@@ -328,10 +150,10 @@ export default function TournamentWaitingRoom()
 				<div className="mt-6 flex justify-center gap-6 flex-wrap">
 					{tournamentData &&
 						loggedInAccounts[0]?.username === tournamentData.hostUsername &&
-						tournamentData?.players.length === tournamentData.maxPlayers &&
 						tournamentData?.matchRound === 1 &&
 						(
-							<button className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-semibold rounded-xl shadow-lg transition cursor-pointer"
+							<button className={`px-3 flex items-center gap-2 py-0 h-10 bg-[#ff914d] text-white font-semibold rounded-3xl shadow-lg transition ${tournamentData?.players.length !== tournamentData?.maxPlayers ? 'opacity-30' : 'cursor-pointer'}`}
+								disabled={tournamentData?.players.length !== tournamentData?.maxPlayers}
 								onClick={async () =>
 								{
 									try
@@ -349,7 +171,7 @@ export default function TournamentWaitingRoom()
 										console.error('tournamentWaitingRoom:ON_CLICK:start-tournament:ERROR:', error);
 									}
 								}}>
-								Start Tournament
+								Start Tournament <BiRocket className='text-white' />
 							</button>
 						)}
 
