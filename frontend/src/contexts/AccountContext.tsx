@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, 
 import { PlayerType, PlayerState, AuthenticatedAccount } from "../types";
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 type AccountContextType = 
 {
@@ -26,6 +27,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 	
 	useEffect(() =>
 	{
+		let socket: WebSocket;
 		async function checkLoggedInAccounts()
 		{
 			const savedLoggedInAccounts = localStorage.getItem('loggedInAccounts');
@@ -35,7 +37,14 @@ export function AccountProvider({ children }: {children: ReactNode})
 				{
 					const response = await axios.post(`http://${window.location.hostname}:5001/api/checkloggedinaccounts`, {savedLoggedInAccounts})
 					if (response.data.success)
-						setLoggedInAccounts(JSON.parse(savedLoggedInAccounts));
+					{
+						const parsed = JSON.parse(savedLoggedInAccounts);
+						setLoggedInAccounts(parsed);
+						if (parsed.length === 1)
+						{
+							socket = new WebSocket(`${WS_URL}/ws/login?userId=${parsed[0].id}`);
+						}
+					}
 					else
 						localStorage.removeItem('loggedInAccounts');
 				}
@@ -59,6 +68,8 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		} fetchAccounts();
 		setTriggerFetchAccounts(false);
+
+		return () => {if (socket) socket.close()}
 	}, [ triggerFetchAccounts ])
 
 	const value = useMemo(() => (

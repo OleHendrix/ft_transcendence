@@ -1,13 +1,13 @@
 import { useMemo, useState, useEffect, useRef } 			from 'react';
 import { motion }											from 'framer-motion';
-import { useNavigate, useParams } 							from 'react-router-dom';
+import { useNavigate, useParams, useLocation } 				from 'react-router-dom';
 import { PlayerData, TournamentData }						from '../types';
 import { useAccountContext } 								from '../contexts/AccountContext';
 import Chat 												from "../chat/Chat"
 import Loader 												from '../utils/Loader';
 import { MdAdminPanelSettings }								from "react-icons/md";
 import { generateBracket, handleClose, socketOnMessage } 	from './utilsFunctions';
-import { stillPlaying, useGetTournamentData } 				from './utilsFunctions';
+import { stillPlaying, useGetTournamentData, handleCloseInstant } 				from './utilsFunctions';
 import CloseButton 											from '../utils/CloseButton';
 import { WinnerMessage, Rounds, TournamentButton, startTournament, startNextRound, BackgroundImage } 	from './utilsComponents';
 const WS_URL = import.meta.env.VITE_WS_URL;
@@ -29,6 +29,7 @@ export default function TournamentWaitingRoom()
 	const isNavigatingToGame 																= useRef(false);
 	useGetTournamentData({ id: id!, setTournamentData });																		//Fetched het gevraagde tournament op basis van id uit de params
 
+
 	//Wanneer component unmount wordt dit aangesproken. Dus bij een pijltjes navigate, refresh idk? 
 	//Regelt het leaven van de game, in de backend etc.
 	//In handleclose zit een protection (isNavigatingToGame) voor wanneer we naar ponggame gaan. Hier wordt er dus niet geleaved
@@ -37,6 +38,11 @@ export default function TournamentWaitingRoom()
 	{
 		return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
 	}, []);	
+
+	// useEffect(() =>
+	// {
+	// 	return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
+	// }, [location.pathname])
 	
 	//Let hier niet op
 	useEffect(() =>
@@ -61,7 +67,7 @@ export default function TournamentWaitingRoom()
 		const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
 		socket.onopen = () => console.log("Tournament WS connected");
 		socket.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
-		return () => {socket.close()};
+		return () => {socket.close();};
 	}, [loggedInAccounts]);
 
 	const rounds = useMemo(() =>
@@ -86,7 +92,7 @@ export default function TournamentWaitingRoom()
 				<BackgroundImage />
 
 				{/*Eerst handleclose afhandelen dan pas unmount.*/}
-				<CloseButton onClick={async () => {await handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! }); navigate('/')}} />
+				<CloseButton onClick={() => navigate('/')} />
 				<div className='flex-col mb-6'>
 					<h1 className="text-3xl font-bold text-center tracking-wide">Tournament Waiting Room</h1>
 					<p className='text-center text-[#ff914d] font-bold'>#{id}</p>
@@ -143,7 +149,7 @@ export default function TournamentWaitingRoom()
 					&& tournamentData?.readyForNextRound && !tournamentData?.winner &&
 						<TournamentButton 	tournamentData={tournamentData} variant={'next'} 
 											onClick={() => startNextRound({ id: id!, tournamentData })} 
-											disabled={tournamentData?.players.length !== tournamentData?.maxPlayers} />}   {/*Start Next Round*/}
+											disabled={false}/>}   {/*Start Next Round*/}
 
 				</div>
 			</motion.div>

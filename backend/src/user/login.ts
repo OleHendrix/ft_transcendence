@@ -1,6 +1,32 @@
 import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
+import cleanup from './cleanup'; 
 import bcrypt from 'bcrypt';
+
+export async function createLoginWebsocket(server: FastifyInstance, prisma: PrismaClient)
+{
+	server.register(async function (server)
+	{
+		server.get("/ws/login", { websocket: true }, (connection, req) =>
+		{
+			console.log("HALLOO")
+			const userIdstring = req.query as { userId: string};
+			const userId = parseInt(userIdstring.userId, 10)
+
+			connection.on("close", () =>
+			{
+				cleanup(userId);
+			})
+
+
+			
+
+		})
+
+	})
+}
+
+
 
 export default async function login(fastify: FastifyInstance, prisma: PrismaClient)
 {

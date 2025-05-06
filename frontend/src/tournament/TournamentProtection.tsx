@@ -3,6 +3,8 @@ import { useAccountContext } 				from "../contexts/AccountContext";
 import { useParams, useNavigate } 			from 'react-router-dom';
 import axios 								from "axios";
 import { PlayerData } 						from "../types";
+import { TournamentData }					from "../types";
+import { useGetTournamentData } from "./utilsFunctions";
 const API_URL 								= import.meta.env.VITE_API_URL;
 
 //Fetched de gevraagde tournament op basis van het id in de params.
@@ -13,8 +15,12 @@ const API_URL 								= import.meta.env.VITE_API_URL;
 function TournamentProtection({children}: {children: ReactNode})
 {
 	const { loggedInAccounts } 	= useAccountContext();
+	const [ tournamentData, setTournamentData ] = useState<TournamentData | null>(null);
 	const { id }				= useParams();
 	const navigate 				= useNavigate();
+	useGetTournamentData({id: id!, setTournamentData});
+
+
 
 	useEffect(() =>
 	{
@@ -29,17 +35,19 @@ function TournamentProtection({children}: {children: ReactNode})
 					const isPlayerInTournament = tournamentData.players.some((p: PlayerData) => p.id === loggedInAccounts[0].id);
 					const isTournamentFull = tournamentData.players.length >= tournamentData.maxPlayers;
 					if (isTournamentFull && !isPlayerInTournament)
-						navigate('/');
+					{
+						throw new Response('Unauthorized', { status: 401 })
+					}
 				}
 			}
 			catch (e)
 			{
-				navigate('/');
+				throw new Response('Unauthorized', { status: 401 })
 			}
 		}
 		if (loggedInAccounts.length)
 			fetchTournament();
-	}, [id, loggedInAccounts, navigate]);
+	}, [loggedInAccounts]);
 	return children;
 }
 

@@ -2,11 +2,11 @@ import { FastifyInstance } 				from "fastify/fastify";
 import { tournamentLobbies } 			from "./tournament";
 import { broadcastTournamentUpdate } 	from "./broadcastTournamentUpdates";
 
-
 export async function leaveTournament(fastify: FastifyInstance)
 {
 	fastify.post('/api/leave-tournament', async (request, reply) =>
 	{
+		console.log('LEAVE')
 		const { playerId, id } = request.body as { playerId: number, id: number };
 		
 		let tournament = tournamentLobbies.get(id);

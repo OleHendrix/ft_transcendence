@@ -80,6 +80,7 @@ export async function startTournament({ id, tournamentData }: ButtonFunctionProp
 
 export async function startNextRound({ id, tournamentData }: ButtonFunctionProps)
 {
+	
 	try
 	{
 		await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { id: Number(id) });
@@ -108,7 +109,7 @@ export function TournamentButton({ tournamentData, onClick, variant, disabled }:
 {
 	return (
 		<button className={`px-3 flex items-center gap-2 py-0 h-10 ${variant === 'start' ? 'bg-[#ff914d]' : 'bg-[#134588]'} text-white font-semibold rounded-3xl shadow-lg transition ${variant === 'start' && tournamentData?.players.length !== tournamentData?.maxPlayers ? 'opacity-30' : 'cursor-pointer'}`}
-			disabled={tournamentData?.players.length !== tournamentData?.maxPlayers}
+			disabled={disabled}
 			onClick={onClick}>
 			{variant === 'start' ? 'Start Tournament' : 'Start Next Round'} <BiRocket className='text-white' />
 		</button>

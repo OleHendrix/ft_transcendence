@@ -22,6 +22,7 @@ export async function joinTournament(fastify: FastifyInstance)
 			catch (error)
 			{
 				console.log(error);
+				return ;
 			}
 		})
 	});

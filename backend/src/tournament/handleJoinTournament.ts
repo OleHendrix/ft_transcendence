@@ -17,7 +17,7 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	if (!tournament) {
 		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_NOT_FOUND`);
 		connection.close();
-		return;
+		throw ("shitsbriccky");
 	}
 
 	if (tournament.players.find(p => p.id === playerId)){
@@ -41,9 +41,11 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	tournament.players.push(player);
 	tournament.sockets.add(connection);
 
-	connection.on("close", () => {
+	connection.on("close", () =>
+	{
 		console.log(`Cleaning up closed socket for player ${connection.playerId}`);
 		tournament.sockets.delete(connection);
+
 	});
 
 	broadcastTournamentUpdate(tournamentId, "DATA");

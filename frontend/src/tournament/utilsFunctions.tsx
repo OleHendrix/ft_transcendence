@@ -149,6 +149,29 @@ export async function handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef
 	}
 }
 
+export function handleCloseInstant({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id }: handleCloseProps)
+{
+	if (isLeaving) 						return; // protection agains double clicks
+	if (!tournamentDataRef.current) 	return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
+	if (isNavigatingToGame.current)		return; 
+
+	setIsLeavingRef.current(true);
+	try
+	{
+		if (loggedInAccountsRef.current[0].id === tournamentDataRef.current?.hostId && tournamentDataRef.current.players.length > 1)
+			axios.post(`${API_URL}/api/rehost-tournament`, {id: Number(id)});
+		axios.post(`${API_URL}/api/leave-tournament`, { playerId: loggedInAccountsRef.current[0].id, id: Number(id)});
+	}
+	catch (error)
+	{
+		console.log(error);
+	} 
+	finally
+	{
+		setIsLeaving(false);
+	}
+}
+
 interface generateBracketProps
 {
 	players: 	PlayerData[];

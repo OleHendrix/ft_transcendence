@@ -45,7 +45,8 @@ function PongGame() {
 			}
 		});
 
-		const handleUnload = () => {
+		const handleUnload = () =>
+		{
 			try {
 				axios.post(`${API_URL}/pong/end-game`, { 
 					userID: loggedInAccounts[0].id 

@@ -15,7 +15,6 @@ import PlayerStats from './user/Playerstats.tsx';
 import { Queue } from './Hero.tsx';
 import ErrorPage from './ErrorPage.tsx';
 import TournamentProtection from './tournament/TournamentProtection.tsx';
-import { TournamentData } from './types.ts';
 
 const router = createBrowserRouter([
 	{
@@ -44,10 +43,7 @@ const router = createBrowserRouter([
 			children:
 			[
 				{ path: 'menu', element: <TournamentMenu />},
-				{ path: 'waiting-room/:id', element: 
-				<TournamentProtection> 
-						<TournamentWaitingRoom />
-				</TournamentProtection>
+				{ path: 'waiting-room/:id', element: <TournamentProtection><TournamentWaitingRoom /></TournamentProtection>
 				}
 			]
 		}
@@ -56,7 +52,7 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById('root')!).render(
-//   <StrictMode>
-	<RouterProvider router={router} />
-//   </StrictMode>
+  	// <StrictMode>
+		<RouterProvider router={router} />
+	// </StrictMode>
 )

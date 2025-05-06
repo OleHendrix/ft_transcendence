@@ -4,6 +4,7 @@ import { PlayerType, LoginFormType, LoginValidationType, AuthenticatedAccount } 
 import { motion } from 'framer-motion';
 import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL;
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 //Helper Functions
 
@@ -84,7 +85,7 @@ export function updateLoggedInAccounts(account: AuthenticatedAccount, accessToke
 		return updatedPlayers;
 	});
 	const loggedInAccounts = localStorage.getItem('loggedInAccounts');
-	console.log(loggedInAccounts);
+	return (loggedInAccounts)
 }
 
 export interface ResetValidationProps

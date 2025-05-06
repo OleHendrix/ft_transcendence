@@ -113,6 +113,7 @@ export default async function initPongServer(fastify: FastifyInstance)
 
 	fastify.post('/pong/end-game', async (request, reply) =>
 	{
+		console.log('ZIJN ER');
 		const { userID } = request.body as { userID: number };
 		// console.log("--- ending match with UID:", userID);
 		const match = getMatch(userID);

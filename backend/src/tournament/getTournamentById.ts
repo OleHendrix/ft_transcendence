@@ -9,11 +9,11 @@ export async function getTournamentById(fastify: FastifyInstance)
 		const tournamentId = parseInt(id, 10);
 	
 		if (isNaN(tournamentId) || tournamentId === -1)
-			return reply.status(400).send({ error: "Invalid tournament ID" });
+			return reply.status(400).send({ success: false, error: "Invalid tournament ID" });
 	
 		const tournament = tournamentLobbies.get(tournamentId);
 		if (!tournament)
-			return reply.status(404).send({ error: "Tournament not found" });
+			return reply.status(404).send({ success: false, error: "Tournament not found" });
 	
 		return reply.send({success: true, tournament: tournament});
 	});
