@@ -21,7 +21,6 @@ function Navbar()
 		setIsPlaying(PlayerState.idle)
 		try
 		{
-			await axios.post(`${API_URL}/pong/end-game`, { userID: loggedInAccounts[0].id });
 			await axios.post(`${API_URL}/pong/delete`,   { userID: loggedInAccounts[0].id });
 		}
 		catch (error)

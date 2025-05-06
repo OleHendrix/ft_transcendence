@@ -104,7 +104,6 @@ export function Queue()
 						onClick={() =>
 						{
 							endQueue(loggedInAccounts[0].id, setIsPlaying)
-							navigate("/")
 						}}>Cancel
 					</motion.button>
 				</motion.div>
@@ -119,11 +118,9 @@ export async function AddGame(
 	isLocalGame: boolean,
 	setIsPlaying: (state: PlayerState) => void,
 	navigate: ReturnType<typeof useNavigate>
-)
-{
+) {
 	const response = await axios.post(`${API_URL}/pong/add`, { user1, user2, isLocalGame, tournamentId: -1 });
-	if (response.status >= 400)
-	{
+	if (response.status >= 400) {
 		console.log("Failed to create match");
 		return;
 	}
