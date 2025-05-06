@@ -16,7 +16,8 @@ import { Queue } from './Hero.tsx';
 import ErrorPage from './ErrorPage.tsx';
 import TournamentProtection from './tournament/TournamentProtection.tsx';
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+[
 	{
 		path: '/',
 		element: <App />,
@@ -49,7 +50,15 @@ const router = createBrowserRouter([
 		}
 		]
 	}
-]);
+],
+{
+	future:
+	{
+		v7_startTransition: true,
+		v7_relativeSplatPath: true,
+	}
+}
+);
 
 createRoot(document.getElementById('root')!).render(
   	// <StrictMode>

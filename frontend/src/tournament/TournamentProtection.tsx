@@ -15,42 +15,50 @@ const API_URL 								= import.meta.env.VITE_API_URL;
 function TournamentProtection({children}: {children: ReactNode})
 {
 	const { loggedInAccounts } 	= useAccountContext();
-	const [ tournamentData, setTournamentData ] = useState<TournamentData | null>(null);
 	const { id }				= useParams();
 	const navigate 				= useNavigate();
-	useGetTournamentData({id: id!, setTournamentData});
+	const [authorized, setAuthorized] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
-
+	const [ tournamentData, setTournamentData ] = useState<TournamentData | null>(null);
 
 	useEffect(() =>
 	{
-		async function fetchTournament()
+		async function fetchTournamentData()
 		{
 			try
 			{
 				const response = await axios.get(`${API_URL}/api/tournament-data/${id}`);
 				if (response.data.success)
-				{
-					const tournamentData = response.data.tournament;
-					const isPlayerInTournament = tournamentData.players.some((p: PlayerData) => p.id === loggedInAccounts[0].id);
-					const isTournamentFull = tournamentData.players.length >= tournamentData.maxPlayers;
-					if (isTournamentFull && !isPlayerInTournament)
-					{
-						throw new Response('Unauthorized', { status: 401 })
-					}
-				}
+					setTournamentData(response.data.tournament);
 			}
-			catch (e)
+			catch (error)
 			{
-				throw new Response('Unauthorized', { status: 401 })
+				setError("Tournament not found");
 			}
+		}	fetchTournamentData();
+	}, [id]);
+
+	useEffect(() =>
+	{
+		if (error)
+			throw new Response("Tournament not found", { status: 404 });
+		if (!tournamentData || !loggedInAccounts.length)
+			return;
+		const isPlayerInTournament = tournamentData.players.some((p: PlayerData) => p.id === loggedInAccounts[0].id);
+		const isTournamentFull = tournamentData.players.length >= tournamentData.maxPlayers;
+
+		if (isTournamentFull && !isPlayerInTournament)
+		{
+			setAuthorized(false);
+			throw new Response("Unauthorized", { status: 401 });
 		}
-		if (loggedInAccounts.length)
-			fetchTournament();
-	}, [loggedInAccounts]);
-	return children;
+		else
+			setAuthorized(true);
+	}, [tournamentData, loggedInAccounts, navigate, error]);
+	if (authorized)
+		return children;
 }
 
 export default TournamentProtection;	
-
 

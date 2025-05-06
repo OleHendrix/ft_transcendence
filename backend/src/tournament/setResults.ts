@@ -21,25 +21,23 @@ export function setResults(tournamentId: number, p1: number, p1score: number, p2
 	if (!tournament.winners[tournament.roundIdx]) tournament.winners[tournament.roundIdx] = [];
 
 	let winner: PlayerData;
-	if (result === Result.P1WON || result === Result.DRAW) {
+	if (result === Result.P1WON || result === Result.DRAW)
 		winner = round.p1;
-	} else if (result === Result.P2WON) {
+	else if (result === Result.P2WON)
 		winner = round.p2;
-	} else {
+	else
 		return console.log(`setResults:ERROR:corrupted_resultState:${result}`);
-	}
 
 	const alreadyExists = tournament.winners[tournament.roundIdx].some(p => p.id === winner.id);
-	if (!alreadyExists) {
+	if (!alreadyExists)
+	{
 		tournament.winners[tournament.roundIdx].push(winner);
 		broadcastTournamentUpdate(tournamentId, "DATA");
 	}
 
 	const totalRounds = Math.log2(tournament.maxPlayers);
-	console.log(totalRounds);
 	if (tournament.roundIdx === totalRounds - 1)
 	{
-		console.log("FINAL ROUND WINNNER", winner);
 		tournament.winner = winner;
 		broadcastTournamentUpdate(tournamentId, "DATA");
 	}

@@ -9,7 +9,7 @@ export async function createLoginWebsocket(server: FastifyInstance, prisma: Pris
 	{
 		server.get("/ws/login", { websocket: true }, (connection, req) =>
 		{
-			console.log("HALLOO")
+			console.log("LOGIN SOCKET CONNECTED");
 			const userIdstring = req.query as { userId: string};
 			const userId = parseInt(userIdstring.userId, 10)
 
@@ -17,15 +17,9 @@ export async function createLoginWebsocket(server: FastifyInstance, prisma: Pris
 			{
 				cleanup(userId);
 			})
-
-
-			
-
 		})
-
 	})
 }
-
 
 
 export default async function login(fastify: FastifyInstance, prisma: PrismaClient)

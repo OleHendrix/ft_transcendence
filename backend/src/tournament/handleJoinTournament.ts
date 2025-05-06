@@ -14,7 +14,8 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	if (tournamentId === -1) return ;
 
 	const tournament = tournamentLobbies.get(tournamentId);
-	if (!tournament) {
+	if (!tournament)
+	{
 		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_NOT_FOUND`);
 		connection.close();
 		throw ("shitsbriccky");
