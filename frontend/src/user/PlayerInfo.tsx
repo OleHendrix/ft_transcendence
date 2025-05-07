@@ -6,7 +6,7 @@ import { ImageCropper, CameraLabel } from "./ImageUpload";
 import ModalWrapper from "../utils/ModalWrapper";
 import { DisplayInfo, ProfileActionButton, LogoutDeleteButton, ImageDisplay } from "./utilsComponents";
 import { StyledButton } from "./utilsComponents";
-import { PlayerType } from "../types";
+import { AuthenticatedAccount, PlayerType } from "../types";
 import { Display2FA } from "./2FA";
 import { cancelEdit, useGetAccount } from "./utilsFunctions";
 import CloseButton from "../utils/CloseButton";

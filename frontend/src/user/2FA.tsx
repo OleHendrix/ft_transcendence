@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { PlayerType } from "../types";
+import { AuthenticatedAccount, PlayerType } from "../types";
 import { EditIcon, StyledButton } from "./utilsComponents";
 import { secureApiCall } from "../jwt/secureApiCall";
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface UpdateLoggedInAccounts2FAProps
 {
-	loggedInAccounts: PlayerType[];
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	loggedInAccounts: AuthenticatedAccount[];
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
 	selectedAccount: PlayerType | undefined;
 	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
@@ -31,9 +31,9 @@ function updateLoggedInAccounts_2FA({loggedInAccounts, setLoggedInAccounts, setT
 
 interface Disable2FAProps
 {
-	loggedInAccounts: PlayerType[];
+	loggedInAccounts: AuthenticatedAccount[];
 	selectedAccount: PlayerType | undefined;
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
 	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -64,10 +64,10 @@ export async function disable2FA({loggedInAccounts, selectedAccount, setLoggedIn
 
 interface Enable2FAProps
 {
-	loggedInAccounts: PlayerType[];
+	loggedInAccounts: AuthenticatedAccount[];
 	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>;
 	selectedAccount: PlayerType | undefined;
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 }
@@ -178,9 +178,9 @@ export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, s
 
 interface Display2FAProps
 {
-	loggedInAccounts: PlayerType[];
+	loggedInAccounts: AuthenticatedAccount[];
 	selectedAccount: PlayerType | undefined;
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
 	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 	editProfile: boolean;

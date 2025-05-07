@@ -90,7 +90,7 @@ export function updateLoggedInAccounts(account: AuthenticatedAccount, accessToke
 export interface ResetValidationProps
 {
 	formData: LoginFormType;
-	loggedInAccounts: PlayerType[];
+	loggedInAccounts: AuthenticatedAccount[];
 	setValidation: Dispatch<SetStateAction<LoginValidationType>>;
 	setEmptyForm: Dispatch<SetStateAction<boolean>>;
 }

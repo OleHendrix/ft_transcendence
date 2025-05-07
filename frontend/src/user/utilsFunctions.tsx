@@ -1,5 +1,5 @@
 import { NavigateFunction } from "react-router-dom";
-import { PlayerType, SignUpFormType } from "../types";
+import { AuthenticatedAccount, PlayerType, SignUpFormType } from "../types";
 import axios from "axios";
 import { useEffect } from "react";
 import { secureApiCall } from "../jwt/secureApiCall";
@@ -37,8 +37,8 @@ export function useGetAccount({username, setSelectedAccount}: UseGetAccountProps
 
 interface HandleAccountRemovalProps
 {
-	loggedInAccounts: PlayerType[];
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	loggedInAccounts: AuthenticatedAccount[];
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
 	selectedAccount: PlayerType | undefined;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -53,8 +53,8 @@ function handleAccountRemoval({loggedInAccounts, setLoggedInAccounts, selectedAc
 
 interface logout_deleteProps
 {
-	loggedInAccounts: PlayerType[];
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	loggedInAccounts: AuthenticatedAccount[];
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
 	selectedAccount: PlayerType | undefined;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -103,8 +103,8 @@ export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, sele
 interface updateAccountProps
 {
 	formData: SignUpFormType;
-	loggedInAccounts: PlayerType[];	
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	loggedInAccounts: AuthenticatedAccount[];	
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
 	selectedAccount: PlayerType | undefined;
 	setEditProfile: React.Dispatch<React.SetStateAction<boolean>>;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;

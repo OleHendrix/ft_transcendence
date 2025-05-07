@@ -1,13 +1,13 @@
 import axios 																			from "axios";
 import type { MutableRefObject } 														from 'react';
-import { PlayerData, PlayerState, PlayerType, Result, TournamentData, TournamentLobby } from "../types";
+import { AuthenticatedAccount, PlayerData, PlayerState, PlayerType, Result, TournamentData, TournamentLobby } from "../types";
 import { NavigateFunction } 															from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface CreateTournamentProps
 {
 	maxPlayers: 		number;
-	loggedInAccounts: 	PlayerType[];
+	loggedInAccounts: 	AuthenticatedAccount[];
 	navigate:			NavigateFunction;
 }
 
@@ -120,7 +120,7 @@ interface handleCloseProps
 {
 	isLeaving: 				boolean;
 	setIsLeaving: 			(isLeaving: boolean) => void;
-	loggedInAccountsRef:	React.MutableRefObject<PlayerType[]>;
+	loggedInAccountsRef:	React.MutableRefObject<AuthenticatedAccount[]>;
 	tournamentDataRef: 		React.MutableRefObject<TournamentData | null>;
 	isNavigatingToGame: 	React.MutableRefObject<boolean>;
 	setIsLeavingRef: 		React.MutableRefObject<(isLeaving: boolean) => void>;
