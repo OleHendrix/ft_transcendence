@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } 			from 'react';
 import { motion }											from 'framer-motion';
-import { useNavigate, useParams, useLocation } 				from 'react-router-dom';
+import { useNavigate, useParams, useLocation, Outlet } 				from 'react-router-dom';
 import { PlayerData, TournamentData }						from '../types';
 import { useAccountContext } 								from '../contexts/AccountContext';
 import Chat 												from "../chat/Chat"
@@ -74,17 +74,13 @@ export default function TournamentWaitingRoom()
 
 
 	return (
-		<motion.div
-			className="absolute h-screen min-h-screen w-screen backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			exit={{ opacity: 0 }}>
-			<motion.div
+		<div className="absolute h-screen min-h-screen w-screen backdrop-blur-md bg-[#1e1e1e] p-10 flex flex-col z-50">
+			{/* <motion.div
 				className="relative bg-[#1e1e1e] text-white shadow-2xl p-10 h-screen min-h-screen w-screen overflow-hidden flex flex-col"
 				initial={{ scale: 0.95, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.95, y: 20 }}
-				transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+				transition={{ type: "spring", stiffness: 300, damping: 25 }}> */}
 				<BackgroundImage />
 
 				{/*Eerst handleclose afhandelen dan pas unmount.*/}
@@ -148,8 +144,9 @@ export default function TournamentWaitingRoom()
 											disabled={false}/>}   {/*Start Next Round*/}
 
 				</div>
-			</motion.div>
+			{/* </motion.div> */}
+			{/* <Outlet /> */}
 			<Chat />
-		</motion.div>
+		</div>
 	);
 }

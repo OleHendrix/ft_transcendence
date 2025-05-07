@@ -4,6 +4,7 @@ import { TbTournament } 		from "react-icons/tb";
 import axios					from "axios";
 import { BiRocket } 			from "react-icons/bi";
 import BackgroundTournament 	from '../../assets/BackgroundTournament.svg';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export function WinnerMessage({ username }: {username: string})
 {
@@ -64,8 +65,8 @@ export async function startTournament({ id, tournamentData }: ButtonFunctionProp
 {
 	try
 	{
-		await axios.post(`http://${window.location.hostname}:5001/api/start-tournament`, { id: Number(id) });
-		await axios.post(`http://${window.location.hostname}:5001/api/send-message`,
+		await axios.post(`${API_URL}/api/start-tournament`, { id: Number(id) });
+		await axios.post(`${API_URL}/api/send-message`,
 		{
 			content: `Tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
 			senderId: 1,
@@ -83,8 +84,8 @@ export async function startNextRound({ id, tournamentData }: ButtonFunctionProps
 	
 	try
 	{
-		await axios.post(`http://${window.location.hostname}:5001/api/start-next-round`, { id: Number(id) });
-		await axios.post(`http://${window.location.hostname}:5001/api/send-message`,
+		await axios.post(`${API_URL}/api/start-next-round`, { id: Number(id) });
+		await axios.post(`${API_URL}/api/send-message`,
 		{
 			content: `The next round of tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
 			senderId: 1,

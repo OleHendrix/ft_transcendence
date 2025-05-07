@@ -13,7 +13,8 @@ import { isBrowser, isMobile, isTablet } from "react-device-detect";
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
 
-function PongGame() {
+function PongGame() 
+{
 	const { loggedInAccounts, setIsPlaying } 					= useAccountContext();
 	const { pongState: pong, setPongState, match, setMatch }	= usePongContext();
 
@@ -99,7 +100,7 @@ function PongGame() {
 
 	function leaveMatch(userID: number) {
 		if (match.tournamentId !== -1) {
-			navigate('/tournament/waiting-room', { replace: true });
+			navigate(-1);
 		} else {
 			navigate('/', { replace: true });
 		}
@@ -178,7 +179,7 @@ function PongGame() {
 	const bounceStrength = -Math.min(1.2 * pong.ball.dir.x, 8); //TODO: check if cap is decent
 	return (
 		<>
-			<div className='w-screen h-screen flex flex-col'>
+			<div className='fixed inset-0 bg-[#222222] w-screen h-screen flex flex-col'>
 				<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
 					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => forfeitMatch()}>
 						<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-30 hover:opacity-70" />

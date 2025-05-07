@@ -2,11 +2,10 @@ import axios from "axios";
 import { useAccountContext } from "../contexts/AccountContext";
 import { useLoginContext } from "../contexts/LoginContext";
 import { SignUpFormType } from "../types";
-
+const API_URL = import.meta.env.VITE_API_URL;
 
 export function useCheckSubmit()
 {
-	const { setNumberOfLoggedInAccounts } = useAccountContext();
 	const { setShowLoginModal, setShowSignUpModal } = useLoginContext();
 	console.log("Submitting form...");
 	// const [isLoading, setIsLoading] = useState(false);
@@ -19,11 +18,10 @@ export function useCheckSubmit()
 
 		try
 		{
-			const response = await axios.post(`http://${window.location.hostname}:5001/api/add-account`, { username, email, password });
+			const response = await axios.post(`${API_URL}/api/add-account`, { username, email, password });
 
 			if (response.data.success)
 			{
-				setNumberOfLoggedInAccounts((count) => count + 1);
 				setShowSignUpModal(false);
 				setShowLoginModal(true);
 			}

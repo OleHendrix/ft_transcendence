@@ -44,8 +44,12 @@ const router = createBrowserRouter(
 			children:
 			[
 				{ path: 'menu', element: <TournamentMenu />},
-				{ path: 'waiting-room/:id', element: <TournamentProtection><TournamentWaitingRoom /></TournamentProtection>
-				}
+				{ path: 'waiting-room/:id', element: <TournamentProtection><TournamentWaitingRoom /></TournamentProtection>,
+					// children:	
+					// [
+					// 	{ path: 'pong-game', element: <PongGame />}
+					// ]
+				},
 			]
 		}
 		]

@@ -104,6 +104,7 @@ export function socketOnMessage({ playerId, playerUsername, tournamentId, setTou
 					clearInterval(interval);
 					setIsPlaying(PlayerState.playing); // start game
 					isNavigatingToGame.current = true;
+					// navigate('./pong-game');
 					navigate('/pong-game');
 				}
 			}, 1000);
