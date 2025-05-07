@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useNavigationType } from 'react-router-dom';
 import axios from "axios";
 import Players from "./Players";
 import { RiGamepadLine } from "react-icons/ri";
@@ -56,19 +56,27 @@ export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) =
 export function Queue()
 {
 	const navigate = useNavigate();
+	const navigationType = useNavigationType();
 	const [queueTime, setQueueTime] = useState(0);
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 
 	function endQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
 	{
+		queueStartTime = 0;
+		navigate('/', { replace: true });
+		setIsPlaying(PlayerState.idle);
 		if (socket !== null)
 		{
 			socket.close();
 			socket = null;
 		}
-		navigate("/")
-		setIsPlaying(PlayerState.idle);
 	}
+
+	useEffect(() => {
+		if (navigationType === "POP") {
+			endQueue(loggedInAccounts[0].id, setIsPlaying);
+		}
+	}, [navigationType, location]);
 
 	useEffect(() => 
 	{

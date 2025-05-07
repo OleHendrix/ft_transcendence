@@ -39,6 +39,7 @@ export default async function refreshToken(fastify: FastifyInstance, prisma: Pri
 		},
 		{ expiresIn: '7d' });
 
+
 		return reply.send({ newAccessToken, newRefreshToken });
 	});
 }

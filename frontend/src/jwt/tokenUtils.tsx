@@ -1,5 +1,6 @@
 import { AuthenticatedAccount } from "../types";
 import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export function getUserTokens(userId: number)
 {
@@ -41,8 +42,8 @@ export async function refreshTokens(refreshToken: string)
 	{
 		const response = await axios.post(`${API_URL}/api/refresh-token`, { refreshToken });
 
-		const newAccessToken  = response.data.accessToken;
-		const newRefreshToken = response.data.refreshToken;
+		const newAccessToken  = response.data.newAccessToken;
+		const newRefreshToken = response.data.newRefreshToken;
 
 		return { newAccessToken, newRefreshToken };
 	}
@@ -62,13 +63,14 @@ export function storeNewTokens(userId: number, newAccessToken: string, newRefres
 
 	const updatedAccounts = loggedInAccounts.map(account =>
 		{
-		if (account.id === userId) {
-		return {
-			...account,
-			jwt: newAccessToken,
-			refreshToken: newRefreshToken,
-		};
-		}
+			if (account.id === userId)
+			{
+				return {
+					...account,
+					accessToken:  newAccessToken,
+					refreshToken: newRefreshToken,
+				};
+			}
 		return account;
 	});
 	

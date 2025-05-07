@@ -10,13 +10,15 @@ import CloseButton from "../utils/CloseButton";
 import ModalWrapper from "../utils/ModalWrapper";
 import { useAccountContext } from "../contexts/AccountContext";
 import { checkValidation } from "./utils/checkValidation";
+import TermsModal from "./utils/termsModal";
 
 function SignUpModal()
 {
 	const { loggedInAccounts, setTriggerFetchAccounts } 	= useAccountContext();
 	const [formData, setFormData] 							= useState(emptySignUpForm);
 	const [emptyForm, setEmptyForm] 						= useState(true);
-	const [validation, setValidation] 						= useState(defaultSignUpValidation)
+	const [validation, setValidation] 						= useState(defaultSignUpValidation);
+	const [showTerms, setShowTerms]							= useState(false);
 	const navigate 											= useNavigate();
 		
 	useEffect(() =>
@@ -41,8 +43,8 @@ function SignUpModal()
 						e.preventDefault();
 						if (await SubmitSignUp( formData ))
 						{
-							navigate('/login')
-							setTriggerFetchAccounts(true)
+							navigate('/login');
+							setTriggerFetchAccounts(true);
 						}
 					}}>
 					<UsernameField 	validation={validation} formData={formData} setFormData={setFormData} />
@@ -51,10 +53,21 @@ function SignUpModal()
 					<ConfirmPasswordField validation={validation} formData={formData} setFormData={setFormData} />
 					{validation['Already logged in'] && <AlreadyLoggedInMessage />}
 					{((validation['Username exists'] || validation['Email exists'])) && !validation['Already logged in'] && <AccountExistsMessage />}
+					<p className="text-xs text-center text-gray-400">
+						By signing up you agree to these{" "}
+						<button
+							type="button"
+							onClick={() => setShowTerms(true)}
+							className="underline text-blue-400 hover:text-blue-300"
+						>
+							terms
+						</button>
+					</p>
 					<SignUpButton validation={validation} emptyForm={emptyForm} />
 					{!(validation['Already logged in'] || validation['Username exists'] || validation['Email exists']) && <LoginMessage />}
 				</form>
 			</motion.div>
+			{showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
 		</ModalWrapper>
 	)
 }
