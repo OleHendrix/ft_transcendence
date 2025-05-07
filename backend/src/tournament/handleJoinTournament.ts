@@ -21,9 +21,20 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		throw ("shitsbriccky");
 	}
 
-	if (tournament.players.find(p => p.id === playerId)){
+	if (tournament.players.find(p => p.id === playerId))
+	{
+		// Verwijder oude socket van dezelfde speler als die bestaat
+		for (let socket of tournament.sockets)
+		{
+			if (socket.playerId === playerId)
+				return ;
+		}
+		// Voeg nieuwe socket toe
 		tournament.sockets.add(connection);
-		return console.log(`handleJoinTournament:Player${playerId}:TRIED_TO_JOIN:tournament${tournamentId}:ALLREADY_IN`);
+		connection.playerId = playerId;
+		console.log(`handleJoinTournament:Player${playerId}:REJOINED:tournament${tournamentId}`);
+		broadcastTournamentUpdate(tournamentId, "DATA");
+		return;
 	}
 	if (tournament.players.length >= tournament.maxPlayers) {
 		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`); //TODO test this
@@ -45,8 +56,14 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	connection.on("close", () =>
 	{
 		console.log(`Cleaning up closed socket for player ${connection.playerId}`);
-		tournament.sockets.delete(connection);
 
+		// if (tournament.players.length > 1)
+		// {
+		// 	tournament.hostId = tournament.players[1].id;
+		// 	tournament.hostUsername = tournament.players[1].username;
+		// }
+
+		tournament.sockets.delete(connection);
 	});
 
 	broadcastTournamentUpdate(tournamentId, "DATA");

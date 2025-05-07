@@ -27,8 +27,8 @@ export default function TournamentWaitingRoom()
 	const loggedInAccountsRef 																= useRef(loggedInAccounts);
 	const navigateRef 																		= useRef(navigate);
 	const isNavigatingToGame 																= useRef(false);
+	const socketRef 																		= useRef<WebSocket | null>(null);
 	useGetTournamentData({ id: id!, setTournamentData });																		//Fetched het gevraagde tournament op basis van id uit de params
-
 
 	//Wanneer component unmount wordt dit aangesproken. Dus bij een pijltjes navigate, refresh idk? 
 	//Regelt het leaven van de game, in de backend etc.
@@ -38,11 +38,6 @@ export default function TournamentWaitingRoom()
 	{
 		return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
 	}, []);	
-
-	// useEffect(() =>
-	// {
-	// 	return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
-	// }, [location.pathname])
 	
 	//Let hier niet op
 	useEffect(() =>
@@ -62,12 +57,13 @@ export default function TournamentWaitingRoom()
 	useEffect(() =>
 	{
 		const player = loggedInAccounts[0];
-		if (!id || !player?.id || !player?.username)
+		if (!id || !player?.id || !player?.username || socketRef.current)
 			return;
-		const socket = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
-		socket.onopen = () => console.log("Tournament WS connected");
-		socket.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
-		return () => {socket.close();};
+
+		socketRef.current = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
+		socketRef.current.onopen = () => console.log("Tournament WS connected");
+		socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
+		return () => {if (!isNavigatingToGame.current) socketRef.current?.close();};
 	}, [loggedInAccounts]);
 
 	const rounds = useMemo(() =>
@@ -84,7 +80,7 @@ export default function TournamentWaitingRoom()
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}>
 			<motion.div
-				className="relative bg-[#1e1e1e]/90 text-white shadow-2xl p-10 h-screen min-h-screen w-screen overflow-hidden flex flex-col"
+				className="relative bg-[#1e1e1e] text-white shadow-2xl p-10 h-screen min-h-screen w-screen overflow-hidden flex flex-col"
 				initial={{ scale: 0.95, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.95, y: 20 }}

@@ -13,10 +13,7 @@ export async function createLoginWebsocket(server: FastifyInstance, prisma: Pris
 			const userIdstring = req.query as { userId: string};
 			const userId = parseInt(userIdstring.userId, 10)
 
-			connection.on("close", () =>
-			{
-				cleanup(userId);
-			})
+			connection.on("close", () => cleanup(userId));
 		})
 	})
 }

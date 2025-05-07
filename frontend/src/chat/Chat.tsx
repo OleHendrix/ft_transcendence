@@ -341,9 +341,7 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 				receiverId: receiverId
 			})
 			if (response.data.success)
-			{
 				setMessageReceived(true);
-			}
 		}
 		catch (error: any)
 		{

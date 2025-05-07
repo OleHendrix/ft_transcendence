@@ -48,7 +48,7 @@ function TournamentProtection({children}: {children: ReactNode})
 		const isPlayerInTournament = tournamentData.players.some((p: PlayerData) => p.id === loggedInAccounts[0].id);
 		const isTournamentFull = tournamentData.players.length >= tournamentData.maxPlayers;
 
-		if (isTournamentFull && !isPlayerInTournament)
+		if ((isTournamentFull && !isPlayerInTournament))
 		{
 			setAuthorized(false);
 			throw new Response("Unauthorized", { status: 401 });

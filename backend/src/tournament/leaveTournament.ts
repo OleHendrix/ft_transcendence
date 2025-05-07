@@ -20,10 +20,17 @@ export async function leaveTournament(fastify: FastifyInstance)
 				tournament.sockets.delete(socket);
 			}
 		}
-		tournament.players = tournament.players.filter(player => player.id !== playerId);
+		if (tournament.matchRound === 1)
+			tournament.players = tournament.players.filter(player => player.id !== playerId);
+		console.log(tournament.sockets.size);
 
-		if (tournament.players.length === 0)
+		const allSocketsDisconnected = Array.from(tournament.sockets).every(socket =>
+			socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING
+		);
+
+		if (allSocketsDisconnected)
 		{
+			console.log("ALL SOCKETS DISCONNECTED");
 			tournamentLobbies.delete(id);
 			return ;
 		}

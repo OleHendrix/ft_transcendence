@@ -3,19 +3,23 @@ import { broadcastTournamentUpdate } from '../tournament/broadcastTournamentUpda
 
 export default async function cleanup(userId: number)
 {
-	console.log("CLEANUP")
+	// console.log("CLEANUP")
 	tournamentLobbies.forEach((tournament, id) =>
 	{
 		if (tournament.players.some(player => player.id === userId))
 		{
 			if (tournament.players.length < 2)
 				console.log(`rehost-tournament:ERROR:rehosting_tournamentId"${id}":NOT_ENOUGH_PLAYERS_TO_REHOST`);
-			if (!tournament.players[1].id || !tournament.players[1].username)
-				console.log(`rehost-tournament:ERROR:corrupted_player_in_tournament:id:${tournament.players[1].id}`);
-
-			tournament.hostId = tournament.players[1].id;
-			tournament.hostUsername = tournament.players[1].username;
-
+			else
+			{
+				if (!tournament.players[1].id || !tournament.players[1].username)
+					console.log(`rehost-tournament:ERROR:corrupted_player_in_tournament:id:${tournament.players[1].id}`);
+				else
+				{
+					tournament.hostId = tournament.players[1].id;
+					tournament.hostUsername = tournament.players[1].username;
+				}
+			}
 			for (let socket of tournament.sockets)
 			{
 				if (socket.playerId === userId)
