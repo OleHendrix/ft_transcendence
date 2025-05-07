@@ -45,7 +45,6 @@ export async function refreshTokens(refreshToken: string)
 		const newAccessToken  = response.data.newAccessToken;
 		const newRefreshToken = response.data.newRefreshToken;
 
-		console.log(newAccessToken, newRefreshToken);
 		return { newAccessToken, newRefreshToken };
 	}
 	catch (error)
@@ -76,6 +75,4 @@ export function storeNewTokens(userId: number, newAccessToken: string, newRefres
 	});
 	
 	localStorage.setItem('loggedInAccounts', JSON.stringify(updatedAccounts));
-	console.log(localStorage.getItem('loggedInAccounts'));
-	console.log('updated accounts', updatedAccounts);
 }
