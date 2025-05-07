@@ -5,14 +5,33 @@ import { EditIcon, StyledButton } from "./utilsComponents";
 import { secureApiCall } from "../jwt/secureApiCall";
 const API_URL = import.meta.env.VITE_API_URL;
 
-interface UpdateLoggedInAccounts2FAProps
+interface TwoFAProps
 {
-	loggedInAccounts: AuthenticatedAccount[];
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
-	selectedAccount: PlayerType | undefined;
-	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
+	loggedInAccounts:        AuthenticatedAccount[];
+	setLoggedInAccounts:     React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
+	selectedAccount:         PlayerType | undefined;
+	setSelectedAccount:      React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface UpdateLoggedInAccounts2FAProps extends TwoFAProps
+{
 	enabled: boolean;
+}
+
+interface Enable2FAProps extends TwoFAProps
+{
+	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface Display2FAProps extends TwoFAProps
+{
+	editProfile:          boolean;
+	setEditProfile:       React.Dispatch<React.SetStateAction<boolean>>;
+	confirmDisable2Fa:    boolean;
+	setConfirmDisable2Fa: React.Dispatch<React.SetStateAction<boolean>>;
+	settingUp2FA:         boolean;
+	setSettingUp2FA:      React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function updateLoggedInAccounts_2FA({loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts, selectedAccount, setSelectedAccount, enabled}: UpdateLoggedInAccounts2FAProps)
@@ -29,16 +48,7 @@ function updateLoggedInAccounts_2FA({loggedInAccounts, setLoggedInAccounts, setT
 	setTriggerFetchAccounts(true);
 }
 
-interface Disable2FAProps
-{
-	loggedInAccounts: AuthenticatedAccount[];
-	selectedAccount: PlayerType | undefined;
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
-	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
-	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export async function disable2FA({loggedInAccounts, selectedAccount, setLoggedInAccounts, setSelectedAccount, setTriggerFetchAccounts}: Disable2FAProps)
+export async function disable2FA({loggedInAccounts, selectedAccount, setLoggedInAccounts, setSelectedAccount, setTriggerFetchAccounts}: TwoFAProps)
 {
 	try
 	{
@@ -60,16 +70,6 @@ export async function disable2FA({loggedInAccounts, selectedAccount, setLoggedIn
 	{
 		console.error('Error disabling 2FA:', error);
 	}
-}
-
-interface Enable2FAProps
-{
-	loggedInAccounts: AuthenticatedAccount[];
-	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>;
-	selectedAccount: PlayerType | undefined;
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
-	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
-	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 }
 
 export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, setLoggedInAccounts, setTriggerFetchAccounts, setSelectedAccount}: Enable2FAProps)
@@ -174,21 +174,6 @@ export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, s
 			</div>
 		</div>
 	);
-}
-
-interface Display2FAProps
-{
-	loggedInAccounts: AuthenticatedAccount[];
-	selectedAccount: PlayerType | undefined;
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
-	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
-	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
-	editProfile: boolean;
-	setEditProfile: React.Dispatch<React.SetStateAction<boolean>>;
-	confirmDisable2Fa: boolean;
-	setConfirmDisable2Fa: React.Dispatch<React.SetStateAction<boolean>>;
-	settingUp2FA: boolean;
-	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function Display2FA({ loggedInAccounts, selectedAccount, setLoggedInAccounts, setSelectedAccount, setTriggerFetchAccounts, editProfile, setEditProfile, confirmDisable2Fa, setConfirmDisable2Fa, settingUp2FA, setSettingUp2FA}: Display2FAProps)

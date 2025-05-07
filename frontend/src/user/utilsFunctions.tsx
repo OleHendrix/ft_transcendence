@@ -7,8 +7,37 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 interface UseGetAccountProps
 {
-	username: string | undefined;
+	username:           string | undefined;
 	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
+}
+
+interface AccountProps
+{
+	loggedInAccounts:    AuthenticatedAccount[];
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
+	selectedAccount:     PlayerType | undefined;
+}
+
+interface HandleAccountRemovalProps extends AccountProps
+{
+	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface updateAccountProps extends AccountProps
+{
+	formData:                SignUpFormType;
+	setEditProfile:          React.Dispatch<React.SetStateAction<boolean>>;
+	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
+	navigate:                NavigateFunction;
+}
+
+interface cancelEditProps
+{
+	setEditProfile:       React.Dispatch<React.SetStateAction<boolean>>;
+	setSettingUp2FA:      React.Dispatch<React.SetStateAction<boolean>>;
+	setConfirmDisable2Fa: React.Dispatch<React.SetStateAction<boolean>>;
+	setFormData:          React.Dispatch<React.SetStateAction<SignUpFormType>>;
+	selectedAccount:      PlayerType | undefined;
 }
 
 export function useGetAccount({username, setSelectedAccount}: UseGetAccountProps)
@@ -35,13 +64,6 @@ export function useGetAccount({username, setSelectedAccount}: UseGetAccountProps
 	}, [username, setSelectedAccount]);
 }
 
-interface HandleAccountRemovalProps
-{
-	loggedInAccounts: AuthenticatedAccount[];
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
-	selectedAccount: PlayerType | undefined;
-	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
 function handleAccountRemoval({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}: HandleAccountRemovalProps)
 {
@@ -51,15 +73,9 @@ function handleAccountRemoval({loggedInAccounts, setLoggedInAccounts, selectedAc
 	setTriggerFetchAccounts(true);
 }
 
-interface logout_deleteProps
-{
-	loggedInAccounts: AuthenticatedAccount[];
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
-	selectedAccount: PlayerType | undefined;
-	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
-export async function logout({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}: logout_deleteProps)
+
+export async function logout({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}: HandleAccountRemovalProps)
 {
 	try
 	{
@@ -83,7 +99,7 @@ export async function logout({loggedInAccounts, setLoggedInAccounts, selectedAcc
 	}
 }
 
-export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}: logout_deleteProps)
+export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}: HandleAccountRemovalProps)
 {
 	try
 	{
@@ -100,16 +116,7 @@ export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, sele
 	}
 }
 
-interface updateAccountProps
-{
-	formData: SignUpFormType;
-	loggedInAccounts: AuthenticatedAccount[];	
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
-	selectedAccount: PlayerType | undefined;
-	setEditProfile: React.Dispatch<React.SetStateAction<boolean>>;
-	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
-	navigate: NavigateFunction;
-}
+
 
 export async function updateAccount({formData, loggedInAccounts, setLoggedInAccounts, selectedAccount, setEditProfile, setTriggerFetchAccounts, navigate}: updateAccountProps)
 {
@@ -154,15 +161,6 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 	{
 		console.log(error.response.data);
 	}
-}
-
-interface cancelEditProps
-{
-	setEditProfile: React.Dispatch<React.SetStateAction<boolean>>;
-	setSettingUp2FA: React.Dispatch<React.SetStateAction<boolean>>;
-	setConfirmDisable2Fa: React.Dispatch<React.SetStateAction<boolean>>;
-	setFormData: React.Dispatch<React.SetStateAction<SignUpFormType>>;
-	selectedAccount: PlayerType | undefined;
 }
 
 export function cancelEdit({setEditProfile, setSettingUp2FA, setConfirmDisable2Fa, setFormData, selectedAccount}: cancelEditProps)

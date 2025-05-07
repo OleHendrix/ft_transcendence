@@ -28,7 +28,7 @@ interface ShowInfoProps
 
 function ShowInfo( {editProfile, setEditProfile, selectedAccount, setSelectedAccount}: ShowInfoProps )
 {
-	const { loggedInAccounts, setTriggerFetchAccounts, setLoggedInAccounts }  	= useAccountContext();
+	const { loggedInAccounts, setTriggerFetchAccounts, setLoggedInAccounts }	= useAccountContext();
 	const [formData, setFormData] 												= useState(emptySignUpForm);
 	const [emptyForm, setEmptyForm] 											= useState(true);
 	const [confirmDelete, setConfirmDelete] 									= useState(false);
