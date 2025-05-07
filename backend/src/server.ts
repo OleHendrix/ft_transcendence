@@ -18,7 +18,8 @@ fastify.register(fastifyCors,
 		origin: [
 			'http://localhost:5173',
 			'https://ft-transcendence-three.vercel.app',
-			'https://nextball.online'
+			'https://nextball.online',
+			'https://www.nextball.online'
 		],
 		credentials: true
 	}
