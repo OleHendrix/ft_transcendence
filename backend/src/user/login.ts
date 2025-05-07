@@ -46,7 +46,7 @@ export default async function login(fastify: FastifyInstance, prisma: PrismaClie
 			email: account.email,
 			twofaRequired: true,
 		},
-		{ expiresIn: '1h' });
+		{ expiresIn: '30s' });
 
 		const refreshToken = fastify.jwt.sign({
 			sub: account.id,
