@@ -1,6 +1,6 @@
-import { FastifyInstance } 		from "fastify/fastify";
-import { handleJoinTournament } from "./handleJoinTournament";
-import { broadcastTournamentUpdate } from "./broadcastTournamentUpdates";
+import { FastifyInstance } 				from "fastify/fastify";
+import { handleJoinTournament } 		from "./handleJoinTournament";
+import { broadcastTournamentUpdate }	from "./broadcastTournamentUpdates";
 
 export async function joinTournament(fastify: FastifyInstance)
 {
@@ -8,7 +8,6 @@ export async function joinTournament(fastify: FastifyInstance)
 	{
 		fastify.get('/ws/join-tournament', { websocket: true }, (connection, req) =>
 		{
-			// console.log("JOIN TOURNAMENT");
 			try
 			{
 				const { playerId, playerUsername, tournamentId } = req.query as {
@@ -21,8 +20,8 @@ export async function joinTournament(fastify: FastifyInstance)
 			}
 			catch (error)
 			{
-				console.log(error);
-				return ;
+				connection.close();
+				return console.log(error);
 			}
 		})
 	});
