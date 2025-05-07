@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { PrismaClient } from '@prisma/client';
-import { PlayerType } from "./../types/types"
+import { PlayerType } from "../types/types"
 
 export default async function getAccounts(fastify: FastifyInstance, prisma: PrismaClient)
 {
@@ -22,7 +22,11 @@ export default async function getAccounts(fastify: FastifyInstance, prisma: Pris
 	})
 
 
-	fastify.get('/api/get-accounts', async (request, reply) => 
+	fastify.post('/api/get-accounts',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
 		// const hostUrl = `${request.protocol}://${request.hostname}`;
 		try
