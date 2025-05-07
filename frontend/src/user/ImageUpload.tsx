@@ -4,7 +4,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import { useAccountContext } from "../contexts/AccountContext";
 import { motion } from 'framer-motion';
 import { FiCamera } from 'react-icons/fi';
-import { PlayerType } from '../types';
+import { AuthenticatedAccount, PlayerType } from '../types';
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -12,8 +12,8 @@ interface HandleCropCompleteProps
 {	
 	croppedImage: string;
 	selectedAccount: PlayerType | undefined;
-	loggedInAccounts: PlayerType[];
-	setLoggedInAccounts: React.Dispatch<React.SetStateAction<PlayerType[]>>;
+	loggedInAccounts: AuthenticatedAccount[];
+	setLoggedInAccounts: React.Dispatch<React.SetStateAction<AuthenticatedAccount[]>>;
 	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
 	setShowCropper: React.Dispatch<React.SetStateAction<boolean>>;
