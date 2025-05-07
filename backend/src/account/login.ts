@@ -4,9 +4,9 @@ import bcrypt from 'bcrypt';
 
 export default async function login(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post('/api/login', async (req, reply) =>
+	fastify.post('/api/login', async (request, reply) =>
 	{
-		const { username, password } = req.body as { username: string; password: string };
+		const { username, password } = request.body as { username: string; password: string };
 	
 		const account = await prisma.account.findUnique({ where: { username } });
 		if (!account) return reply.status(400).send({ error: 'Username not found' })

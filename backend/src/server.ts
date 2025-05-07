@@ -6,7 +6,7 @@ import fastifyWebsocket  from '@fastify/websocket';
 import { setUpTwofa }       from './auth/setUpAuth';
 import { setupChat }       from './chat/setUpChat';
 import { setupPong }       from './pong/setUpPong';
-import { setUpAccount }    from './user/setUpAccount';
+import { setUpAccount }    from './account/setUpAccount';
 import { setupTournament } from './tournament/tournament';
 import { setUpJwt } from './jwt/setUpJwt';
 

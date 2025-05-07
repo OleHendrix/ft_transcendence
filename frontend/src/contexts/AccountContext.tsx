@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
 import { PlayerType, PlayerState, AuthenticatedAccount } from "../types";
+import { secureApiCall } from "../jwt/secureApiCall";
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -50,7 +51,18 @@ export function AccountProvider({ children }: {children: ReactNode})
 		{
 			try
 			{
-				const response = await axios.get(`${API_URL}/api/get-accounts`);
+				const userId = loggedInAccounts[0]?.id;
+				if (!userId)
+					return;
+				const response = await secureApiCall(userId, (accessToken) =>
+					 axios.post(`${API_URL}/api/get-accounts`, {},
+					{
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+					})
+				);
 				setAccounts(response.data.accounts);
 			}
 			catch (error: any)

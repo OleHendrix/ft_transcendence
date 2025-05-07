@@ -110,6 +110,9 @@ import { useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
+import { secureApiCall } from './jwt/secureApiCall';
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 export function toPercentage(n: number, decimals: number): number
 {
@@ -130,7 +133,22 @@ export default function Leaderboard()
 		{
 			try
 			{
-				const response = await axios.get(`http://${window.location.hostname}:5001/api/get-accounts`);
+				const loggedInAccountsRaw = localStorage.getItem('loggedInAccounts');
+				if (!loggedInAccountsRaw) return;
+
+				const loggedInAccounts = JSON.parse(loggedInAccountsRaw);
+				const userId = loggedInAccounts[0]?.id;
+				if (!userId) return;
+
+				const response = await secureApiCall(userId, (accessToken) =>
+					 axios.post(`${API_URL}/api/get-accounts`, {},
+					{
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+					})
+				);
 				setAccounts(response.data.accounts);
 			}
 			catch (error: any)
