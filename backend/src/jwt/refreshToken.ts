@@ -39,7 +39,7 @@ export default async function refreshToken(fastify: FastifyInstance, prisma: Pri
 		},
 		{ expiresIn: '7d' });
 
-		console.log('Refreshed tokens for', account.username);
+		console.log('Refreshed tokens for', account.username, 'newAccessToken', newAccessToken, 'newRefreshToken', newRefreshToken);
 
 		return reply.send({ newAccessToken, newRefreshToken });
 	});
