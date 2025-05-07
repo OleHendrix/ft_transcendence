@@ -25,5 +25,4 @@ export async function setUpAccount(fastify: FastifyInstance, prisma: PrismaClien
 	await createLoginWebsocket(fastify, prisma);
 	await logout(fastify, prisma);
 	await updateAccount(fastify, prisma);
-	await cleanup(fastify, prisma);
 }

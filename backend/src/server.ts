@@ -9,6 +9,7 @@ import { setupPong }       from './pong/setUpPong';
 import { setUpAccount }    from './user/setUpAccount';
 import { setupTournament } from './tournament/tournament';
 import { setUpJwt } from './jwt/setUpJwt';
+import cleanup from './user/cleanup';
 
 const fastify = Fastify();
 export const prisma = new PrismaClient();
