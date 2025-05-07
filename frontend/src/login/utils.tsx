@@ -84,7 +84,6 @@ export function updateLoggedInAccounts(account: AuthenticatedAccount, accessToke
 		return updatedPlayers;
 	});
 	const loggedInAccounts = localStorage.getItem('loggedInAccounts');
-	console.log(loggedInAccounts);
 }
 
 export interface ResetValidationProps
