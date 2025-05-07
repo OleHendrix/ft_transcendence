@@ -7,7 +7,7 @@ import Chat 												from "../chat/Chat"
 import Loader 												from '../utils/Loader';
 import { MdAdminPanelSettings }								from "react-icons/md";
 import { generateBracket, handleClose, socketOnMessage } 	from './utilsFunctions';
-import { stillPlaying, useGetTournamentData, handleCloseInstant } 				from './utilsFunctions';
+import { stillPlaying, useGetTournamentData } 				from './utilsFunctions';
 import CloseButton 											from '../utils/CloseButton';
 import { WinnerMessage, Rounds, TournamentButton, startTournament, startNextRound, BackgroundImage } 	from './utilsComponents';
 const WS_URL = import.meta.env.VITE_WS_URL;

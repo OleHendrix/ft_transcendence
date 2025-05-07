@@ -1,5 +1,6 @@
 import { tournamentLobbies } 			from "./../tournament/tournament"
 import { broadcastTournamentUpdate } from '../tournament/broadcastTournamentUpdates';
+import WebSocket from 'ws';
 
 export default async function cleanup(userId: number)
 {
@@ -24,9 +25,16 @@ export default async function cleanup(userId: number)
 			{
 				if (socket.playerId === userId)
 				{
-					if (socket.readyState === WebSocket.OPEN)
-						socket.close();
-					tournament.sockets.delete(socket);
+					try
+					{
+						if (socket.readyState === WebSocket.OPEN)
+							socket.close();
+						tournament.sockets.delete(socket);
+					}
+					catch (error)
+					{
+						console.log(`rehost-tournament:ERROR:closing_socket:${error}`);
+					}
 				}
 			}
 			tournament.players = tournament.players.filter(player => player.id !== userId);
