@@ -17,19 +17,12 @@ function PongGame() {
 	const { loggedInAccounts, setIsPlaying } 					= useAccountContext();
 	const { pongState: pong, setPongState, match, setMatch }	= usePongContext();
 	const navigate												= useNavigate();
-	const navigationType										= useNavigationType();
 
 	const isOnPC = !(isMobile || isTablet);
 
 	const socketRef         = useRef<WebSocket | null>(null);
 	const keysPressed       = useRef<{ [key: string]: boolean }>({});
 	const mobileKeysPressed = useRef<{ [key: string]: boolean }>({});
-	
-	useEffect(() => {
-		if (loggedInAccounts.length !== 0 && navigationType === "POP") {
-			leaveMatch(loggedInAccounts[0]?.id);
-		}
-	}, [navigationType, location]);
 
 	useEffect(() => {
 		if (loggedInAccounts.length === 0) {
@@ -49,7 +42,11 @@ function PongGame() {
 				console.log(error);
 			}
 		};
+		const handlePopState = () => {
+			leaveMatch(loggedInAccounts[0]?.id);
+		};
 		window.addEventListener("beforeunload", handleUnload);
+		window.addEventListener("popstate",     handlePopState);
 		window.addEventListener("keydown",      handleKeyDown);
 		window.addEventListener("keyup",        handleKeyUp);
 
@@ -86,16 +83,13 @@ function PongGame() {
 
 	function leaveMatch(userID: number | undefined) {
 		setIsPlaying(PlayerState.idle);
-		if (userID !== undefined) {
+		if (userID) {
 			axios.post(`${API_URL}/pong/delete`, { userID: userID }).catch((error) => {
 				// not printing shit here because this always happens when refreshing :)
 			});
 		}
-		if (match.tournamentId !== -1) {
-			navigate('/tournament/waiting-room', { replace: true });
-		} else {
-			navigate('/', { replace: true });
-		}
+		const navigateTo = match.tournamentId === -1 ? '/' : '/tournament/waiting-room';
+		navigate(navigateTo, { replace: true });
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
@@ -126,8 +120,9 @@ function PongGame() {
 				whileHover={{ scale: 1.00 }}
 				whileTap={{ scale: 0.94 }}
 				style={{ width: '10vh', height: '10vh', top: `${pos.y}vh`, left: `${pos.x}vw` }}
-				onPointerDown={() => { mobileKeysPressed.current[output] = true; }}
-				onPointerUp={() => { mobileKeysPressed.current[output] = false; }}
+				onPointerDown  ={() => { mobileKeysPressed.current[output] = true;  }}
+				onPointerLeave ={() => { mobileKeysPressed.current[output] = false; }}
+				onPointerUp    ={() => { mobileKeysPressed.current[output] = false; }}
 			>
 				{isUp ? <IoChevronUp /> : <IoChevronDown />}
 			</motion.button>
