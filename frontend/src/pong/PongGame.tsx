@@ -6,7 +6,7 @@ import { useAccountContext } from '../contexts/AccountContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatTime, ParseResult } from './pongUtils';
 import { usePongContext } from '../contexts/PongContext';
-import { useNavigate, useNavigationType } from 'react-router-dom';
+import { useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { IoArrowUndoOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
 import { isBrowser, isMobile, isTablet } from "react-device-detect";
 
@@ -17,27 +17,41 @@ function PongGame()
 {
 	const { loggedInAccounts, setIsPlaying } 					= useAccountContext();
 	const { pongState: pong, setPongState, match, setMatch }	= usePongContext();
+	const navigate												= useNavigate();
 
-	const navigate = useNavigate();
-	const navigationType = useNavigationType();
-	const usesBrowser = !(isMobile || isTablet);
-	console.log(usesBrowser);
+	const isOnPC = !(isMobile || isTablet);
 
-	useEffect(() => {
-		if (navigationType === "POP") {
-			leaveMatch(loggedInAccounts[0].id);
-		}
-	}, [navigationType, location]);
-
-
-	const socketRef   = useRef<WebSocket | null>(null);
-	const keysPressed = useRef<{ [key: string]: boolean }>({});
+	const socketRef         = useRef<WebSocket | null>(null);
+	const keysPressed       = useRef<{ [key: string]: boolean }>({});
 	const mobileKeysPressed = useRef<{ [key: string]: boolean }>({});
 
 	useEffect(() => {
+		if (loggedInAccounts.length === 0) {
+			leaveMatch(undefined);
+			return;
+		}
 		const socket = new WebSocket(`${WS_URL}/pong`);
 		socketRef.current = socket;
 
+		const handleKeyDown = (event: KeyboardEvent) => keysPressed.current[event.key] = true;
+		const handleKeyUp   = (event: KeyboardEvent) => delete keysPressed.current[event.key];
+		const handleUnload = () => {
+			try {
+				socket.close();
+				leaveMatch(loggedInAccounts[0].id);
+			} catch (error) {
+				console.log(error);
+			}
+		};
+		const handlePopState = () => {
+			leaveMatch(loggedInAccounts[0]?.id);
+		};
+		window.addEventListener("beforeunload", handleUnload);
+		window.addEventListener("popstate",     handlePopState);
+		window.addEventListener("keydown",      handleKeyDown);
+		window.addEventListener("keyup",        handleKeyUp);
+
+		// get response from server and set pong/match state
 		socket.addEventListener("message", (event) => {
 			try {
 				const receivedMatch = JSON.parse(event.data);
@@ -48,73 +62,35 @@ function PongGame()
 			}
 		});
 
-		const handleUnload = () =>
-		{
-			try {
-				axios.post(`${API_URL}/pong/end-game`, { 
-					userID: loggedInAccounts[0].id 
-				});
-				socket.close();
-				// console.log(`PongGame:HandleUnload:api/pong/end-game:userId${loggedInAccounts[0].id}:socket_closed`);
-			} catch (error) {
-				console.log(error);
-			}
-		};
-		window.addEventListener("beforeunload", handleUnload);
-
-		return () => {
-			window.removeEventListener("beforeunload", handleUnload);
-		};
-	}, []);
-
-	// game loop / websocket out
-	useEffect(() => {
+		// send user input to server 60x per second
 		const sendInput = () => {
 			if (socketRef.current?.readyState === WebSocket.OPEN) {
 				socketRef.current.send(JSON.stringify({
 					userID: loggedInAccounts[0].id,
-					keysPressed: usesBrowser ? keysPressed.current : mobileKeysPressed.current,
+					keysPressed: isOnPC ? keysPressed.current : mobileKeysPressed.current,
 				}));
 			}
 		};
 		const interval = setInterval(sendInput, 1000 / 60);
 
 		return () => {
-			clearInterval(interval);
-		}
-	}, []);
-
-	// init player I/O
-	useEffect(() => {
-		const handleKeyDown = (event: KeyboardEvent) => keysPressed.current[event.key] = true;
-		const handleKeyUp   = (event: KeyboardEvent) => delete keysPressed.current[event.key];
-
-		window.addEventListener("keydown", handleKeyDown);
-		window.addEventListener("keyup", handleKeyUp);
-
-		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("beforeunload", handleUnload);
+
+			clearInterval(interval);
 		};
 	}, []);
 
-	function leaveMatch(userID: number) {
-		if (match.tournamentId !== -1) {
-			navigate(-1);
-		} else {
-			navigate('/', { replace: true });
-		}
+	function leaveMatch(userID: number | undefined) {
 		setIsPlaying(PlayerState.idle);
-		axios.post(`${API_URL}/pong/delete`, { userID: userID });
-	}
-
-	async function forfeitMatch() {
-		try {
-			await axios.post(`${API_URL}/pong/end-game`, { userID: loggedInAccounts[0].id });
-			leaveMatch(loggedInAccounts[0].id)
-		} catch (error) {
-			console.log(error);
+		if (userID) {
+			axios.post(`${API_URL}/pong/delete`, { userID: userID }).catch((error) => {
+				// not printing shit here because this always happens when refreshing :)
+			});
 		}
+		const navigateTo = match.tournamentId === -1 ? '/' : '/tournament/waiting-room';
+		navigate(navigateTo, { replace: true });
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
@@ -145,8 +121,9 @@ function PongGame()
 				whileHover={{ scale: 1.00 }}
 				whileTap={{ scale: 0.94 }}
 				style={{ width: '10vh', height: '10vh', top: `${pos.y}vh`, left: `${pos.x}vw` }}
-				onPointerDown={() => { mobileKeysPressed.current[output] = true; }}
-				onPointerUp={() => { mobileKeysPressed.current[output] = false; }}
+				onPointerDown  ={() => { mobileKeysPressed.current[output] = true;  }}
+				onPointerLeave ={() => { mobileKeysPressed.current[output] = false; }}
+				onPointerUp    ={() => { mobileKeysPressed.current[output] = false; }}
 			>
 				{isUp ? <IoChevronUp /> : <IoChevronDown />}
 			</motion.button>
@@ -154,7 +131,7 @@ function PongGame()
 	}
 
 	function RenderButtons() {
-		if (usesBrowser) {
+		if (isOnPC) {
 			return (<></>);
 		}
 		return (
@@ -176,12 +153,12 @@ function PongGame()
 		)
 	}
 
-	const bounceStrength = -Math.min(1.2 * pong.ball.dir.x, 8); //TODO: check if cap is decent
+	const bounceStrength = -Math.min(1.2 * pong.ball.dir.x, 6.0);
 	return (
 		<>
 			<div className='fixed inset-0 bg-[#222222] w-screen h-screen flex flex-col'>
 				<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
-					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => forfeitMatch()}>
+					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => leaveMatch(loggedInAccounts[0].id)}>
 						<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-30 hover:opacity-70" />
 					</motion.button>
 					<div className='absolute left-[25%] text-2xl opacity-50'>
@@ -275,13 +252,6 @@ function PongGame()
 										whileTap={{ scale: 0.97 }}
 										onClick={() => { leaveMatch(loggedInAccounts[0].id) }}>Back To Home
 									</motion.button>
-									{match.isLocalGame === false &&
-										<motion.button className="pt-2 bg-[#134588] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#246bcb] hover:cursor-pointer"
-											whileHover={{ scale: 1.03 }}
-											whileTap={{ scale: 0.97 }}
-											onClick={() => { leaveMatch(loggedInAccounts[0].id); startQueue({player: {id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, opponentID: Opponent.ANY}, setIsPlaying, navigate) }}>Find new match
-										</motion.button>
-									}
 								</>
 								}
 								{match.tournamentId !== -1 &&

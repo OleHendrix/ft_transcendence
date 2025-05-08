@@ -3,7 +3,7 @@ import { WebSocket } from "ws";
 import { isInGame, addGame } from "./pongServer";
 import { Opponent, PlayerType, QueueData } from "./../types/types"
 
-class BiMap<K, V>
+class BiMap<K, V> //templates :3
 {
 	private forward = new Map<K, V>();
 	private reverse = new Map<V, K>();
