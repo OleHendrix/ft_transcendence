@@ -8,7 +8,7 @@ import { DisplayInfo, ProfileActionButton, LogoutDeleteButton, ImageDisplay } fr
 import { StyledButton } from "./utilsComponents";
 import { AuthenticatedAccount, PlayerType } from "../types";
 import { Display2FA } from "./2FA";
-import { cancelEdit, useGetAccount } from "./utilsFunctions";
+import { cancelEdit, useGetAccount, handleDownload } from "./utilsFunctions";
 import CloseButton from "../utils/CloseButton";
 import { deleteAccount, logout, updateAccount } from "./utilsFunctions";
 import { defaultSignUpValidation, emptySignUpForm } from "../objects";
@@ -17,6 +17,7 @@ import { UsernameField } from "../signup/utils/InputFields";
 import { checkValidation } from "../signup/utils/checkValidation";
 import { AlreadyLoggedInMessage } from "../signup/utils/ValidationMessages";
 import { AccountExistsMessage } from "../signup/utils/ValidationMessages";
+
 
 interface ShowInfoProps
 {
@@ -94,13 +95,13 @@ function ShowInfo( {editProfile, setEditProfile, selectedAccount, setSelectedAcc
 
 function PlayerInfo()
 {
-	const { loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts } 	= useAccountContext();
-	const [editProfile, setEditProfile] 										= useState(false);
-	const [tempImageUrl, setTempImageUrl] 										= useState<string>('');
-	const [showCropper, setShowCropper] 										= useState(false);
-	const [selectedAccount, setSelectedAccount] 								= useState<PlayerType>();
-	const navigate 																= useNavigate();
-	const { username } 															= useParams();
+	const { loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts }	= useAccountContext();
+	const [editProfile, setEditProfile]											= useState(false);
+	const [tempImageUrl, setTempImageUrl]										= useState<string>('');
+	const [showCropper, setShowCropper]											= useState(false);
+	const [selectedAccount, setSelectedAccount]									= useState<PlayerType>();
+	const navigate																= useNavigate();
+	const { username }															= useParams();
 
 	useGetAccount({username, setSelectedAccount});
 
@@ -124,6 +125,7 @@ function PlayerInfo()
 					(
 						<div className="flex w-full justify-between">
 							<ProfileActionButton keyword="edit" onClick={() => setEditProfile(true)}/>
+							<ProfileActionButton keyword="download" onClick={() => handleDownload(selectedAccount)}/>
 							<ProfileActionButton keyword="stats" onClick={() => navigate('./stats')}/>
 						</div>
 					)}

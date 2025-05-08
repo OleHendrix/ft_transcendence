@@ -4,6 +4,7 @@ import { FiEdit3, FiCamera } from "react-icons/fi";
 import { IoIosStats } from 'react-icons/io';
 import { LiaUserEditSolid } from 'react-icons/lia';
 import { MdOutlineDeleteForever } from 'react-icons/md';
+import { IoMdDownload } from "react-icons/io";
 import Player from '../../assets/Player.svg';
 
 interface StyledButtonProps
@@ -48,7 +49,7 @@ export function EditIcon({ onClick, keyName }: EditIconProps)
 
 interface ProfileActionButtonProps
 {
-	keyword: "edit" | "stats";
+	keyword: "edit" | "stats" | "download";
 	onClick: () => void;
 }
 
@@ -60,9 +61,9 @@ export function ProfileActionButton({ keyword, onClick }: ProfileActionButtonPro
 				whileHover={{ scale: 1.17 }}
 				whileTap={{ scale: 0.87 }}
 				onClick={onClick}>
-				{keyword === 'edit' ? <LiaUserEditSolid size={24} /> : <IoIosStats size={24} />}
+				{keyword === 'edit' ? <LiaUserEditSolid size={24} /> : (keyword == 'stats' ? <IoIosStats size={24} /> : <IoMdDownload size={24} />)}
 			</motion.button>
-			<p className="font-thin text-xs opacity-40">{keyword === 'edit' ? 'Edit profile' : 'Show Stats'}</p>
+			<p className="font-thin text-xs opacity-40">{keyword === 'edit' ? 'Edit profile' : (keyword == 'stats' ? 'Show Stats' : 'Download Data')}</p>
 		</div>
 	);
 }

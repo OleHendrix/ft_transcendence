@@ -178,3 +178,34 @@ export function cancelEdit({setEditProfile, setSettingUp2FA, setConfirmDisable2F
 	}))
 }
 
+export const handleDownload = async (account: PlayerType | undefined) =>
+{
+	if (!account) return;
+	try
+	{
+		const response = await secureApiCall(account.id, (accessToken) =>
+			axios.post(`${API_URL}/api/get-account-data`, {},
+			{
+				headers:
+				{
+					Authorization: `Bearer ${accessToken}`
+				},
+				responseType: 'blob'
+			})
+		);
+
+		const blob = new Blob([response.data], { type: 'application/json' });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'account-data.json';
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		window.URL.revokeObjectURL(url);
+	}
+	catch (error)
+	{
+		console.error('Error downloading data:', error);
+	}
+};

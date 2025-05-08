@@ -12,6 +12,7 @@ import { createLoginWebsocket } from "./login";
 import cleanup from "./cleanup";
 import logout from "./logout";
 import updateAccount from "./updateAccount";
+import getAccountData from "./getAccountData";
 
 export async function setUpAccount(fastify: FastifyInstance, prisma: PrismaClient)
 {
@@ -19,6 +20,7 @@ export async function setUpAccount(fastify: FastifyInstance, prisma: PrismaClien
 	await deleteAccount(fastify, prisma);
 	await getAccount(fastify, prisma);
 	await getAccounts(fastify, prisma);
+	await getAccountData(fastify, prisma);
 	await upload(fastify, prisma);
 	await checkValidation(fastify, prisma);
 	await login(fastify, prisma);

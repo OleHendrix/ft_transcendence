@@ -158,7 +158,7 @@ function PlayerStats()
 				const response = await axios.get(`${API_URL}/api/get-account`,
 					{
 						params:
-						{ 
+						{
 							requestedUser: loggedInAccounts[0].id,
 							username: username,
 						}
