@@ -99,7 +99,7 @@ function updateBall(ball: Ball)
 	ball.pos.y += ball.dir.y;
 }
 
-function manageAIInput(match: Match, game: PongState, ticks: number): void
+function manageAIInput(game: PongState, ticks: number): void
 {
 	if (game.ai.desiredY > game.p2.pos.y + game.p2.size.y / 2)
 		game.p2Input = 1;
@@ -107,23 +107,27 @@ function manageAIInput(match: Match, game: PongState, ticks: number): void
 		game.p2Input = -1;
 	if (ticks % 2 === 0 && Math.abs(game.ai.desiredY - game.p2.pos.y) < game.p2.size.y)
 		game.p2Input = 0;
+	if (game.ai.collisionTick % 3 === 0 && ticks > game.ai.collisionTick - 5)
+		game.p2Input = game.ai.collisionTick % 2 === 0 ? 1 : -1;
 }
 
 function tick(match: Match, game: PongState, ticks: number): void
 {
 	if (match.p2.id === -1)
-		manageAIInput(match, game, ticks);
+		manageAIInput(game, ticks);
 	managePaddle(game.p1, game.p1Input);
 	managePaddle(game.p2, game.p2Input);
 	updateBall(game.ball);
 	handleColision(game, match);
 }
 
-function manageAI(game: PongState): void
+function manageAI(game: PongState, now: number): void
 {
 	const ballCopy = structuredClone(game.ball);
 	const p1collX = game.p1.pos.x + game.p1.size.x + ballCopy.size.x / 2;
 	const p2collX = game.p2.pos.x - ballCopy.size.x / 2;
+
+	game.ai.collisionTick = now;
 
 	while (ballCopy.pos.x < p2collX)
 	{
@@ -138,6 +142,7 @@ function manageAI(game: PongState): void
 			ballCopy.dir.x *= s.BOUNCE.x;
 		}
 		updateBall(ballCopy);
+		game.ai.collisionTick++;
 	}
 	game.ai.desiredY = Math.max(game.p2.size.y / 2, Math.min(100 - game.p2.size.y / 2, ballCopy.pos.y));
 }
@@ -179,7 +184,7 @@ export function updateGame(match: Match, userID: number, keysPressed: {[key: str
 	{
 		if (match.p2.id === -1 && game.ai.lastActivation + 100 <= game.lastUpdate)
 		{
-			manageAI(game);
+			manageAI(game, now);
 			game.ai.lastActivation = game.lastUpdate;
 		}
 		tick(match, game, game.lastUpdate);
@@ -215,7 +220,7 @@ export function initGame(p1Data: PlayerData, p2Data: PlayerData): PongState
 		p2Input: 0,
 		ball: resetBall(0, 0),
 		lastUpdate: -1,
-		ai: { lastActivation: 0, desiredY: 0 },
+		ai: { lastActivation: 0, desiredY: 0, collisionTick: 0 },
 		maxPoints: 3,
 		timer: 180 * 1000,
 		result: Result.PLAYING,

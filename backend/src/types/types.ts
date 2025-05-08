@@ -113,6 +113,7 @@ export interface AI
 {
 	lastActivation:	number;
 	desiredY:		number;
+	collisionTick:	number;
 }
 
 export interface Statics
