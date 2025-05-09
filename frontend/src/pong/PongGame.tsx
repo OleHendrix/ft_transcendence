@@ -142,15 +142,15 @@ function PongGame()
 			<>
 				{match?.isLocalGame && match.p2.id !== -1 ? 
 					<>
-						{CreateMotionButton({ x: 25, y: 74 }, 'w', true)}
-						{CreateMotionButton({ x: 25, y: 85 }, 's', false)}
-						{CreateMotionButton({ x: 75, y: 74 }, 'ArrowUp', true)}
-						{CreateMotionButton({ x: 75, y: 85 }, 'ArrowDown', false)}
+						{CreateMotionButton({ x: 25, y: 64 }, 'w', true)}
+						{CreateMotionButton({ x: 25, y: 75 }, 's', false)}
+						{CreateMotionButton({ x: 75, y: 64 }, 'ArrowUp', true)}
+						{CreateMotionButton({ x: 75, y: 75 }, 'ArrowDown', false)}
 					</>
 					:
 					<>
-						{CreateMotionButton({ x: 50, y: 74 }, 'w', true)}
-						{CreateMotionButton({ x: 50, y: 85 }, 's', false)}
+						{CreateMotionButton({ x: 50, y: 64 }, 'w', true)}
+						{CreateMotionButton({ x: 50, y: 75 }, 's', false)}
 					</>
 				}
 			</>
