@@ -261,28 +261,27 @@ function calcWinRate(wins: number, total: number): number | null
 	return 100 * (wins / total);
 }
 
-function setMatchHistory(match: Match, p1Elo: number, p2Elo: number, p1NewElo: number, p2NewElo: number): any
+function setMatchStats(match: Match, p1Elo: number, p2Elo: number, p1NewElo: number, p2NewElo: number, isP1: boolean): any
 {
-	return {
+	let matchStats = {
 		winner:		match.state.result === Result.DRAW ? "Draw" : (match.state.result === Result.P1WON ? match.p1.username : match.p2.username),
 		p1:			match.p1.username,
 		p2:			match.p2.username,
-		p1score:	match.state.p1Score,
-		p2score:	match.state.p2Score,
+		p1Score:	match.state.p1Score,
+		p2Score:	match.state.p2Score,
 		p1Elo:		p1Elo,
 		p2Elo:		p2Elo,
 		p1Diff:		p1NewElo - p1Elo,
 		p2Diff:		p2NewElo - p2Elo,
 	}
+	if (isP1 === false) {
+		[matchStats.p1,      matchStats.p2     ] = [matchStats.p2,      matchStats.p1     ];
+		[matchStats.p1Score, matchStats.p2Score] = [matchStats.p2Score, matchStats.p1Score];
+		[matchStats.p1Elo,   matchStats.p2Elo  ] = [matchStats.p2Elo,   matchStats.p1Elo  ];
+		[matchStats.p1Diff,  matchStats.p2Diff ] = [matchStats.p2Diff,  matchStats.p1Diff ];
+	}
+	return matchStats;
 }
-
-// export async function fillDB(match: Match, result: Result, isP1: boolean)
-// {
-// 	const id = isP1 ? match.p1.id : match.p2.id;
-// 	let player = await prisma.account.findUnique({ where: { id: id } }) as any;
-// 	const newElo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P1WON ? 1 : 0));
-
-// }
 
 export async function endGame(match: Match, result: Result)
 {
@@ -299,7 +298,8 @@ export async function endGame(match: Match, result: Result)
 	const newPlayer1Elo  = calculateNewElo(player1.elo,  player2.elo, result === Result.DRAW ? 0.5 : (result === Result.P1WON ? 1 : 0));
 	const newPlayer2Elo  = calculateNewElo(player2.elo,  player1.elo, result === Result.DRAW ? 0.5 : (result === Result.P2WON ? 1 : 0));
 
-	const MatchHistory = setMatchHistory(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo);
+	const p1MatchHistory = setMatchStats(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo, true);
+	const p2MatchHistory = setMatchStats(match, player1.elo, player2.elo, newPlayer1Elo, newPlayer2Elo, false);
 
 	const matchResult = (result: Result, isP1: boolean) =>
 	{
@@ -319,7 +319,7 @@ export async function endGame(match: Match, result: Result)
 			matchesPlayed: { increment: 1 },
 			elo: newPlayer1Elo,
 			...p1ResultField,
-			matches: { create: MatchHistory },
+			matches: { create: p1MatchHistory },
 		}
 	});
 
@@ -331,7 +331,7 @@ export async function endGame(match: Match, result: Result)
 			matchesPlayed: { increment: 1 },
 			elo: newPlayer2Elo,
 			...p2ResultField,
-			matches: { create: MatchHistory },
+			matches: { create: p2MatchHistory },
 		}
 	});
 
