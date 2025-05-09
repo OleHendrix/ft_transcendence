@@ -122,9 +122,14 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 
 function ChatHeader()
 {
-	const {accounts, loggedInAccounts} 									= useAccountContext();
+	const {accounts, loggedInAccounts, setTriggerFetchAccounts} 		= useAccountContext();
 	const [searchInput, setSearchInput] 								= useState('');
 	const {receiverId, setReceiverId, setReceiverUsername} 				= useChatContext();
+
+	useEffect(() => setTriggerFetchAccounts(true), []);
+
+	if (!accounts || !loggedInAccounts.length)
+		return <div className="text-gray-400 text-sm">Loading chat...</div>;
 
 	return (
 		<div className="w-full flex flex-col max-w-full">
