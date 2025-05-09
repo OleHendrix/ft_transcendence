@@ -34,10 +34,10 @@ export default function TournamentWaitingRoom()
 	//Regelt het leaven van de game, in de backend etc.
 	//In handleclose zit een protection (isNavigatingToGame) voor wanneer we naar ponggame gaan. Hier wordt er dus niet geleaved
 	
-	useEffect(() =>
-	{
-		return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
-	}, []);	
+	// useEffect(() =>
+	// {
+	// 	return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
+	// }, []);	
 	
 	//Let hier niet op
 	useEffect(() =>
@@ -63,7 +63,11 @@ export default function TournamentWaitingRoom()
 		socketRef.current = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
 		socketRef.current.onopen = () => console.log("Tournament WS connected");
 		socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
-		return () => {if (!isNavigatingToGame.current) socketRef.current?.close();};
+		return () => {if (!isNavigatingToGame.current) 
+			{
+				console.log("CLOSING");
+				socketRef.current?.close();
+			}};
 	}, [loggedInAccounts]);
 
 	const rounds = useMemo(() =>

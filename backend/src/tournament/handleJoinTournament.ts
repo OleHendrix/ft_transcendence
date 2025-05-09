@@ -57,13 +57,29 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	{
 		console.log(`Cleaning up closed socket for player ${connection.playerId}`);
 
-		// if (tournament.players.length > 1)
-		// {
-		// 	tournament.hostId = tournament.players[1].id;
-		// 	tournament.hostUsername = tournament.players[1].username;
-		// }
+			if (tournament.players.length < 2)
+				console.log(`rehost-tournament:ERROR:rehosting_tournamentId"":NOT_ENOUGH_PLAYERS_TO_REHOST`);
+			else
+			{
+				if (!tournament.players[1].id || !tournament.players[1].username)
+					console.log(`rehost-tournament:ERROR:corrupted_player_in_tournament:id:${tournament.players[1].id}`);
+				else
+				{
+					tournament.hostId = tournament.players[1].id;
+					tournament.hostUsername = tournament.players[1].username;
+				}
+			}
+			tournament.sockets.delete(connection);
+			if (tournament.matchRound === 1)
+				tournament.players = tournament.players.filter(player => player.id !== playerId);
+	
+			if (tournament.players.length === 0)
+			{
+				tournamentLobbies.delete(tournamentId);
+				return ;
+			}
+			broadcastTournamentUpdate(tournament.tournamentId, "DATA");
 
-		tournament.sockets.delete(connection);
 	});
 
 	broadcastTournamentUpdate(tournamentId, "DATA");

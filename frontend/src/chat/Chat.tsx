@@ -169,9 +169,8 @@ function ChatHeader()
 function MessageList()
 {
 	const { loggedInAccounts } = useAccountContext();
-	const { setMessageReceived, chatMessages, setChatMessages, receiverId, receiverUsername, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
+	const { setMessageReceived, chatMessages, receiverId, receiverUsername, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const navigate = useNavigate();
 
 	useEffect(() =>
 	{

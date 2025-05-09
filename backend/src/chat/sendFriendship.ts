@@ -100,6 +100,7 @@ export default async function sendFriendship(server: FastifyInstance, prisma: Pr
 			},
 			include: { sender: { select: { username: true } } }
 		});
+		notifyClients(message);
 
 		return reply.send({ success: true });
 	});
