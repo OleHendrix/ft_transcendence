@@ -26,8 +26,8 @@ export interface MatchHistory
 	winner:		string;
 	p1:			string;
 	p2:			string;
-	p1score:	number;
-	p2score:	number;
+	p1Score:	number;
+	p2Score:	number;
 	p1Elo:		number;
 	p2Elo:		number;
 	p1Diff:		number;

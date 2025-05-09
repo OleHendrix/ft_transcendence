@@ -74,9 +74,10 @@ function PongGame()
 		const interval = setInterval(sendInput, 1000 / 60);
 
 		return () => {
-			window.removeEventListener("keydown", handleKeyDown);
-			window.removeEventListener("keyup", handleKeyUp);
 			window.removeEventListener("beforeunload", handleUnload);
+			window.removeEventListener("popstate",     handlePopState);
+			window.removeEventListener("keydown",      handleKeyDown);
+			window.removeEventListener("keyup",        handleKeyUp);
 
 			clearInterval(interval);
 		};
@@ -89,8 +90,11 @@ function PongGame()
 				// not printing shit here because this always happens when refreshing :)
 			});
 		}
-		const navigateTo = match.tournamentId === -1 ? '/' : '/tournament/waiting-room';
-		navigate(navigateTo, { replace: true });
+		if (match.tournamentId === -1) {
+			navigate('/', { replace: true });
+		} else {
+			navigate(-1);
+		}
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);

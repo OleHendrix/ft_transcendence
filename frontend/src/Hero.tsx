@@ -60,26 +60,23 @@ export function Queue()
 	const [queueTime, setQueueTime] = useState(0);
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
 
-	function endQueue(userID: number, setIsPlaying: (state: PlayerState) => void)
+	function endQueue(setIsPlaying: (state: PlayerState) => void)
 	{
 		queueStartTime = 0;
-		navigate('/', { replace: true });
 		setIsPlaying(PlayerState.idle);
 		if (socket !== null)
-		{
-			socket.close();
-			socket = null;
-		}
+			{
+				socket.close();
+				socket = null;
+			}
+		navigate('/', { replace: true });
 	}
-
-	useEffect(() => {
-		if (navigationType === "POP") {
-			endQueue(loggedInAccounts[0].id, setIsPlaying);
-		}
-	}, [navigationType, location]);
 
 	useEffect(() => 
 	{
+		if (loggedInAccounts.length === 0) {
+			endQueue(setIsPlaying);
+		}
 		const interval = setInterval(() =>
 		{
 			if (loggedInAccounts.length !== 0)
@@ -87,7 +84,17 @@ export function Queue()
 				setQueueTime(Math.floor((Date.now() - queueStartTime) / 1000));
 			}
 		}, 100);
-		return () => clearInterval(interval);
+
+		const handleUnload = () => {
+			endQueue(setIsPlaying);
+		};
+		window.addEventListener("beforeunload", handleUnload);
+		window.addEventListener("popstate",     handleUnload);
+		return () => {
+			clearInterval(interval);
+			window.removeEventListener("beforeunload", handleUnload);
+			window.removeEventListener("popstate",     handleUnload);
+		};
 	}, [])
 
 	return (
@@ -103,7 +110,7 @@ export function Queue()
 						whileTap={ {scale: 0.97}}
 						onClick={() =>
 						{
-							endQueue(loggedInAccounts[0].id, setIsPlaying)
+							endQueue(setIsPlaying)
 						}}>Cancel
 					</motion.button>
 				</motion.div>
@@ -207,6 +214,8 @@ function Buttons()
 function Hero()
 {
 	const { isPlaying, setIsPlaying } = useAccountContext();
+
+	console.log(isPlaying);
 
 	return(
 		<>

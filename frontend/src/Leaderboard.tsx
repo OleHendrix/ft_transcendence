@@ -124,7 +124,7 @@ export default function Leaderboard()
 {
 	const [ accounts, setAccounts ] = useState<PlayerType[]>([]);
 	const [ sortedAccounts, setSortedAccounts ] = useState<PlayerType[]>([]);
-	const [searchInput, setSearchInput] = useState('');
+	const [ searchInput, setSearchInput ] = useState('');
 	const navigate = useNavigate();
 
 	useEffect(() =>
@@ -141,7 +141,7 @@ export default function Leaderboard()
 				if (!userId) return;
 
 				const response = await secureApiCall(userId, (accessToken) =>
-					 axios.post(`${API_URL}/api/get-accounts`, {},
+					axios.post(`${API_URL}/api/get-accounts`, {},
 					{
 						headers:
 						{
@@ -158,7 +158,13 @@ export default function Leaderboard()
 		} fetchAccounts();
 	}, [])
 
-	useEffect(() => {setSortedAccounts(accounts.sort((a, b) => b.elo - a.elo));}, [accounts]);
+	useEffect(() => {
+		const sorted = [...accounts].sort((a, b) => {
+			if (b.elo !== a.elo) return b.elo - a.elo;
+			return a.username.localeCompare(b.username);
+		});
+		setSortedAccounts(sorted);
+	}, [accounts]);
 
 	function getBorderColour(position: number): string {
 		let str = "";
@@ -172,20 +178,12 @@ export default function Leaderboard()
 	}
 
 	function getRanking(player: PlayerType, accountsList: PlayerType[]): number {
-		let ranking = 1
-
-		for (const account of accountsList)
-		{
-			if (player.id === account.id)
-				continue
-			if ((player.elo  <  account.elo) ||
-				(player.elo === account.elo && player.winRate  <  account.winRate) ||
-				(player.elo === account.elo && player.winRate === account.winRate && player.username > account.username))
-			{
-				ranking++
+		for (let i = 0; i < accountsList.length; i++) {
+			if (player.id === accountsList[i].id) {
+				return i + 1;
 			}
 		}
-		return ranking
+		return accountsList.length
 	}
 
 	function GetPositionFormatting(player: PlayerType, accountsList: PlayerType[], index: number) {
@@ -218,22 +216,6 @@ export default function Leaderboard()
 		</tr>
 		)
 	}
-
-	// function getBorderColour(position: number): string
-	// {
-	// 	if (position > 3)
-	// 		return "";
-	
-	// 	let str = "shadow-xl text-lg border-2 ";
-	
-	// 	switch (position) { 
-	// 		case 1: str += "bg-gradient-to-r from-[#C88F0B] via-[#E0B320] to-[#F0D000] border-[#C88F0B]"; break;
-	// 		case 2: str += "bg-gradient-to-r from-[#B0B0B0] via-[#D0D0D0] to-[#E0E0E0] border-[#B0B0B0]"; break;
-	// 		case 3: str += "bg-gradient-to-r from-[#B85C00] via-[#DD7500] to-[#E08400] border-[#B85C00]"; break;
-
-	// 	}
-	// 	return str;
-	// }
 
 	return (
 		<ModalWrapper>
@@ -276,7 +258,7 @@ export default function Leaderboard()
 						<tbody>
 							{sortedAccounts
 								.filter(account => account.username.toLowerCase().includes(searchInput.toLowerCase()))
-								.map((account, index) => GetPositionFormatting(account, accounts, index))
+								.map((account, index) => GetPositionFormatting(account, sortedAccounts, index))
 							}
 						</tbody>
 					</table>
