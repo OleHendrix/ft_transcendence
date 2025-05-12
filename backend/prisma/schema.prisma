@@ -89,8 +89,8 @@ model MatchHistory {
   winner  String
   p1      String
   p2      String
-  p1score Int
-  p2score Int
+  p1Score Int
+  p2Score Int
   p1Elo   Int
   p2Elo   Int
   p1Diff  Int

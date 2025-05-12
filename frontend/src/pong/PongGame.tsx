@@ -75,11 +75,11 @@ function PongGame()
 		const interval = setInterval(sendInput, 1000 / 60);
 
 		return () => {
-			window.removeEventListener("keydown", handleKeyDown);
-			window.removeEventListener("keyup", handleKeyUp);
 			window.removeEventListener("beforeunload", handleUnload);
-			leaveMatch(loggedInAccounts[0].id)
-			socket.close();
+			window.removeEventListener("popstate",     handlePopState);
+			window.removeEventListener("keydown",      handleKeyDown);
+			window.removeEventListener("keyup",        handleKeyUp);
+
 			clearInterval(interval);
 		};
 	}, []);
@@ -92,8 +92,16 @@ function PongGame()
 		// 	navigate('/', { replace: true });
 		// }
 		setIsPlaying(PlayerState.idle);
-		if (userID)
-			axios.post(`${API_URL}/pong/delete`, { userID: userID });
+		if (userID) {
+			axios.post(`${API_URL}/pong/delete`, { userID: userID }).catch((error) => {
+				// not printing shit here because this always happens when refreshing :)
+			});
+		}
+		if (match.tournamentId === -1) {
+			navigate('/', { replace: true });
+		} else {
+			navigate(-1);
+		}
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
@@ -141,15 +149,15 @@ function PongGame()
 			<>
 				{match?.isLocalGame && match.p2.id !== -1 ? 
 					<>
-						{CreateMotionButton({ x: 25, y: 74 }, 'w', true)}
-						{CreateMotionButton({ x: 25, y: 85 }, 's', false)}
-						{CreateMotionButton({ x: 75, y: 74 }, 'ArrowUp', true)}
-						{CreateMotionButton({ x: 75, y: 85 }, 'ArrowDown', false)}
+						{CreateMotionButton({ x: 25, y: 64 }, 'w', true)}
+						{CreateMotionButton({ x: 25, y: 75 }, 's', false)}
+						{CreateMotionButton({ x: 75, y: 64 }, 'ArrowUp', true)}
+						{CreateMotionButton({ x: 75, y: 75 }, 'ArrowDown', false)}
 					</>
 					:
 					<>
-						{CreateMotionButton({ x: 50, y: 74 }, 'w', true)}
-						{CreateMotionButton({ x: 50, y: 85 }, 's', false)}
+						{CreateMotionButton({ x: 50, y: 64 }, 'w', true)}
+						{CreateMotionButton({ x: 50, y: 75 }, 's', false)}
 					</>
 				}
 			</>

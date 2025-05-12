@@ -14,50 +14,132 @@ import { format } from 'date-fns';
 import OnlineStatus from "../utils/OnlineStatus";
 import ModalWrapper from "../utils/ModalWrapper";
 import axios from "axios";
+
+import {
+	Chart as ChartJS,
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	Title,
+	Tooltip,
+	Legend,
+} from 'chart.js';
+
+ChartJS.register(
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	Title,
+	Tooltip,
+	Legend
+);
+import { Line } from 'react-chartjs-2';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-function ShowMatchHistory({selectedAccount} : {selectedAccount: PlayerType})
+function ShowHistoryGraph({matchHistory, selectedAccount} : {matchHistory: MatchHistory[], selectedAccount: PlayerType})
 {
-	const matchHistory = selectedAccount?.matches ?? [];
-	const SMH = [...matchHistory].sort((a, b) => b.id - a.id); //SortedMatchHistory
+	let history: number[] = [];
+	let labels:  number[] = [];
 
+	let i = matchHistory.length - 15;
+	if (i < 0) {
+		i = 0;
+	}
+
+	for (; i < matchHistory.length; i++) {
+		history.push(matchHistory[i].p1Elo);
+		labels.push(i);
+	}
+	history.push(selectedAccount.elo);
+	labels.push(i);
+
+	const data = {
+		labels: labels,
+		datasets: [
+			{
+				label: 'ELO',
+				data: history,
+				borderColor: '#AAAAAAFF',
+				borderWidth: 3,
+				pointRadius: 2.5,
+				pointHoverRadius: 3.5,
+				pointBorderWidth: 5,
+				pointHoverBorderWidth: 5,
+				pointHitRadius: 20,
+				fill: false,
+			},
+		],
+	};
+
+	const options = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: {
+				display: false,
+			},
+		},
+		scales: {
+			y: {
+				beginAtZero: false,
+			},
+		},
+	};
+
+	return (
+		<div className="border border-base-content/20">
+			<div className="text-lg font-bold text-grey-700 bg-[#303030]/90 text-center py-2">
+				ELO Graph {/*values are always off somehow D:*/}
+			</div>
+			<div className="h-230px px-2 pt-1">
+				<Line data={data} options={options} />
+			</div>
+		</div>
+	)
+}
+
+function ShowMatchHistory({sorted} : {sorted: MatchHistory[]})
+{
 	return (
 		<div className="border border-base-content/20 bg-transparent md:h-[486px] md:overflow-y-auto">
 			<table className="w-full table overflow-y-auto whitespace-nowrap">
 				<thead className="md:sticky md:top-0 z-10 bg-black shadow-2xl">
 					<tr className="text-lg font-light bg-[#303030]/90 text-lightgrey">
 						<th className="text-center" colSpan={6}>
-						<div className="flex w-full items-center justify-center gap-1">
-							Match History
-							<RiGamepadLine />
-						</div>
+							<div className="flex w-full items-center justify-center gap-1">
+								Match History
+								<RiGamepadLine />
+							</div>
 						</th>
 					</tr>
 				</thead>
 				<tbody>
-					{SMH.map((match, index) => (
+					{sorted.map((match, index) => (
 						<tr
 							key={match.id}
 							className={`${"h-18 font-medium "} ${match.winner === "Draw"
 								? "bg-[linear-gradient(to_bottom_right,_#40404050_0%,_#47474790_30%,_#40404070_70%,_#33333337_100%)]"
-								: match.winner === selectedAccount?.username 
+								: match.winner === match.p1 
 								? "bg-[linear-gradient(to_bottom_right,_#2c8a3950_0%,_#20602f90_30%,_#0f402470_70%,_#1f4b2837_100%)]"
 								: "bg-[linear-gradient(to_bottom_right,_#e02e2e50_0%,_#aa202090_30%,_#8b131370_70%,_#8b131337_100%)]"}`}>
 							<td className="w-2/5 text-left pr-2">
-								<div className="text-2xl">                     {SMH[index].p1} </div>
-								<div className="text-xs italic text-gray-400"> {`${SMH[index].p1Elo} (${SMH[index].p1Diff >= 0 ? `+${SMH[index].p1Diff}` : SMH[index].p1Diff})`} </div>
+								<div className="text-2xl">                     {sorted[index].p1} </div>
+								<div className="text-xs italic text-gray-400"> {`${sorted[index].p1Elo} (${sorted[index].p1Diff >= 0 ? `+${sorted[index].p1Diff}` : sorted[index].p1Diff})`} </div>
 							</td>
 
 							<td className="w-1/5 text-center">
 								<div className="flex flex-col justify-center w-full">
-									<span className="text-2xl font-bold">{match.p1score}-{match.p2score}</span>
+									<span className="text-2xl font-bold">{match.p1Score}-{match.p2Score}</span>
 									<span className="text-xs italic text-gray-400">{format(new Date(match.time), "MM-dd HH:mm")}</span>
 								</div>
 							</td>
 								
 							<td className="w-2/5 text-right pl-2">
-								<div className="text-2xl">                     {SMH[index].p2} </div>
-								<div className="text-xs italic text-gray-400"> {`${SMH[index].p2Elo} (${SMH[index].p2Diff >= 0 ? `+${SMH[index].p2Diff}` : SMH[index].p2Diff})`} </div>
+								<div className="text-2xl">                     {sorted[index].p2} </div>
+								<div className="text-xs italic text-gray-400"> {`${sorted[index].p2Elo} (${sorted[index].p2Diff >= 0 ? `+${sorted[index].p2Diff}` : sorted[index].p2Diff})`} </div>
 							</td>
 						</tr>
 					))}
@@ -88,7 +170,8 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 	if (player[stat] === null)
 		return "Play a match to see ranking";
 	const [worseThan, total] = calcWorseThan(player, stat, accounts);
-	return `Top ${toPercentage(100 / (total / worseThan), 1)}% - #${worseThan + 1}`
+	const percentile = toPercentage((worseThan / total) * 100, 1);
+	return `Top ${percentile}% - #${worseThan + 1}`
 }
 
 function ShowStats({selectedAccount} : {selectedAccount: PlayerType})
@@ -202,13 +285,15 @@ function PlayerStats()
 			console.log(error.response)
 		}
 	}
+	const matchHistory = selectedAccount?.matches ?? [];
+	const sortedMatchHistory = [...matchHistory].sort((a, b) => b.id - a.id);
 
 	return (
 		<ModalWrapper>
 			<motion.div
 				className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-4 md:p-8 gap-4 md:gap-8 
-					w-full max-w-xl md:max-w-3xl mx-2 md:mx-8 lg:mx-16 
-					h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto md:overflow-hidden 
+					w-full max-w-xl md:max-w-2xl mx-2 md:mx-8 lg:mx-16 
+					h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto
 					rounded-xl relative shadow-2xl border border-[#383838]"
 				initial={{ scale: 0.9, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
@@ -254,16 +339,18 @@ function PlayerStats()
 						</div>
 					</div>
 				</div>
-				<div className="flex-1 w-full">
-				<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
-					<div className="w-full md:w-2/5 flex-shrink-0">
-						{selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType}/>}
+				<div className="flex flex-col w-full gap-3">
+					<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
+						<div className="w-full md:w-2/5 flex-shrink-0">
+							{selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType}/>}
+						</div>
+
+						<div className="w-full md:w-3/5 flex-grow">
+							{selectedAccount && <ShowMatchHistory sorted={sortedMatchHistory as MatchHistory[]}/>}
+						</div>
 					</div>
 
-					<div className="w-full md:w-3/5 flex-grow">
-						{selectedAccount && <ShowMatchHistory selectedAccount={selectedAccount  as PlayerType}/>}
-					</div>
-				</div>
+					{selectedAccount && <ShowHistoryGraph matchHistory={matchHistory as MatchHistory[]} selectedAccount={selectedAccount as PlayerType}/>}
 				</div>
 			</motion.div>
 		</ModalWrapper>
