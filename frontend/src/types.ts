@@ -190,6 +190,12 @@ export interface TournamentLobby
 
 import type { WebSocket } from 'ws';
 
+export type TournamentSocket = {
+	playerId: number;
+	socket: WebSocket;
+};
+
+
 export interface TournamentData
 {
 	tournamentId:		number;
@@ -198,10 +204,10 @@ export interface TournamentData
 	maxPlayers:			number;
 	players:			PlayerData[];
 	winners:			PlayerData[][];
-	winner: 			PlayerData;
+	winner: 			PlayerData | null;
 	roundIdx:			number;
 	matchRound:			number;
 	rounds:				Match[][] | null;
-	sockets:			Set<WebSocket>;
+	sockets:			Set<TournamentSocket>;
 	readyForNextRound: 	boolean;
 };

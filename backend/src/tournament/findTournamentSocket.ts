@@ -5,19 +5,19 @@ export async function findTournamentSocket(fastify: FastifyInstance)
 {
 	fastify.get('/api/find-tournament-socket', (request, reply) => 
 	{
-		try{
-
-			const { playerId, id } = request.query as 
-			{
-				playerId: string,
-				id: string
-			}
-			const pId = Number(playerId);
+		try
+		{
+		const { playerId, id } = request.query as 
+		{
+			playerId: string,
+			id: string
+		}
+		const pId = Number(playerId);
 		const tId = Number(id);
-		console.log(pId, tId);
+
 		const tournament = tournamentLobbies.get(tId);
 		if (!tournament)
-			{
+		{
 			console.log(`cannot find tId ${tId}`);
 			return reply.status(404).send({error: `findTournamentSocket:Tournament:${tId}:ERROR_NOT_FOUND`});
 		}
@@ -31,7 +31,8 @@ export async function findTournamentSocket(fastify: FastifyInstance)
 		}
 		catch (error )
 		{
-			console.log(error);
+			console.error("💥 Uncaught error in findTournamentSocket:", error);
+			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 	})
 }

@@ -1,5 +1,5 @@
 import { tournamentLobbies } 			from "./tournament";
-import { PlayerData } 					from "../types/types";
+import { PlayerData, TournamentSocket } 	from "../types/types";
 import { broadcastTournamentUpdate } 	from "./broadcastTournamentUpdates";
 import type { WebSocket } 				from 'ws';
 
@@ -21,39 +21,32 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		throw ("shitsbriccky");
 	}
 
-	if (tournament.players.find(p => p.id === playerId))
-	{
-		// Verwijder oude socket van dezelfde speler als die bestaat
-		for (let socket of tournament.sockets)
-		{
-			if (socket.playerId === playerId)
-			{
-				connection.close();
-				return;
-			}
-		}
-		// Voeg nieuwe socket toe
-		tournament.sockets.add(connection);
-		connection.playerId = playerId;
-		console.log(`handleJoinTournament:Player${playerId}:REJOINED:tournament${tournamentId}`);
-		broadcastTournamentUpdate(tournamentId, "DATA");
-		return;
-	}
+	// if (tournament.players.find(p => p.id === playerId))
+	// {
+	// 	tournament.sockets.add(tsocket);
+	// 	// Voeg nieuwe socket toe
+	// 	// tournament.sockets.add(connection);
+	// 	// connection.playerId = playerId;
+	// 	console.log(`handleJoinTournament:Player${playerId}:REJOINED:tournament${tournamentId}`);
+	// 	broadcastTournamentUpdate(tournamentId, "DATA");
+	// 	return;
+	// }
 	if (tournament.players.length >= tournament.maxPlayers) {
 		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`);
 		connection.close();
 		return;
 	}
-
+	
 	const player: PlayerData = {
 		id: playerId,
 		username: playerUsername,
 	};
-
+	
 	connection.playerId = playerId;
-
+	
+	const tsocket: TournamentSocket = { playerId, socket: connection };
 	tournament.players.push(player);
-	tournament.sockets.add(connection);
+	tournament.sockets.add(tsocket);
 
 	connection.on("close", () =>
 	{
@@ -71,7 +64,7 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 					tournament.hostUsername = tournament.players[1].username;
 				}
 			}
-			tournament.sockets.delete(connection);
+			tournament.sockets.delete(tsocket);
 			console.log(tournament.sockets.size);
 			if (tournament.matchRound === 1)
 				tournament.players = tournament.players.filter(player => player.id !== playerId);

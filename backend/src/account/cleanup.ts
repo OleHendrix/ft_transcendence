@@ -4,7 +4,7 @@ import WebSocket from 'ws';
 
 export default async function cleanup(userId: number)
 {
-	// console.log("CLEANUP")
+	console.log("CLEANUP")
 	tournamentLobbies.forEach((tournament, id) =>
 	{
 		if (tournament.players.some(player => player.id === userId))
