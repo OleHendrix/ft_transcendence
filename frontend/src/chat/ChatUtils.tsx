@@ -48,16 +48,47 @@ export function GameInvite( {message, isSender} : MessageProps)
 
 		try {
 			changeMsgStatus(status);
-			if (status === 2) {
-				const result = await axios.post(`${API_URL}/invite/accept`, { msgID: messageId, user: {id: loggedInAccounts[0].id , username: loggedInAccounts[0].username}});
+			if (status === 2)
+			{
+				const userId = loggedInAccounts[0].id;
+				if (!userId) return;
+
+				const result = await secureApiCall(userId, (accessToken) =>
+					axios.post(`${API_URL}/invite/accept`,
+					{
+						msgID: messageId,
+						user: {id: userId , username: loggedInAccounts[0].username }
+					},
+					{
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+					})
+				);
 				if (result.data === true) {
 					setIsPlaying(PlayerState.playing);
 					navigate('/pong-game');
 				} else {
 					changeMsgStatus(5);
 				}
-			} else if (status >= 3) {
-				await axios.post(`${API_URL}/invite/decline`, { msgID: messageId });
+			} else if (status >= 3)
+			{
+				const userId = loggedInAccounts[0].id;
+				if (!userId) return;
+
+				const result = await secureApiCall(userId, (accessToken) =>
+					axios.post(`${API_URL}/invite/decline`,
+					{
+						msgID: messageId
+					},
+					{
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+					})
+				);
 			}
 
 			setChatMessages((prevMessages) => // update localstorage 

@@ -68,7 +68,11 @@ function deleteBySocket(socket: WebSocket)
 
 export default function initInvite(fastify: FastifyInstance)
 {
-	fastify.post('/invite/accept', async (request, reply) =>
+	fastify.post('/invite/accept',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
 		const { msgID, user } = request.body as { msgID: number, user: PlayerType };
 
@@ -84,22 +88,17 @@ export default function initInvite(fastify: FastifyInstance)
 		return reply.code(200).send(true);
 	});
 
-	fastify.post('/invite/decline', async (request, reply) =>
+	fastify.post('/invite/decline',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
 		const { msgID } = request.body as { msgID: number };
 
 		const socket = findSocket(msgID);
 		if (socket === undefined) return reply.code(500).send(false);
 		socket.close();
-		deleteByMsgID(msgID);
-		return reply.code(200).send(true);
-	});
-
-	fastify.post('/invite/cancel', async (request, reply) =>
-	{
-		const { msgID } = request.body as { msgID: number };
-
-		if (msgID === undefined) return reply.code(500).send(false);
 		deleteByMsgID(msgID);
 		return reply.code(200).send(true);
 	});
