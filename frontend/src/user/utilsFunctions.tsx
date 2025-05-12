@@ -103,10 +103,21 @@ export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, sele
 {
 	try
 	{
-		const response = await axios.post(`${API_URL}/api/delete-account`,
-		{
-			username: selectedAccount?.username
-		});
+		const userId = selectedAccount?.id;
+		if (!userId) return;
+
+		const response = await secureApiCall(userId, (accessToken) =>
+			axios.post(`${API_URL}/api/delete-account`,
+			{
+				userId
+			},
+			{
+				headers:
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+			})
+		);
 		if (response.data.success)
 			handleAccountRemoval({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts});
 	}

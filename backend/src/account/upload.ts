@@ -19,7 +19,11 @@ export default async function upload(fastify: FastifyInstance, prisma: PrismaCli
 		prefix: '/uploads/',
 	});
 
-	fastify.post('/api/upload', async (request, reply) =>
+	fastify.post('/api/upload',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
 		const parts = request.parts();
 		let username = '';

@@ -42,7 +42,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 			{
 				try
 				{
-					const response = await axios.post(`${API_URL}/api/checkloggedinaccounts`, {savedLoggedInAccounts})
+					const response = await axios.post(`${API_URL}/api/check-loggedin-accounts`, {savedLoggedInAccounts})
 					if (response.data.success)
 					{
 						const parsed = JSON.parse(savedLoggedInAccounts);

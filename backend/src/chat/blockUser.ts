@@ -3,7 +3,12 @@ import { PrismaClient } from "@prisma/client";
 import { notifyClients } from "./createWebsocket";
 
 export default async function blockUser(server: FastifyInstance, prisma: PrismaClient) {
-	server.post('/api/block-user', async (request, reply) => {
+	server.post('/api/block-user',
+		{
+			preHandler: server.authenticate
+		},
+		async (request, reply) =>
+	{
 		const { senderId, receiverId } = request.body as { senderId: number, receiverId: number };
 		if (receiverId === -1) return ;
 

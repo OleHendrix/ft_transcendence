@@ -4,7 +4,12 @@ import { getOrCreateChatSession } from "./chatUtils/getOrCreateChatSession";
 import { notifyClients } from "./createWebsocket";
 
 export default async function setMsgStatus(server: FastifyInstance, prisma: PrismaClient) {
-	server.post('/api/change-msg-status', async (request, reply) => {
+	server.post('/api/change-msg-status',
+		{
+			preHandler: server.authenticate
+		},
+		async (request, reply) =>
+	{
 		try {
 			const { senderId, receiverId, status, messageId } = request.body as {
 				senderId: number;

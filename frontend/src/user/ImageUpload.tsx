@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { FiCamera } from 'react-icons/fi';
 import { AuthenticatedAccount, PlayerType } from '../types';
 import axios from 'axios';
+import { secureApiCall } from '../jwt/secureApiCall';
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface HandleCropCompleteProps
@@ -32,13 +33,19 @@ async function handleCropComplete({croppedImage, selectedAccount, loggedInAccoun
 		formData.append('username', selectedAccount?.username)
 	try
 	{
-		const response = await axios.post(`${API_URL}/api/upload`, formData,
-		{
-			headers:
+		const userId = selectedAccount?.id;
+		if (!userId) return;
+
+		const response = await secureApiCall(userId, (accessToken) =>
+			axios.post(`${API_URL}/api/upload`, formData,
 			{
-				'Accept': 'application/json' // géén Content-Type hier!
-			}
-		})
+				headers:
+				{
+					'Accept': 'application/json', // géén Content-Type hier!
+					Authorization: `Bearer ${accessToken}`
+				}
+			})
+		);
 		if (response.data.success)
 		{
 			const updatedloggedInAccounts = loggedInAccounts.map((account) =>

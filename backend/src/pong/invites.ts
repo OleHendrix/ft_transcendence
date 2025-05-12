@@ -106,9 +106,9 @@ export default function initInvite(fastify: FastifyInstance)
 
 	fastify.register( async function (fastify)
 	{
-		fastify.get("/invite/send", { websocket: true }, (connection, req) =>
+		fastify.get('/invite/send', { websocket: true }, (connection, req) =>
 		{
-			connection.on("message", (message) =>
+			connection.on('message', (message) =>
 			{
 				const data = JSON.parse(message.toString());
 				const [msgID, senderID] = [data.ID, data.senderID];
@@ -118,7 +118,7 @@ export default function initInvite(fastify: FastifyInstance)
 				senders.set(msgID, senderID);
 			});
 
-			connection.on("close", () =>
+			connection.on('close', () =>
 			{
 				deleteBySocket(connection);
 			});
