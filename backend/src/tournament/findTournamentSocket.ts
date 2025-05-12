@@ -7,27 +7,27 @@ export async function findTournamentSocket(fastify: FastifyInstance)
 	{
 		try
 		{
-		const { playerId, id } = request.query as 
-		{
-			playerId: string,
-			id: string
-		}
-		const pId = Number(playerId);
-		const tId = Number(id);
-
-		const tournament = tournamentLobbies.get(tId);
-		if (!tournament)
-		{
-			console.log(`cannot find tId ${tId}`);
-			return reply.status(404).send({error: `findTournamentSocket:Tournament:${tId}:ERROR_NOT_FOUND`});
-		}
-
-		for (let socket of tournament.sockets)
+			const { playerId, id } = request.query as 
 			{
-				if (socket.playerId === pId)
-					return reply.status(200).send({found: true, socket: socket});
+				playerId: string,
+				id: string
 			}
-			return reply.status(200).send({found: false});
+			const pId = Number(playerId);
+			const tId = Number(id);
+
+			const tournament = tournamentLobbies.get(tId);
+			if (!tournament)
+			{
+				console.log(`cannot find tId ${tId}`);
+				return reply.status(404).send({error: `findTournamentSocket:Tournament:${tId}:ERROR_NOT_FOUND`});
+			}
+			for (let socket of tournament.sockets)
+			{
+				console.log(`ENCOUNTERING SOCKET WITH PLAYER ID ${socket.playerId}`);
+				if (socket.playerId === pId)
+					return reply.status(200).send({found: true});
+			}
+				return reply.status(200).send({found: false});
 		}
 		catch (error )
 		{

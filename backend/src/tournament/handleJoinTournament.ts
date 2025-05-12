@@ -47,6 +47,7 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	const tsocket: TournamentSocket = { playerId, socket: connection };
 	tournament.players.push(player);
 	tournament.sockets.add(tsocket);
+	console.log(`ADDING SOCKET WITH PLAYER ID ${tsocket.playerId}`);
 
 	connection.on("close", () =>
 	{

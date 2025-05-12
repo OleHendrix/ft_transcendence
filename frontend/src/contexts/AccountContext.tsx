@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType, PlayerState, AuthenticatedAccount } from "../types";
+import { PlayerType, PlayerState, AuthenticatedAccount, TournamentSocket } from "../types";
 import { secureApiCall } from "../jwt/secureApiCall";
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -15,16 +15,19 @@ type AccountContextType =
 	setTriggerFetchAccounts: Dispatch<SetStateAction<boolean>>;
 	isPlaying: PlayerState;
 	setIsPlaying: Dispatch<SetStateAction<PlayerState>>;
+	Tsocket: WebSocket | null;
+	setTsocket: React.Dispatch<React.SetStateAction<WebSocket | null>>;
 };
 
 const AccountContext = createContext<AccountContextType | null>(null);
 
 export function AccountProvider({ children }: {children: ReactNode})
 {
-	const [ accounts,                 setAccounts]                 = useState<PlayerType[]>([]);
-	const [ loggedInAccounts,         setLoggedInAccounts]         = useState<AuthenticatedAccount[]>([]);
-	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     = useState(false);
-	const [ isPlaying,                setIsPlaying]                = useState(PlayerState.idle);
+	const [ accounts,                 setAccounts]                 	= useState<PlayerType[]>([]);
+	const [ loggedInAccounts,         setLoggedInAccounts]         	= useState<AuthenticatedAccount[]>([]);
+	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     	= useState(false);
+	const [ isPlaying,                setIsPlaying]                	= useState(PlayerState.idle);
+	const [ Tsocket, 					setTsocket] 				= useState<TournamentSocket | null>(null);
 	
 	useEffect(() =>
 	{
@@ -90,6 +93,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 			loggedInAccounts, setLoggedInAccounts,
 			triggerFetchAccounts, setTriggerFetchAccounts,
 			isPlaying, setIsPlaying,
+			Tsocket, setTsocket
 		}), [ accounts, loggedInAccounts, triggerFetchAccounts, isPlaying ]);
 	return (
 		<AccountContext.Provider value={value}>

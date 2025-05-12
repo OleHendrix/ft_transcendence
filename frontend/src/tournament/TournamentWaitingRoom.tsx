@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } 			from 'react';
 import { motion }											from 'framer-motion';
-import { useNavigate, useParams, useLocation, Outlet } 				from 'react-router-dom';
+import { useNavigate, useParams, useLocation, Outlet } 		from 'react-router-dom';
 import { PlayerData, TournamentData }						from '../types';
 import { useAccountContext } 								from '../contexts/AccountContext';
 import Chat 												from "../chat/Chat"
@@ -16,17 +16,17 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function TournamentWaitingRoom() 
 {
-	const { loggedInAccounts, setIsPlaying } 												= useAccountContext();
+	const { loggedInAccounts, setIsPlaying, Tsocket, setTsocket } 												= useAccountContext();
 	const [ tournamentData, setTournamentData ] 											= useState<TournamentData | null>(null);
 	// const [ isLeaving, setIsLeaving ]														= useState(false);
 	const [ countdown, setCountdown ]														= useState(0);
 	const navigate 																			= useNavigate();
 	const { id }																			= useParams();						//Haalt tournamentId uit de params
 	let matchCounter 																		= 1;								//Nodig voor bracketgame nummering, moet nog naar gekeken worden
-	const isNavigatingToGame 																= useRef(false);
-	const socketRef 																		= useRef<WebSocket | null>(null);
+	const isNavigatingToGame 																= useRef(false);				
 	useGetTournamentData({ id: id!, setTournamentData });
-	
+	const socketRef																			= useRef<WebSocket | null>(null);
+
 	useEffect(() =>
 	{
 		const player = loggedInAccounts[0];
@@ -35,51 +35,30 @@ export default function TournamentWaitingRoom()
 			console.log("returning from socketuseffect");
 			return;
 		}
-
-		async function findTournamentSocket()
+		if (!Tsocket)
 		{
-			try 
-			{
-				console.log(`looking for ${player.id}'s socket in tournament ${id}`);
-				const response = await axios.get(`${API_URL}/api/find-tournament-socket?playerId=${player.id}&id=${id}`)
-				if (!response.data.found)
-				{
-					socketRef.current = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
-					socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
-				}
-				if (response.data.found)
-				{
-					socketRef.current = response.data.socket;
-				}
-			}
-			catch (error)
-			{
-				console.log(error);
-			}
-		} findTournamentSocket();
+			socketRef.current = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
+			socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
+			setTsocket(socketRef.current);
+		}
 		return () => 
 		{
 			if (!isNavigatingToGame.current)
 			{
-				if (socketRef.current)
+				if (Tsocket)
 				{
 					console.log("UNMOUNT: cleaning socket connection");
+					Tsocket.close();
+					setTsocket(null);
+				}
+				if (socketRef.current)
+				{
+					console.log("CLOSING ORIGINAL SOCKET");
 					socketRef.current.close();
 				}
 			}
 		};
 	}, [loggedInAccounts]);
-
-	useEffect(() => {
-		const handleBeforeUnload = () => {
-			if (socketRef.current) {
-				socketRef.current.close();
-			}
-		};
-	
-		window.addEventListener("beforeunload", handleBeforeUnload);
-		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-	}, []);
 	
 
 	const rounds = useMemo(() =>

@@ -17,10 +17,10 @@ export async function leaveTournament(fastify: FastifyInstance)
 			if (socket.playerId === playerId)
 			{
 				console.log("433333333");
-				if (socket.readyState === WebSocket.OPEN)
+				if (socket.socket.readyState === WebSocket.OPEN)
 				{
 					console.log("what");
-					socket.close();
+					socket.socket.close();
 				}
 				else
 				{
@@ -35,7 +35,7 @@ export async function leaveTournament(fastify: FastifyInstance)
 		console.log(tournament.sockets.size);
 
 		const allSocketsDisconnected = Array.from(tournament.sockets).every(socket =>
-			socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING
+			socket.socket.readyState === WebSocket.CLOSED || socket.socket.readyState === WebSocket.CLOSING
 		);
 
 		if (allSocketsDisconnected)

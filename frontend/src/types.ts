@@ -190,7 +190,8 @@ export interface TournamentLobby
 
 import type { WebSocket } from 'ws';
 
-export type TournamentSocket = {
+export type TournamentSocket =
+{
 	playerId: number;
 	socket: WebSocket;
 };
