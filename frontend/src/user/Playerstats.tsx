@@ -39,18 +39,23 @@ import { Line } from 'react-chartjs-2';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function ShowHistoryGraph({sorted} : {sorted: MatchHistory[]})
+function ShowHistoryGraph({matchHistory, selectedAccount} : {matchHistory: MatchHistory[], selectedAccount: PlayerType})
 {
 	let history: number[] = [];
-	let labels: number[] = [];
-	for (let maxLen = 15, i = maxLen > sorted.length ? 0 : sorted.length - maxLen; i < sorted.length; i++) {
-		const match = sorted[i];
-		history.push(match.p1Elo);
+	let labels:  number[] = [];
+
+	let i = matchHistory.length - 15;
+	if (i < 0) {
+		i = 0;
+	}
+
+	for (; i < matchHistory.length; i++) {
+		history.push(matchHistory[i].p1Elo);
 		labels.push(i);
 	}
-	// history.push(match.p1Elo);
-	// labels.push(i);
-	sorted[0]
+	history.push(selectedAccount.elo);
+	labels.push(i);
+
 	const data = {
 		labels: labels,
 		datasets: [
@@ -165,7 +170,7 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 	if (player[stat] === null)
 		return "Play a match to see ranking";
 	const [worseThan, total] = calcWorseThan(player, stat, accounts);
-	const percentile = total === 0 ? 0 : toPercentage((worseThan / total) * 100, 1);
+	const percentile = toPercentage((worseThan / total) * 100, 1);
 	return `Top ${percentile}% - #${worseThan + 1}`
 }
 
@@ -345,7 +350,7 @@ function PlayerStats()
 						</div>
 					</div>
 
-					{selectedAccount && <ShowHistoryGraph sorted={sortedMatchHistory as MatchHistory[]}/>}
+					{selectedAccount && <ShowHistoryGraph matchHistory={matchHistory as MatchHistory[]} selectedAccount={selectedAccount as PlayerType}/>}
 				</div>
 			</motion.div>
 		</ModalWrapper>
