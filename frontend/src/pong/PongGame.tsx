@@ -6,7 +6,7 @@ import { useAccountContext } from '../contexts/AccountContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatTime, ParseResult } from './pongUtils';
 import { usePongContext } from '../contexts/PongContext';
-import { useNavigate, useNavigationType, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { IoArrowUndoOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
 import { isBrowser, isMobile, isTablet } from "react-device-detect";
 
@@ -17,7 +17,10 @@ function PongGame()
 {
 	const { loggedInAccounts, setIsPlaying } 					= useAccountContext();
 	const { pongState: pong, setPongState, match, setMatch }	= usePongContext();
+	const location												= useLocation();
 	const navigate												= useNavigate();
+	const navigationType										= useNavigationType();
+	const firstRender 											= useRef(true);
 
 	const isOnPC = !(isMobile || isTablet);
 
@@ -25,11 +28,20 @@ function PongGame()
 	const keysPressed       = useRef<{ [key: string]: boolean }>({});
 	const mobileKeysPressed = useRef<{ [key: string]: boolean }>({});
 
+	function navigateBack() {
+		if (match.tournamentId === -1) {
+			navigate('/', { replace: true });
+		} else {
+			navigate(-1);
+		}
+	}
+
 	useEffect(() => {
 		if (loggedInAccounts.length === 0) {
-			leaveMatch(undefined);
+			navigateBack()
 			return;
 		}
+
 		const socket = new WebSocket(`${WS_URL}/pong`);
 		socketRef.current = socket;
 
@@ -38,16 +50,17 @@ function PongGame()
 		const handleUnload = () => {
 			try {
 				socket.close();
-				leaveMatch(loggedInAccounts[0].id);
+				navigateBack();
 			} catch (error) {
 				console.log(error);
 			}
 		};
-		const handlePopState = () => {
-			leaveMatch(loggedInAccounts[0]?.id);
-		};
+		// const handlePopState = () => {
+		// 	console.log("popstate")
+		// 	leaveMatch(loggedInAccounts[0]?.id);
+		// };
 		window.addEventListener("beforeunload", handleUnload);
-		window.addEventListener("popstate",     handlePopState);
+		// window.addEventListener("popstate",     handlePopState);
 		window.addEventListener("keydown",      handleKeyDown);
 		window.addEventListener("keyup",        handleKeyUp);
 
@@ -75,11 +88,12 @@ function PongGame()
 
 		return () => {
 			window.removeEventListener("beforeunload", handleUnload);
-			window.removeEventListener("popstate",     handlePopState);
+			// window.removeEventListener("popstate",     handlePopState);
 			window.removeEventListener("keydown",      handleKeyDown);
 			window.removeEventListener("keyup",        handleKeyUp);
 
 			clearInterval(interval);
+			leaveMatch(loggedInAccounts[0]?.id);
 		};
 	}, []);
 
@@ -89,11 +103,6 @@ function PongGame()
 			axios.post(`${API_URL}/pong/delete`, { userID: userID }).catch((error) => {
 				// not printing shit here because this always happens when refreshing :)
 			});
-		}
-		if (match.tournamentId === -1) {
-			navigate('/', { replace: true });
-		} else {
-			navigate(-1);
 		}
 	}
 
@@ -162,7 +171,7 @@ function PongGame()
 		<>
 			<div className='fixed inset-0 bg-[#222222] w-screen h-screen flex flex-col'>
 				<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
-					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => leaveMatch(loggedInAccounts[0].id)}>
+					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => navigateBack()}>
 						<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-30 hover:opacity-70" />
 					</motion.button>
 					<div className='absolute left-[25%] text-2xl opacity-50'>
@@ -254,7 +263,7 @@ function PongGame()
 									<motion.button className="pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
 										whileHover={{ scale: 1.03 }}
 										whileTap={{ scale: 0.97 }}
-										onClick={() => { leaveMatch(loggedInAccounts[0].id) }}>Back To Home
+										onClick={() => { navigateBack() }}>Back To Home
 									</motion.button>
 								</>
 								}
@@ -262,7 +271,7 @@ function PongGame()
 									<motion.button className="pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
 										whileHover={{ scale: 1.03 }}
 										whileTap={{ scale: 0.97 }}
-										onClick={() => { leaveMatch(loggedInAccounts[0].id) }}>Back To Tournament
+										onClick={() => { navigateBack() }}>Back To Tournament
 									</motion.button>
 								}
 							</div>
