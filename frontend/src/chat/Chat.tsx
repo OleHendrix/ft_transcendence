@@ -114,7 +114,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 			</button>
 
 			<ChatHeader />
-			<MessageList/>
+			<MessageList />
 		</div>
 	</div>
 );
@@ -266,11 +266,11 @@ function MessageList()
 				const isFriendRequest = message.content === "::friendRequest::";
 				const isSender = loggedInAccounts[0]?.id === message.senderId;
 				if (isGameInvite)
-					return <GameInvite message={message} isSender={isSender} />;
+					return <GameInvite key={message.id} message={message} isSender={isSender} />;
 				else if (isFriendRequest)
-					return <FriendRequest message={message} isSender={isSender} />;
+					return <FriendRequest key={message.id} message={message} isSender={isSender} />;
 				else
-					return <DefaultMessage message={message} isSender={isSender} />;
+					return <DefaultMessage key={message.id} message={message} isSender={isSender} />;
 			})}
 			{isTyping && <IsTypingBubble isTyping={isTyping} />}
 			<div ref={messagesEndRef} />
