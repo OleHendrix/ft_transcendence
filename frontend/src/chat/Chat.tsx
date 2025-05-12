@@ -63,7 +63,7 @@ function Chat()
 	{
 		if (!chatSessionId) return;
 
-		console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
+		// console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
 		const socket = new WebSocket(`${WS_URL}/ws/chat?chatSessionId=${chatSessionId}`);
 
 		socket.onmessage = function(event)
@@ -73,7 +73,7 @@ function Chat()
 				setIsTyping(message.isTyping);
 			else
 			{
-				console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
+				// console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
 				setMessageReceived(true);
 				setIsTyping('');
 			}
@@ -434,7 +434,7 @@ function MessageInput()
 			});
 			if (response.data.success)
 			{
-				console.log("MessageInput: setMessageReceived(true)");
+				// console.log("MessageInput: setMessageReceived(true)");
 				setMessageReceived(true);
 			}
 			target.value = '';

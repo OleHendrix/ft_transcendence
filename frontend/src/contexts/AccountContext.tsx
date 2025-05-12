@@ -47,8 +47,6 @@ export function AccountProvider({ children }: {children: ReactNode})
 					{
 						const parsed = JSON.parse(savedLoggedInAccounts);
 						setLoggedInAccounts(parsed);
-						if (parsed.length === 1)
-							socket = new WebSocket(`${WS_URL}/ws/login?userId=${parsed[0].id}`);
 					}
 					else
 						localStorage.removeItem('loggedInAccounts');
@@ -84,12 +82,6 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		} fetchAccounts();
 		setTriggerFetchAccounts(false);
-
-		return () => 
-		{
-			if (socket && !isRefreshing)
-				socket.close();
-		}
 	}, [ triggerFetchAccounts ])
 
 	const value = useMemo(() => (

@@ -1,19 +1,33 @@
 import { motion } 								from 'framer-motion';
 import { useNavigate } 							from 'react-router-dom';
 import { useAccountContext } 					from '../contexts/AccountContext';
-import { useState } 							from 'react';
+import { useEffect, useState } 							from 'react';
 import ModalWrapper 							from "../utils/ModalWrapper";
 import { TournamentLobby } 						from '../types';
-import { createTournament, useFetchLobbies } 	from './utilsFunctions';
+import { createTournament } 	from './utilsFunctions';
 import CloseButton 								from '../utils/CloseButton';
 import { StyledButton } 						from '../user/utilsComponents';
+const API_URL = import.meta.env.VITE_API_URL;
+import axios from 'axios';
 
 export default function TournamentMenu()
 {
 	const { loggedInAccounts } 		= useAccountContext();
 	const [ lobbies, setLobbies ] 	= useState<TournamentLobby[]>([]);
 	const navigate					= useNavigate();
-	useFetchLobbies(setLobbies);	//Fetched de lobbies en set het in de state
+	
+	useEffect(() => {
+		const fetchLobbies = async () => {
+			const response = await axios.get(`${API_URL}/api/get-tournament-lobbies`);
+			setLobbies(response.data);
+		};
+	
+		fetchLobbies();
+		const interval = setInterval(fetchLobbies, 1000);
+	
+		return () => clearInterval(interval);
+	}, []);
+	
 
 	return (
 		<ModalWrapper className='bg-black/60'>

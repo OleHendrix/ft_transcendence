@@ -11,7 +11,7 @@ export async function leaveTournament(fastify: FastifyInstance)
 		let tournament = tournamentLobbies.get(id);
 		if (!tournament)
 			return reply.status(500).send({ error: `player ${playerId} tried to leave invalid tournamentid: ${id}` });
-		// console.log(tournament.sockets)
+
 		for (let socket of tournament.sockets)
 		{
 			if (socket.playerId === playerId)

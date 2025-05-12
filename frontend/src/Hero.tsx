@@ -215,8 +215,6 @@ function Hero()
 {
 	const { isPlaying, setIsPlaying } = useAccountContext();
 
-	console.log(isPlaying);
-
 	return(
 		<>
 			<div className={`w-full flex flex-col lg:flex-row min-h-[calc(100vh-8vh)] justify-between items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>

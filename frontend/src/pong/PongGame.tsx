@@ -44,9 +44,9 @@ function PongGame()
 				console.log(error);
 			}
 		};
-		// const handlePopState = () => {
-		// 	leaveMatch(loggedInAccounts[0]?.id);
-		// };
+		const handlePopState = () => {
+			leaveMatch(loggedInAccounts[0]?.id);
+		};
 		window.addEventListener("beforeunload", handleUnload);
 		// window.addEventListener("popstate",     handlePopState);
 		window.addEventListener("keydown",      handleKeyDown);
@@ -79,6 +79,7 @@ function PongGame()
 			window.removeEventListener("popstate",     handlePopState);
 			window.removeEventListener("keydown",      handleKeyDown);
 			window.removeEventListener("keyup",        handleKeyUp);
+			leaveMatch(loggedInAccounts[0].id);
 
 			clearInterval(interval);
 		};
@@ -92,16 +93,17 @@ function PongGame()
 		// 	navigate('/', { replace: true });
 		// }
 		setIsPlaying(PlayerState.idle);
-		if (userID) {
+		if (userID)
+		{
 			axios.post(`${API_URL}/pong/delete`, { userID: userID }).catch((error) => {
 				// not printing shit here because this always happens when refreshing :)
 			});
 		}
-		if (match.tournamentId === -1) {
-			navigate('/', { replace: true });
-		} else {
-			navigate(-1);
-		}
+		// if (match.tournamentId === -1) {
+		// 	navigate('/', { replace: true });
+		// } else {
+		// 	navigate(-1);
+		// }
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);

@@ -8,6 +8,7 @@ import { manageTournament } 	from "./manageTournament";
 import { leaveTournament } 		from "./leaveTournament";
 import { rehostTournament } 	from "./rehostTournament";
 import { PrismaClient } 		from ".prisma/client";
+import { findTournamentSocket } from "./findTournamentSocket";
 
 export let tournamentLobbies = new Map<number, TournamentData>();
 
@@ -20,4 +21,5 @@ export async function setupTournament(fastify: FastifyInstance) {
 	await manageTournament(fastify);
 	await leaveTournament(fastify);
 	await rehostTournament(fastify);
+	await findTournamentSocket(fastify);
 }

@@ -33,18 +33,6 @@ export async function createTournament({ maxPlayers, loggedInAccounts, navigate 
 	}
 }
 
-export async function useFetchLobbies(setLobbies: (lobbies: TournamentLobby[]) => void)
-{
-	try
-	{
-		const response = await axios.get(`${API_URL}/api/get-tournament-lobbies`);
-		setLobbies(response.data);
-	}
-	catch (error)
-	{
-		console.log(error);
-	}
-}
 
 interface useGetTournamentDataProps
 {
@@ -79,7 +67,7 @@ interface socketOnMessageProps
 	event: 				MessageEvent;
 }
 
-export function socketOnMessage({ playerId, playerUsername, tournamentId, setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event }: socketOnMessageProps)
+export function socketOnMessage({ playerId, setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event }: socketOnMessageProps)
 {
 	try
 	{
@@ -102,9 +90,8 @@ export function socketOnMessage({ playerId, playerUsername, tournamentId, setTou
 				if (count < 0)
 				{
 					clearInterval(interval);
-					setIsPlaying(PlayerState.playing); // start game
+					setIsPlaying(PlayerState.playing);
 					isNavigatingToGame.current = true;
-					// navigate('./pong-game');
 					navigate('/pong-game');
 				}
 			}, 1000);
@@ -114,40 +101,6 @@ export function socketOnMessage({ playerId, playerUsername, tournamentId, setTou
 	{
 		console.error("Failed to parse WebSocket message", err);
 	}	
-}
-
-interface handleCloseProps
-{
-	isLeaving: 				boolean;
-	setIsLeaving: 			(isLeaving: boolean) => void;
-	loggedInAccountsRef:	React.MutableRefObject<AuthenticatedAccount[]>;
-	tournamentDataRef: 		React.MutableRefObject<TournamentData | null>;
-	isNavigatingToGame: 	React.MutableRefObject<boolean>;
-	setIsLeavingRef: 		React.MutableRefObject<(isLeaving: boolean) => void>;
-	id: 					string;
-}
-
-export async function handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id }: handleCloseProps)
-{
-	if (isLeaving) 						return; // protection agains double clicks
-	if (!tournamentDataRef.current) 	return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
-	if (isNavigatingToGame.current)		return; 
-
-	setIsLeavingRef.current(true);
-	try
-	{
-		if (loggedInAccountsRef.current[0].id === tournamentDataRef.current?.hostId && tournamentDataRef.current.players.length > 1)
-			await axios.post(`${API_URL}/api/rehost-tournament`, {id: Number(id)});
-		await axios.post(`${API_URL}/api/leave-tournament`, { playerId: loggedInAccountsRef.current[0].id, id: Number(id)});
-	}
-	catch (error)
-	{
-		console.log(error);
-	} 
-	finally
-	{
-		setIsLeaving(false);
-	}
 }
 
 interface generateBracketProps

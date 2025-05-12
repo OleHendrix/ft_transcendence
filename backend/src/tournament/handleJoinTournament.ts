@@ -27,7 +27,10 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		for (let socket of tournament.sockets)
 		{
 			if (socket.playerId === playerId)
-				return ;
+			{
+				connection.close();
+				return;
+			}
 		}
 		// Voeg nieuwe socket toe
 		tournament.sockets.add(connection);
@@ -37,11 +40,10 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		return;
 	}
 	if (tournament.players.length >= tournament.maxPlayers) {
-		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`); //TODO test this
+		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`);
 		connection.close();
 		return;
 	}
-  
 
 	const player: PlayerData = {
 		id: playerId,
@@ -57,7 +59,7 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	{
 		console.log(`Cleaning up closed socket for player ${connection.playerId}`);
 
-			if (tournament.players.length < 2)
+			if (tournament.players.length < 2 || tournament.hostId !== playerId)
 				console.log(`rehost-tournament:ERROR:rehosting_tournamentId"":NOT_ENOUGH_PLAYERS_TO_REHOST`);
 			else
 			{
@@ -70,17 +72,16 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 				}
 			}
 			tournament.sockets.delete(connection);
+			console.log(tournament.sockets.size);
 			if (tournament.matchRound === 1)
 				tournament.players = tournament.players.filter(player => player.id !== playerId);
 	
-			if (tournament.players.length === 0)
+			if (tournament.sockets.size === 0)
 			{
 				tournamentLobbies.delete(tournamentId);
 				return ;
 			}
 			broadcastTournamentUpdate(tournament.tournamentId, "DATA");
-
 	});
-
 	broadcastTournamentUpdate(tournamentId, "DATA");
 }
