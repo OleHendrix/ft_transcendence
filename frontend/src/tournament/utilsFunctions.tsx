@@ -195,6 +195,8 @@ interface stillPlayingProps
 
 export function stillPlaying({ tournamentData }: stillPlayingProps)
 {
+	if (tournamentData?.winner)
+		return false;
 	const currentRound = tournamentData?.rounds?.[tournamentData.roundIdx] || [];
 	const anyPlaying = currentRound.some(match => match.state.result === Result.PLAYING);
 

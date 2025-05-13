@@ -168,6 +168,7 @@ import type { WebSocket } from 'ws';
 
 export type TournamentSocket = {
 	playerId: number;
+	playerUsername: string;
 	socket: WebSocket;
 };
 

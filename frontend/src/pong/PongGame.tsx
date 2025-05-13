@@ -27,8 +27,13 @@ function PongGame()
 
 	useEffect(() =>
 	{
-		if (loggedInAccounts.length === 0) {
-			leaveMatch(undefined);
+		if (loggedInAccounts.length === 0)
+		{
+			// leaveMatch(undefined);
+			if (match.tournamentId !== -1) 
+				navigate(-1);
+			else
+				navigate('/', { replace: true });
 			return;
 		}
 		const socket = new WebSocket(`${WS_URL}/pong`);
@@ -36,11 +41,15 @@ function PongGame()
 
 		const handleKeyDown = (event: KeyboardEvent) => keysPressed.current[event.key] = true;
 		const handleKeyUp   = (event: KeyboardEvent) => delete keysPressed.current[event.key];
-		const handleUnload = () => {
-			try {
-				socket.close();
-				// leaveMatch(loggedInAccounts[0].id);
-			} catch (error) {
+		const handleUnload = () => 
+		{
+			try
+			{
+				leaveMatch(loggedInAccounts[0].id);
+
+			} 
+			catch (error)
+			{
 				console.log(error);
 			}
 		};
@@ -99,6 +108,7 @@ function PongGame()
 				// not printing shit here because this always happens when refreshing :)
 			});
 		}
+		socketRef.current?.close();
 		// if (match.tournamentId === -1) {
 		// 	navigate('/', { replace: true });
 		// } else {
