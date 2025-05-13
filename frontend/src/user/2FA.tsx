@@ -3,7 +3,7 @@ import axios from "axios";
 import { AuthenticatedAccount, PlayerType } from "../types";
 import { EditIcon, StyledButton } from "./utilsComponents";
 import { secureApiCall } from "../jwt/secureApiCall";
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../utils/network';
 
 interface TwoFAProps
 {

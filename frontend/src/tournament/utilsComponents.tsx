@@ -4,7 +4,7 @@ import { TbTournament } 		from "react-icons/tb";
 import axios					from "axios";
 import { BiRocket } 			from "react-icons/bi";
 import BackgroundTournament 	from '../../assets/BackgroundTournament.svg';
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../utils/network';
 
 export function WinnerMessage({ username }: {username: string})
 {

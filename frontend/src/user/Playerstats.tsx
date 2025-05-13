@@ -37,7 +37,7 @@ ChartJS.register(
 );
 import { Line } from 'react-chartjs-2';
 
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../utils/network';
 
 function ShowHistoryGraph({matchHistory, selectedAccount} : {matchHistory: MatchHistory[], selectedAccount: PlayerType})
 {

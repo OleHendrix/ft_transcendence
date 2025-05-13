@@ -10,7 +10,7 @@ import { generateBracket, handleClose, socketOnMessage } 	from './utilsFunctions
 import { stillPlaying, useGetTournamentData } 				from './utilsFunctions';
 import CloseButton 											from '../utils/CloseButton';
 import { WinnerMessage, Rounds, TournamentButton, startTournament, startNextRound, BackgroundImage } 	from './utilsComponents';
-const WS_URL = import.meta.env.VITE_WS_URL;
+import { WS_URL } from '../utils/network';
 
 export default function TournamentWaitingRoom() 
 {

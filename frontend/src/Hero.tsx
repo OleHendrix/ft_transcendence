@@ -10,8 +10,8 @@ import { useAccountContext } from "./contexts/AccountContext";
 import "./css/ponganimation.css";
 import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
-const API_URL = import.meta.env.VITE_API_URL;
-const WS_URL = import.meta.env.VITE_WS_URL;
+import { API_URL } from './utils/network';
+import { WS_URL } from './utils/network';
 
 function SimplePong()
 {

@@ -2,7 +2,7 @@ import axios from "axios";
 import { useAccountContext } from "../contexts/AccountContext";
 import { useLoginContext } from "../contexts/LoginContext";
 import { SignUpFormType } from "../types";
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../utils/network';
 
 export function useCheckSubmit()
 {

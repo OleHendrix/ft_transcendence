@@ -8,8 +8,8 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { secureApiCall } from '../jwt/secureApiCall';
-const API_URL = import.meta.env.VITE_API_URL;
-const WS_URL = import.meta.env.VITE_WS_URL;
+import { API_URL } from '../utils/network';
+import { WS_URL } from '../utils/network';
 
 interface MessageProps
 {

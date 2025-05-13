@@ -3,7 +3,7 @@ import { AuthenticatedAccount, PlayerType, SignUpFormType } from "../types";
 import axios from "axios";
 import { useEffect } from "react";
 import { secureApiCall } from "../jwt/secureApiCall";
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../utils/network';
 
 interface UseGetAccountProps
 {

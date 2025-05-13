@@ -10,8 +10,8 @@ import { useLocation, useNavigate, useNavigationType, useParams } from 'react-ro
 import { IoArrowUndoOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
 import { isBrowser, isMobile, isTablet } from "react-device-detect";
 
-const API_URL = import.meta.env.VITE_API_URL;
-const WS_URL = import.meta.env.VITE_WS_URL;
+import { API_URL } from '../utils/network';
+import { WS_URL } from '../utils/network';
 
 function PongGame() 
 {

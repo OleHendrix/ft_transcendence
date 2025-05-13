@@ -2,8 +2,8 @@ import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, 
 import { PlayerType, PlayerState, AuthenticatedAccount } from "../types";
 import { secureApiCall } from "../jwt/secureApiCall";
 import axios from 'axios';
-const API_URL = import.meta.env.VITE_API_URL;
-const WS_URL = import.meta.env.VITE_WS_URL;
+import { API_URL } from '../utils/network';
+import { WS_URL } from '../utils/network';
 
 type AccountContextType = 
 {
