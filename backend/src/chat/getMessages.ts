@@ -28,7 +28,11 @@ export default async function getMessages(server: FastifyInstance, prisma: Prism
 	// })
 
 
-	server.get("/api/get-messages", async (request, reply) =>
+	server.get('/api/get-messages',
+		{
+			preHandler: server.authenticate
+		},
+		async (request, reply) =>
 	{
 		try {
 			const { senderId, receiverId } = request.query as { senderId: string; receiverId: string };

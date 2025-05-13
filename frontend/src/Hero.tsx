@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useNavigationType } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import axios from "axios";
 import Players from "./Players";
 import { RiGamepadLine } from "react-icons/ri";
@@ -28,6 +28,7 @@ function SimplePong()
 
 let socket: WebSocket | null = null;
 let queueStartTime = 0;
+let forwardNav = false;
 
 export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) => void, navigate: ReturnType<typeof useNavigate>)
 {
@@ -46,6 +47,7 @@ export function startQueue(user: QueueData, setIsPlaying: (state: PlayerState) =
 		if (event.data === "Starting match")
 		{
 			setIsPlaying(PlayerState.playing);
+			forwardNav = true;
 			navigate('/pong-game');
 		}
 	});
@@ -58,24 +60,26 @@ export function Queue()
 	const navigate = useNavigate();
 	const navigationType = useNavigationType();
 	const [queueTime, setQueueTime] = useState(0);
-	const { loggedInAccounts, setIsPlaying } = useAccountContext();
+	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
 
 	function endQueue(setIsPlaying: (state: PlayerState) => void)
 	{
 		queueStartTime = 0;
-		setIsPlaying(PlayerState.idle);
-		if (socket !== null)
-			{
-				socket.close();
-				socket = null;
-			}
-		navigate('/', { replace: true });
+		if (forwardNav === false) {
+			setIsPlaying(PlayerState.idle);
+		}
+		forwardNav = false;
+		if (socket !== null) {
+			socket.close();
+			socket = null;
+		}
 	}
 
 	useEffect(() => 
 	{
-		if (loggedInAccounts.length === 0) {
-			endQueue(setIsPlaying);
+		// yeets user back upon refresh or when they leave a match entered via queue
+		if (loggedInAccounts.length === 0 || navigationType	=== "POP") {
+			navigate('/', { replace: true });
 		}
 		const interval = setInterval(() =>
 		{
@@ -86,14 +90,13 @@ export function Queue()
 		}, 100);
 
 		const handleUnload = () => {
-			endQueue(setIsPlaying);
+			navigate('/', { replace: true });
 		};
 		window.addEventListener("beforeunload", handleUnload);
-		window.addEventListener("popstate",     handleUnload);
 		return () => {
+			endQueue(setIsPlaying);
 			clearInterval(interval);
 			window.removeEventListener("beforeunload", handleUnload);
-			window.removeEventListener("popstate",     handleUnload);
 		};
 	}, [])
 
@@ -110,7 +113,7 @@ export function Queue()
 						whileTap={ {scale: 0.97}}
 						onClick={() =>
 						{
-							endQueue(setIsPlaying)
+							navigate('/', { replace: true });
 						}}>Cancel
 					</motion.button>
 				</motion.div>
@@ -214,7 +217,6 @@ function Buttons()
 function Hero()
 {
 	const { isPlaying, setIsPlaying } = useAccountContext();
-
 	return(
 		<>
 			<div className={`w-full flex flex-col lg:flex-row min-h-[calc(100vh-8vh)] justify-between items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>

@@ -18,6 +18,7 @@ import { useAccountContext } from ".././contexts/AccountContext";
 import { useChatContext } from ".././contexts/ChatContext";
 import "../css/TypingLoader.css";
 import { AddGame } from "../Hero";
+import { secureApiCall } from "../jwt/secureApiCall";
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
 
@@ -33,14 +34,23 @@ function Chat()
 		{
 			try
 			{
-				const response = await axios.get(`${API_URL}/api/get-messages`,
-				{
-					params:
+				const userId = loggedInAccounts[0]?.id;
+				if (!userId) return;
+
+				const response = await secureApiCall(userId, (accessToken) =>
+					axios.get(`${API_URL}/api/get-messages`,
 					{
-						senderId: loggedInAccounts[0].id,
-						receiverId: receiverId
-					}
-				})
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						},
+						params:
+						{
+							senderId: userId,
+							receiverId,
+						},
+					})
+				);
 
 				if (response.data.success)
 				{
@@ -69,7 +79,7 @@ function Chat()
 		socket.onmessage = function(event)
 		{
 			const message = JSON.parse(event.data)
-			if (message.isTyping && message.isTyping !== loggedInAccounts[0].username && !isTyping)
+			if (message.isTyping && loggedInAccounts[0]?.username && message.isTyping !== loggedInAccounts[0]?.username && !isTyping)
 				setIsTyping(message.isTyping);
 			else
 			{
@@ -114,7 +124,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 			</button>
 
 			<ChatHeader />
-			<MessageList/>
+			<MessageList />
 		</div>
 	</div>
 );
@@ -196,14 +206,23 @@ function MessageList()
 		{
 			try
 			{
-				const response = await axios.get(`${API_URL}/api/is-blocked`, 
-				{
-					params:
+				const userId = loggedInAccounts[0]?.id;
+				if (!userId) return;
+
+				const response = await secureApiCall(userId, (accessToken) =>
+					axios.get(`${API_URL}/api/is-blocked`,
 					{
-						senderId: loggedInAccounts[0]?.id,
-						receiverId,
-					},
-				});
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						},
+						params:
+						{
+							senderId: userId,
+							receiverId,
+						},
+					})
+				);
 				setIsBlocked(response.data.blocked);
 				setAmIBlocker(response.data.amIBlocker); 
 			}
@@ -220,11 +239,22 @@ function MessageList()
 	{
 		try
 		{
-			const unblock = await axios.post(`${API_URL}/api/unblock-user`, 
-			{
-				receiverId,
-				senderId: loggedInAccounts[0]?.id
-			})
+			const userId = loggedInAccounts[0]?.id;
+			if (!userId) return;
+
+			const unblock = await secureApiCall(userId, (accessToken) =>
+				axios.post(`${API_URL}/api/unblock-user`, 
+				{
+					receiverId,
+					senderId: userId
+				},
+				{
+					headers:
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+				})
+			);
 			if (unblock.data.succes)
 			{
 				console.log("unBlockUser:Succes");
@@ -265,11 +295,11 @@ function MessageList()
 				const isFriendRequest = message.content === "::friendRequest::";
 				const isSender = loggedInAccounts[0]?.id === message.senderId;
 				if (isGameInvite)
-					return <GameInvite message={message} isSender={isSender} />;
+					return <GameInvite key={message.id} message={message} isSender={isSender} />;
 				else if (isFriendRequest)
-					return <FriendRequest message={message} isSender={isSender} />;
+					return <FriendRequest key={message.id} message={message} isSender={isSender} />;
 				else
-					return <DefaultMessage message={message} isSender={isSender} />;
+					return <DefaultMessage key={message.id} message={message} isSender={isSender} />;
 			})}
 			{isTyping && <IsTypingBubble isTyping={isTyping} />}
 			<div ref={messagesEndRef} />
@@ -316,13 +346,26 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 
 	const sendGameInvite = async () => 
 	{
-		try {
-			const response = await axios.post(`${API_URL}/api/send-message`, {
-					content: "::gameInvite::",
-					senderId: loggedInAccounts[0]?.id,
-					receiverId: receiverId,
-					status: 1 // pending invite
-			});
+		try
+		{
+			const userId = loggedInAccounts[0]?.id;
+			if (!userId) return;
+
+			const response = await secureApiCall(userId, (accessToken) =>
+				axios.post(`${API_URL}/api/send-message`,
+				{
+						content: "::gameInvite::",
+						senderId: userId,
+						receiverId: receiverId,
+						status: 1 // pending invite
+				},
+				{
+					headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+				})
+			);
 
 			if (response.data.success) {
 				console.log("SendGameInvite:succes");
@@ -356,10 +399,19 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 
 	const blockUser = async () => {
 		try {
-			const block = await axios.post(`${API_URL}/api/block-user`, {
-				receiverId,
-				senderId: loggedInAccounts[0]?.id
-			})
+			const block = await secureApiCall(loggedInAccounts[0]?.id, (accessToken) =>
+				axios.post(`${API_URL}/api/block-user`,
+				{
+					receiverId,
+					senderId: loggedInAccounts[0]?.id
+				},
+				{
+					headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+				})
+			);
 			if (block.data.succes) {
 				console.log("BlockUser:Succes");
 				setIsBlocked(true);
@@ -424,14 +476,26 @@ function MessageInput()
 
 		if (!message) return;
 
-		try {
-			const response = await axios.post(`${API_URL}/api/send-message`,
-			{
-				senderId: loggedInAccounts[0]?.id,
-				receiverId: receiverId,
-				content: message,
-				status: 0
-			});
+		try
+		{
+			const userId = loggedInAccounts[0]?.id;
+			if (!userId) return;
+
+			const response = await secureApiCall(userId, (accessToken) =>
+				axios.post(`${API_URL}/api/send-message`,
+				{
+					senderId: loggedInAccounts[0]?.id,
+					receiverId: receiverId,
+					content: message,
+					status: 0
+				},
+				{
+					headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+				})
+			);
 			if (response.data.success)
 			{
 				// console.log("MessageInput: setMessageReceived(true)");

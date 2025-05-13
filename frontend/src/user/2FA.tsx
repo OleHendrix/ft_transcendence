@@ -118,6 +118,7 @@ export function Enable2FA({loggedInAccounts, setSettingUp2FA, selectedAccount, s
 		{
 			const userId = selectedAccount?.id;
 			if (!userId) return;
+
 			const response = await secureApiCall(userId, (accessToken) =>
 				axios.post(`${API_URL}/api/auth/verify-setup-totp`, {token},
 				{

@@ -232,10 +232,10 @@ export function mirrorGame(match: Match): Match
 	let mirror = structuredClone(match);
 	let state = mirror.state;
 
-	[state.p1.pos.y, state.p2.pos.y] = [state.p2.pos.y, state.p1.pos.y];
+	[state.p1.pos.y,      state.p2.pos.y     ] = [state.p2.pos.y,      state.p1.pos.y     ];
 	[state.p1.lastBounce, state.p2.lastBounce] = [state.p2.lastBounce, state.p1.lastBounce];
-	[state.p1Score, state.p2Score] = [state.p2Score, state.p1Score];
-	[mirror.p1, mirror.p2] = [mirror.p2, mirror.p1];
+	[state.p1Score,       state.p2Score      ] = [state.p2Score,       state.p1Score      ];
+	[mirror.p1,           mirror.p2          ] = [mirror.p2,           mirror.p1          ];
 	if (state.result === Result.P1WON)
 		state.result = Result.P2WON
 	else if (state.result === Result.P2WON)
@@ -249,7 +249,7 @@ export function mirrorGame(match: Match): Match
 export function calculateNewElo(p1Elo: number, p2Elo: number, win: number)
 {
 	if (win === 0.5)
-		return p1Elo; //wont lose elo on draws as stoping a local game will cause a draw
+		return p1Elo; //wont lose elo on draws as stopping a local game will cause a draw
 	const expectedOutcome = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
 	return(Math.round(p1Elo + 24 * (win - expectedOutcome)));
 }

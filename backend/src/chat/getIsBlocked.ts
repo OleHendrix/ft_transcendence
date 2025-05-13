@@ -2,7 +2,12 @@ import { FastifyInstance } from "fastify";
 import { PrismaClient } from "@prisma/client";
 
 export default async function getIsBlocked(server: FastifyInstance, prisma: PrismaClient) {
-	server.get('/api/is-blocked', async (request, reply) => {
+	server.get('/api/is-blocked',
+		{
+			preHandler: server.authenticate
+		},
+		async (request, reply) =>
+	{
 		try {
 			const { senderId, receiverId } = request.query as { senderId: string; receiverId: string; };
 			const senderIdNum = parseInt(senderId, 10);

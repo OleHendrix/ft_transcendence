@@ -5,7 +5,11 @@ import { notifyClients } from "./createWebsocket";
 
 export default async function sendFriendship(server: FastifyInstance, prisma: PrismaClient)
 {
-	server.post('/api/update-friendship', async (request, reply) =>
+	server.post('/api/update-friendship',
+		{
+			preHandler: server.authenticate
+		},
+		async (request, reply) =>
 	{
 		const { senderId, receiverId, status, messageId } = request.body as { senderId: number; receiverId: number; status: number; messageId: number;};
 		try

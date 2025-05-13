@@ -7,6 +7,7 @@ import { useAccountContext } from '../contexts/AccountContext';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { secureApiCall } from '../jwt/secureApiCall';
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
 
@@ -24,27 +25,70 @@ export function GameInvite( {message, isSender} : MessageProps)
  
 	async function handleGameInviteResponse(messageId: number, status: number)
 	{
-		async function changeMsgStatus(newStatus: number) {
-			await axios.post(`${API_URL}/api/change-msg-status`, {
-					senderId: loggedInAccounts[0]?.id,
+		async function changeMsgStatus(newStatus: number)
+		{
+			const userId = loggedInAccounts[0]?.id;
+			if (!userId) return;
+
+			const response = await secureApiCall(userId, (accessToken) =>
+				axios.post(`${API_URL}/api/change-msg-status`, {
+					senderId: userId,
 					receiverId,
 					status: newStatus,
 					messageId,
-				});
+				},
+				{
+					headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+				})
+			);
 		}
 
 		try {
 			changeMsgStatus(status);
-			if (status === 2) {
-				const result = await axios.post(`${API_URL}/invite/accept`, { msgID: messageId, user: {id: loggedInAccounts[0].id , username: loggedInAccounts[0].username}});
+			if (status === 2)
+			{
+				const userId = loggedInAccounts[0].id;
+				if (!userId) return;
+
+				const result = await secureApiCall(userId, (accessToken) =>
+					axios.post(`${API_URL}/invite/accept`,
+					{
+						msgID: messageId,
+						user: {id: userId , username: loggedInAccounts[0].username }
+					},
+					{
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+					})
+				);
 				if (result.data === true) {
 					setIsPlaying(PlayerState.playing);
 					navigate('/pong-game');
 				} else {
 					changeMsgStatus(5);
 				}
-			} else if (status >= 3) {
-				await axios.post(`${API_URL}/invite/decline`, { msgID: messageId });
+			} else if (status >= 3)
+			{
+				const userId = loggedInAccounts[0].id;
+				if (!userId) return;
+
+				const result = await secureApiCall(userId, (accessToken) =>
+					axios.post(`${API_URL}/invite/decline`,
+					{
+						msgID: messageId
+					},
+					{
+						headers:
+						{
+							Authorization: `Bearer ${accessToken}`
+						}
+					})
+				);
 			}
 
 			setChatMessages((prevMessages) => // update localstorage 
@@ -109,13 +153,24 @@ export function FriendRequest( {message, isSender} : MessageProps)
 	{
 		try
 		{
-			const response = await axios.post(`${API_URL}/api/update-friendship`,
-			{
-				senderId: loggedInAccounts[0]?.id,
-				receiverId,
-				status: newStatus,
-				messageId
-			})
+			const userId = loggedInAccounts[0]?.id;
+			if (!userId) return;
+
+			const response = await secureApiCall(userId, (accessToken) =>
+				axios.post(`${API_URL}/api/update-friendship`,
+				{
+					senderId: userId,
+					receiverId,
+					status: newStatus,
+					messageId
+				},
+				{
+					headers:
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+				})
+			);
 		}
 		catch (error: any)
 		{

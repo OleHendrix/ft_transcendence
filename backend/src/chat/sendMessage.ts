@@ -6,7 +6,11 @@ import { notifyClients } from "./createWebsocket";
 
 export default async function sendMessage(server: FastifyInstance, prisma: PrismaClient)
 {
-	server.post('/api/send-message', async (request, reply) =>
+	server.post('/api/send-message',
+		{
+			preHandler: server.authenticate
+		},
+		async (request, reply) =>
 	{
 		const { senderId, receiverId, content, status } = request.body as { senderId: number; receiverId: number; content: string, status: number };
 

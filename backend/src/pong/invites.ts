@@ -68,13 +68,16 @@ function deleteBySocket(socket: WebSocket)
 
 export default function initInvite(fastify: FastifyInstance)
 {
-	fastify.post('/invite/accept', async (request, reply) =>
+	fastify.post('/invite/accept',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
 		const { msgID, user } = request.body as { msgID: number, user: PlayerType };
 
 		const socket = findSocket(msgID);
 		if (socket === undefined) return reply.code(500).send(false);
-		// TODO: check if sender is available
 		if (isInGame(senders.get(msgID)) === true)
 		{
 			return reply.code(200).send(false);
@@ -84,7 +87,11 @@ export default function initInvite(fastify: FastifyInstance)
 		return reply.code(200).send(true);
 	});
 
-	fastify.post('/invite/decline', async (request, reply) =>
+	fastify.post('/invite/decline',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
 		const { msgID } = request.body as { msgID: number };
 
@@ -95,20 +102,11 @@ export default function initInvite(fastify: FastifyInstance)
 		return reply.code(200).send(true);
 	});
 
-	fastify.post('/invite/cancel', async (request, reply) =>
-	{
-		const { msgID } = request.body as { msgID: number };
-
-		if (msgID === undefined) return reply.code(500).send(false);
-		deleteByMsgID(msgID);
-		return reply.code(200).send(true);
-	});
-
 	fastify.register( async function (fastify)
 	{
-		fastify.get("/invite/send", { websocket: true }, (connection, req) =>
+		fastify.get('/invite/send', { websocket: true }, (connection, req) =>
 		{
-			connection.on("message", (message) =>
+			connection.on('message', (message) =>
 			{
 				const data = JSON.parse(message.toString());
 				const [msgID, senderID] = [data.ID, data.senderID];
@@ -118,7 +116,7 @@ export default function initInvite(fastify: FastifyInstance)
 				senders.set(msgID, senderID);
 			});
 
-			connection.on("close", () =>
+			connection.on('close', () =>
 			{
 				deleteBySocket(connection);
 			});

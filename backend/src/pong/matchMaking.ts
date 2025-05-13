@@ -38,9 +38,9 @@ export default function initMatchMaking(fastify: FastifyInstance)
 {
 	fastify.register( async function (fastify)
 	{
-		fastify.get("/matchmake", { websocket: true }, (connection, req) =>
+		fastify.get('/matchmake', { websocket: true }, (connection, req) =>
 		{
-			connection.on("message", (message) =>
+			connection.on('message', (message) =>
 			{
 				const user: QueueData = JSON.parse(message.toString());
 				if (user.opponentID == Opponent.AI)
@@ -53,7 +53,7 @@ export default function initMatchMaking(fastify: FastifyInstance)
 				}
 			});
 
-			connection.on("close", () =>
+			connection.on('close', () =>
 			{
 				queue.delete(connection);
 			});

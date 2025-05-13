@@ -5,20 +5,23 @@ import path from 'path';
 
 export default async function deleteAccount(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post('/api/delete-account', async (request, reply) =>
+	fastify.post('/api/delete-account',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
-		const { username } = request.body as { username: string };
+		const { userId } = request.body as { userId: number };
 		try
 		{
-			const account = await prisma.account.findUnique({ where: { username } });
+			const account = await prisma.account.findUnique({ where: { id: userId } });
 			if (account?.avatar && account.avatar !== "")
 			{
 				const filePath = path.join(process.cwd(), account.avatar);
 				if (fs.existsSync(filePath))
 					fs.unlinkSync(filePath); 
 			}
-			const deleted = await prisma.account.delete({ where: { username } });
-			console.log(deleted);
+			const deleted = await prisma.account.delete({ where: { id: userId } });
 			return reply.send({ success: true});
 		}
 		catch (error)

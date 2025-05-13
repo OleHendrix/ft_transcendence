@@ -8,7 +8,7 @@ import getAccounts from "./getAccounts";
 import upload from "./upload";
 import checkValidation from "./checkValidation";
 import login from "./login";
-import cleanup from "./cleanup";
+
 import logout from "./logout";
 import updateAccount from "./updateAccount";
 import getAccountData from "./getAccountData";

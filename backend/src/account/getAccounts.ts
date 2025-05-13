@@ -4,10 +4,10 @@ import { PlayerType } from "../types/types"
 
 export default async function getAccounts(fastify: FastifyInstance, prisma: PrismaClient)
 {
-	fastify.post('/api/checkloggedinaccounts', async (request, reply) =>
+	fastify.post('/api/check-loggedin-accounts', async (request, reply) =>
 	{
-		const body = request.body as { savedLoggedInAccounts: string}
-		const savedLoggedInAccountsParse = JSON.parse(body.savedLoggedInAccounts) as { id: number}[]
+		const body = request.body as { savedLoggedInAccounts: string};
+		const savedLoggedInAccountsParse = JSON.parse(body.savedLoggedInAccounts) as { id: number}[];
 		const matchedAccounts = await prisma.account.findMany(
 		{
 			where: 
@@ -28,7 +28,6 @@ export default async function getAccounts(fastify: FastifyInstance, prisma: Pris
 		},
 		async (request, reply) =>
 	{
-		// const hostUrl = `${request.protocol}://${request.hostname}`;
 		try
 		{
 			let accounts = await prisma.account.findMany({ where: { NOT: { id: 1 } }, include: { matches: true }});
