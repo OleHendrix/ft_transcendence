@@ -2,7 +2,7 @@ import axios 																			from "axios";
 import type { MutableRefObject } 														from 'react';
 import { AuthenticatedAccount, PlayerData, PlayerState, PlayerType, Result, TournamentData, TournamentLobby } from "../types";
 import { NavigateFunction } 															from "react-router-dom";
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../utils/network';
 
 interface CreateTournamentProps
 {

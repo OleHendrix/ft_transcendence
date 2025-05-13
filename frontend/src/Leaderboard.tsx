@@ -9,7 +9,7 @@
 // import { IoMdClose } from 'react-icons/io';
 // import { GoTrophy } from "react-icons/go";
 // import ModalWrapper from './utils/ModalWrapper';
-// const API_URL = import.meta.env.VITE_API_URL;
+// import { API_URL } from '../network';
 
 // export function toPercentage(n: number, decimals: number): number
 // {
@@ -111,7 +111,7 @@ import axios from 'axios';
 import { IoMdClose } from 'react-icons/io';
 import { GoTrophy } from "react-icons/go";
 import { secureApiCall } from './jwt/secureApiCall';
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from './utils/network';
 
 
 export function toPercentage(n: number, decimals: number): number

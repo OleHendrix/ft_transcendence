@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAccountContext } from "./contexts/AccountContext";
 import { PlayerState } from "./types";
 import { PiUserListLight } from "react-icons/pi";
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from './utils/network';
 
 function Navbar()
 {

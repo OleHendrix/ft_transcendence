@@ -3,8 +3,8 @@ import React from "react";
 import { PlayerType, LoginFormType, LoginValidationType, AuthenticatedAccount } from "../types";
 import { motion } from 'framer-motion';
 import axios from "axios";
-const API_URL = import.meta.env.VITE_API_URL;
-const WS_URL = import.meta.env.VITE_WS_URL;
+import { API_URL } from '../utils/network';
+import { WS_URL } from '../utils/network';
 
 //Helper Functions
 

@@ -7,7 +7,7 @@ import { FiCamera } from 'react-icons/fi';
 import { AuthenticatedAccount, PlayerType } from '../types';
 import axios from 'axios';
 import { secureApiCall } from '../jwt/secureApiCall';
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../utils/network';
 
 interface HandleCropCompleteProps
 {	
