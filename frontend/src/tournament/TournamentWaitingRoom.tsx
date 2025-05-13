@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect, useRef } 			from 'react';
-import { motion }											from 'framer-motion';
-import { useNavigate, useParams, useLocation, Outlet } 		from 'react-router-dom';
+import { useNavigate, useParams } 							from 'react-router-dom';
 import { PlayerData, TournamentData }						from '../types';
 import { useAccountContext } 								from '../contexts/AccountContext';
 import Chat 												from "../chat/Chat"
@@ -9,23 +8,21 @@ import { MdAdminPanelSettings }								from "react-icons/md";
 import { generateBracket, socketOnMessage } 				from './utilsFunctions';
 import { stillPlaying, useGetTournamentData } 				from './utilsFunctions';
 import CloseButton 											from '../utils/CloseButton';
-import { WinnerMessage, Rounds, TournamentButton, startTournament, startNextRound, BackgroundImage } 	from './utilsComponents';
-import axios from 'axios';
+import { WinnerMessage, Rounds, TournamentButton, startTournament, startNextRound, BackgroundImage } 	from './utilsComponents';				
 const WS_URL = import.meta.env.VITE_WS_URL;
-const API_URL = import.meta.env.VITE_API_URL;
 
 export default function TournamentWaitingRoom() 
 {
-	const { loggedInAccounts, setIsPlaying, Tsocket, setTsocket } 												= useAccountContext();
-	const [ tournamentData, setTournamentData ] 											= useState<TournamentData | null>(null);
-	// const [ isLeaving, setIsLeaving ]														= useState(false);
+	const { loggedInAccounts, setIsPlaying, Tsocket, setTsocket, inTournament, setInTournament, tournamentData, setTournamentData } 	= useAccountContext();
 	const [ countdown, setCountdown ]														= useState(0);
 	const navigate 																			= useNavigate();
-	const { id }																			= useParams();						//Haalt tournamentId uit de params
-	let matchCounter 																		= 1;								//Nodig voor bracketgame nummering, moet nog naar gekeken worden
+	const { id }																			= useParams();						
+	let matchCounter 																		= 1;				
 	const isNavigatingToGame 																= useRef(false);				
-	useGetTournamentData({ id: id!, setTournamentData });
 	const socketRef																			= useRef<WebSocket | null>(null);
+	useGetTournamentData({ id: id!, setTournamentData, navigate });
+	const setTournamentDataRef = useRef(setTournamentData);
+	setTournamentDataRef.current = setTournamentData;
 
 	useEffect(() =>
 	{
@@ -35,11 +32,12 @@ export default function TournamentWaitingRoom()
 			console.log("returning from socketuseffect");
 			return;
 		}
-		if (!Tsocket)
+		if (!inTournament)
 		{
 			socketRef.current = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
-			socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
+			socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentDataRef, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
 			setTsocket(socketRef.current);
+			setInTournament(true);
 		}
 		return () => 
 		{
@@ -47,15 +45,17 @@ export default function TournamentWaitingRoom()
 			{
 				if (Tsocket)
 				{
-					console.log("UNMOUNT: cleaning socket connection");
+					// console.log("UNMOUNT: cleaning socket connection");
 					Tsocket.close();
 					setTsocket(null);
 				}
 				if (socketRef.current)
 				{
-					console.log("CLOSING ORIGINAL SOCKET");
+					// console.log("CLOSING ORIGINAL SOCKET");
 					socketRef.current.close();
+					socketRef.current = null;
 				}
+				setInTournament(false);
 			}
 		};
 	}, [loggedInAccounts]);
@@ -106,7 +106,7 @@ export default function TournamentWaitingRoom()
 							</ul>
 					</div>
 													  {/*Wanneer spelers nog in game zitten laat dan loader zien*/}
-				{stillPlaying({ tournamentData }) 	? <Loader /> 
+				{tournamentData && stillPlaying({ tournamentData }) 	? <Loader /> 
 				: tournamentData?.winner 			? <WinnerMessage username={tournamentData?.winner.username} />
 				: rounds.length > 0 				? <Rounds rounds={rounds} tournamentData={tournamentData} matchCounter={matchCounter} />
 				: 									null}

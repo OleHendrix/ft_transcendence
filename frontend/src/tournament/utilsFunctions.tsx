@@ -1,5 +1,5 @@
 import axios 																			from "axios";
-import type { MutableRefObject } 														from 'react';
+import { useEffect, type MutableRefObject } 														from 'react';
 import { AuthenticatedAccount, PlayerData, PlayerState, PlayerType, Result, TournamentData, TournamentLobby } from "../types";
 import { NavigateFunction } 															from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
@@ -38,20 +38,31 @@ interface useGetTournamentDataProps
 {
 	id: 				string;
 	setTournamentData: (tournamentData: TournamentData) => void;
+	navigate: 			NavigateFunction;
 }
 
-export async function useGetTournamentData({ id, setTournamentData }: useGetTournamentDataProps)
+export function useGetTournamentData({ id, setTournamentData, navigate }: useGetTournamentDataProps)
 {
-	try
+	useEffect(() =>
 	{
-		const response = await axios.get(`${API_URL}/api/tournament-data/${id}`);
-		if (response.data.success)
-			setTournamentData(response.data.tournament);
-	}
-	catch (error)
-	{
-		console.log(error);
-	}
+		let isMounted = true;
+		async function fetchData()
+		{
+			try
+			{
+				const response = await axios.get(`${API_URL}/api/tournament-data/${id}`);
+				if (response.data.success && isMounted)
+					setTournamentData(response.data.tournament);
+			}
+			catch (error)
+			{
+				console.log(error);
+			}
+		}
+		if (id)
+			fetchData();
+		return () => { isMounted = false; };
+	}, [id]);
 }
 
 interface socketOnMessageProps
@@ -59,7 +70,7 @@ interface socketOnMessageProps
 	playerId: 			number;
 	playerUsername: 	string;
 	tournamentId: 		number;
-	setTournamentData: 	(tournamentData: TournamentData) => void;
+	setTournamentDataRef: 	MutableRefObject<(tournamentData: TournamentData) => void>;
 	setCountdown: 		(countdown: number) => void;
 	setIsPlaying: 		(isPlaying: PlayerState) => void;
 	isNavigatingToGame: React.MutableRefObject<boolean>;
@@ -67,13 +78,13 @@ interface socketOnMessageProps
 	event: 				MessageEvent;
 }
 
-export function socketOnMessage({ playerId, setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event }: socketOnMessageProps)
+export function socketOnMessage({ playerId, setTournamentDataRef, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event }: socketOnMessageProps)
 {
 	try
 	{
 		const data = JSON.parse(event.data);
 		if (data.type === "DATA")
-			setTournamentData(data.tournament);
+			setTournamentDataRef.current(data.tournament);
 		if (data.type === "START_SIGNAL")	
 		{
 			const activeIds = data.data.activePlayerIds;
@@ -185,7 +196,8 @@ interface stillPlayingProps
 export function stillPlaying({ tournamentData }: stillPlayingProps)
 {
 	const currentRound = tournamentData?.rounds?.[tournamentData.roundIdx] || [];
-	const stillPlaying = currentRound.some(match => match.state.result === Result.PLAYING);
-	return stillPlaying;
+	const anyPlaying = currentRound.some(match => match.state.result === Result.PLAYING);
+
+	return anyPlaying;
 }
 

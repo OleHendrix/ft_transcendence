@@ -44,6 +44,7 @@ export function setResults(tournamentId: number, p1: number, p1score: number, p2
 
 	if (allMatchesFinished(tournament))
 	{
+		console.log("allMatchesFinished");
 		tournament.readyForNextRound = true;
 		broadcastTournamentUpdate(tournamentId, "DATA");
 	}

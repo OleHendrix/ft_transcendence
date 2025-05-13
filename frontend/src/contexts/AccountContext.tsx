@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType, PlayerState, AuthenticatedAccount, TournamentSocket } from "../types";
+import { PlayerType, PlayerState, AuthenticatedAccount, TournamentSocket, TournamentData } from "../types";
 import { secureApiCall } from "../jwt/secureApiCall";
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -17,6 +17,10 @@ type AccountContextType =
 	setIsPlaying: Dispatch<SetStateAction<PlayerState>>;
 	Tsocket: WebSocket | null;
 	setTsocket: React.Dispatch<React.SetStateAction<WebSocket | null>>;
+	inTournament: boolean;
+	setInTournament: Dispatch<SetStateAction<boolean>>;
+	tournamentData: TournamentData | null;
+	setTournamentData: Dispatch<SetStateAction<TournamentData | null>>;
 };
 
 const AccountContext = createContext<AccountContextType | null>(null);
@@ -27,11 +31,12 @@ export function AccountProvider({ children }: {children: ReactNode})
 	const [ loggedInAccounts,         setLoggedInAccounts]         	= useState<AuthenticatedAccount[]>([]);
 	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     	= useState(false);
 	const [ isPlaying,                setIsPlaying]                	= useState(PlayerState.idle);
-	const [ Tsocket, 					setTsocket] 				= useState<TournamentSocket | null>(null);
+	const [ Tsocket, 					setTsocket] 				= useState<WebSocket | null>(null);
+	const [ inTournament, 				setInTournament] 			= useState(false);
+	const [tournamentData, setTournamentData] = useState<TournamentData | null>(null);
 	
 	useEffect(() =>
 	{
-		let socket: WebSocket;
 		let isRefreshing = false;
 
 		window.addEventListener('beforeunload', () =>
@@ -93,8 +98,10 @@ export function AccountProvider({ children }: {children: ReactNode})
 			loggedInAccounts, setLoggedInAccounts,
 			triggerFetchAccounts, setTriggerFetchAccounts,
 			isPlaying, setIsPlaying,
-			Tsocket, setTsocket
-		}), [ accounts, loggedInAccounts, triggerFetchAccounts, isPlaying ]);
+			Tsocket, setTsocket,
+				inTournament, setInTournament,
+			tournamentData, setTournamentData
+		}), [ accounts, loggedInAccounts, triggerFetchAccounts, isPlaying, Tsocket, inTournament, tournamentData ]);
 	return (
 		<AccountContext.Provider value={value}>
 			{ children }
