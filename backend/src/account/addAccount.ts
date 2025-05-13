@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { PrismaClient } from '@prisma/client';
+import { checkLoginData } from "./checkValidation";
 import bcrypt from 'bcrypt';
 
 interface AddAccountRequest
@@ -23,12 +24,10 @@ export default async function addAccount(fastify: FastifyInstance, prisma: Prism
 			}
 		});
 		
-		if (existingAccount)
+		const check = await checkLoginData(prisma, username, email, existingAccount?.username, existingAccount?.email);
+		if (check !== null)
 		{
-			if (existingAccount.username === username)
-				return reply.status(400).send({ error: 'Username already exists' });
-			if (existingAccount.email === email)
-				return reply.status(400).send({ error: 'Email already exists' });
+			return reply.status(400).send({ error: check });
 		}
 		
 		const newAccount = await prisma.account.create(

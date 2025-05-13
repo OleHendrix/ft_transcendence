@@ -5,7 +5,7 @@ export function AlreadyLoggedInMessage()
 {
 	return (
 		<motion.div className="text-center text-sm text-[#ff914d] font-bold" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-			<p>You're already logged in!</p>
+			<p>This user is already logged in</p>
 		</motion.div>
 	)
 }
