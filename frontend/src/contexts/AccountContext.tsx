@@ -88,7 +88,16 @@ export function AccountProvider({ children }: {children: ReactNode})
 		return () => 
 		{
 			if (socket && !isRefreshing)
-				socket.close();
+			{
+				try
+				{
+					socket.close();
+				}
+				catch (error)
+				{
+					
+				}
+			}
 		}
 	}, [ triggerFetchAccounts ])
 
