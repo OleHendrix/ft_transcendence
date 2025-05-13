@@ -79,7 +79,7 @@ function Chat()
 		socket.onmessage = function(event)
 		{
 			const message = JSON.parse(event.data)
-			if (message.isTyping && message.isTyping !== loggedInAccounts[0].username && !isTyping)
+			if (message.isTyping && loggedInAccounts[0]?.username && message.isTyping !== loggedInAccounts[0]?.username && !isTyping)
 				setIsTyping(message.isTyping);
 			else
 			{
