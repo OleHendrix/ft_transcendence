@@ -11,6 +11,7 @@ import "./css/ponganimation.css";
 import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
 import Loader from './utils/Loader';
+import AnimatedBackground from './utils/AnimatedBackground';
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
 
@@ -104,7 +105,7 @@ export function Queue()
 	return (
 		<AnimatePresence>
 			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-				<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-full max-w-md relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+				<motion.div className="flex flex-col items-center bg-zinc-800 text-white p-8 gap-8 rounded-lg w-full max-w-md relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 					<div className="justify-center space-y-3">
 						<h1 className="block text-4xl font-medium text-center">Looking for a match...</h1>
 						<h1 className="block text-l font-medium text-gray-500 text-center">Queue time: {queueTime}s</h1>
@@ -221,9 +222,13 @@ function Buttons()
 function Hero()
 {
 	const { isPlaying, setIsPlaying } = useAccountContext();
+
 	return(
 		<>
-			<div className={`w-full flex flex-col lg:flex-row min-h-[calc(100vh-8vh)] justify-between items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>
+			<div className={`relative w-full flex flex-col lg:flex-row min-h-[calc(100vh-8vh)] justify-between items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>
+				<div className="absolute inset-0 w-full h-full pointer-events-none z-0">
+					<AnimatedBackground />
+				</div>
 				<div className="w-full lg:w-1/2 flex justify-center flex-col p-6 pl-[6vw] md:pl-[4vw] space-y-12">
 					<h1 className="text-5xl md:text-6xl font-semibold text-center md:text-left text-brand-orange">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
 					<p className="text-2xl md:text-3xl text-center md:text-left">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
@@ -239,5 +244,102 @@ function Hero()
 		</>
 	)
 }
+
+// function Buttons()
+// {
+// 	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
+// 	const navigate = useNavigate();
+// 	const hoverScale = 1.03;
+// 	const tapScale = 0.97;
+
+// 	return(
+// 		<div className="flex justify-center flex-row gap-3 md:gap-20 font-bold text-m md:text-xl w-full">
+
+// 			<div className="flex flex-col space-y-2">
+// 				<p className="text-lg font-medium">1 Player:</p>
+// 				<div className="flex flex-col space-y-3">
+// 					<motion.button 
+// 				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-4 py-0 rounded-3xl
+// 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
+// 				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
+// 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
+// 				onClick={() => 
+// 				{
+// 					startQueue({ player: loggedInAccounts[0], opponentID: Opponent.ANY}, setIsPlaying, navigate);
+// 				}}>
+// 				<p>Online Game</p>
+// 				<BiRocket />
+// 				</motion.button>
+
+// 				<motion.button 
+// 				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
+// 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
+// 				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
+// 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
+// 				onClick={() => 
+// 				{
+// 					startQueue( { player: { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username }, opponentID: Opponent.AI }, setIsPlaying, navigate);
+// 				}}>
+// 				<p>Versus AI</p>
+// 					<RiRobot2Line />
+// 					</motion.button>
+// 				</div>
+// 			</div>
+
+// 			<div className="flex flex-col space-y-2">
+// 			<p className="text-lg font-medium">2 Players:</p>
+// 			<div className="flex flex-row">
+// 				<motion.button 
+// 				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
+// 				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
+// 				whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
+// 				whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
+// 				onClick={() => AddGame({id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, {id: loggedInAccounts[1].id, username: loggedInAccounts[1].username}, true, setIsPlaying, navigate)}>
+// 				<p>Local Game</p>
+// 				<RiGamepadLine />
+// 				</motion.button>
+// 			</div>
+// 		</div>
+
+// 		<div className="flex flex-col space-y-2">
+// 			<p className="text-lg md:text-lg font-medium">3+ Players:</p>
+// 			<div className="flex flex-row">
+// 			<motion.button 
+// 				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl
+// 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
+// 				whileHover={(loggedInAccounts.length > 0 ? { scale: hoverScale } : {})}
+// 				whileTap={(loggedInAccounts.length > 0 ? { scale: tapScale } : {})}
+// 					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/menu')}}>
+// 				<p>Tournament</p>
+// 				<TbTournament />
+// 			</motion.button>
+// 			</div>
+// 		</div>
+// 		</div>
+// 	)
+// }
+
+// function Hero()
+// {
+// 	const { isPlaying, setIsPlaying } = useAccountContext();
+// 	return(
+// 		<>
+// 			<div className={`w-full flex flex-col min-h-[calc(100vh-8vh)] p-4 sm:p-8 md:p-12 lg:p-20 justify-start gap-4 sm:gap-6 md:gap-8 lg:gap-10 items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>
+// 					<h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-center text-brand-orange px-4">
+// 						Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?
+// 					</h1>
+// 					<p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-center px-4 max-w-6xl">
+// 						Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?
+// 					</p>
+// 					<div className="w-full max-w-md sm:max-w-lg md:max-w-3xl lg:max-w-6xl">
+// 						<SimplePong />
+// 					</div>
+// 					<div className="w-[90%] sm:max-w-lg md:max-w-3xl lg:max-w-6xl">
+// 						<Buttons />
+// 					</div>
+// 			</div>
+// 		</>
+// 	)
+// }
 
 export default Hero
