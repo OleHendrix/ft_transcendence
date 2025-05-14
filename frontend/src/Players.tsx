@@ -7,21 +7,18 @@ import P1 from "../assets/P1.png";
 import P2 from "../assets/P2.png";
 import PlayerAdd from "../assets/PlayerAdd.svg"
 import { PlayerState } from "./types";
+import "./css/Players.css";
 
 const Players = React.memo(function Players()
 {
 	const { isPlaying, loggedInAccounts, setTriggerFetchAccounts } = useAccountContext();
-	// useEffect(() =>
-	// {
-	// 	console.log(loggedInAccounts);
-	// }, [loggedInAccounts]);
 
 	return(
 		<>
 			<div className="flex items-center">
 				{loggedInAccounts?.map((player, index) =>
 				(
-					<div key={index} className="flex items-center flex-col space-y-0.5 w-18">
+					<div key={index} className="flex items-center flex-col space-y-0.5 w-18 animate-fade-in animate-slide-in">
 						<Link to={`/playerinfo/${player.username}`}>
 							<div className="relative">
 							<motion.img src={player.avatar !== '' ? player.avatar : Player}

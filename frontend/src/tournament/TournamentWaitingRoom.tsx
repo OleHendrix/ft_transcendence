@@ -69,7 +69,7 @@ export default function TournamentWaitingRoom()
 
 
 	return (
-		<div className="absolute h-screen min-h-screen w-screen backdrop-blur-md bg-[#1e1e1e] p-10 flex flex-col z-50">
+		<div className="absolute h-screen min-h-screen w-screen backdrop-blur-md bg-zinc-800 p-10 flex flex-col z-50">
 				<BackgroundImage />
 
 				<CloseButton onClick={() => navigate('/')} />

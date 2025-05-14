@@ -30,9 +30,9 @@ export default function TournamentMenu()
 	
 
 	return (
-		<ModalWrapper className='bg-black/60'>
+		<ModalWrapper>
 			<motion.div
-				className="flex flex-col bg-[#1e1e1e] text-white p-8 gap-6 rounded-2xl w-full max-w-2xl min-h-[600px] shadow-2xl relative"
+				className="flex flex-col bg-zinc-800 text-white p-8 gap-6 rounded-2xl w-full max-w-2xl min-h-[600px] shadow-2xl relative"
 				initial={{ scale: 0.95, y: 30 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.95, y: 30 }}

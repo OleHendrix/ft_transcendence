@@ -25,8 +25,9 @@ function MainContent()
 function App()
 {
 	return (
-		<div className='h-screen min-h-screen w-screen overflow-x-hidden bg-[#222222] font-satoshi text-white'>
-			<div className="flex flex-col w-full h-full bg-[#222222]">
+		<div className='h-screen min-h-screen w-screen overflow-x-hidden font-satoshi text-white
+						bg-gradient-to-tr from-zinc-800 to-zinc-900'>
+			<div className="flex flex-col w-full h-full">
 			<AccountProvider>
 				<PlayerinfoProvider>
 				<PongProvider>

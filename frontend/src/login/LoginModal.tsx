@@ -25,7 +25,7 @@ function LoginModal()
 
 	return (
 		<div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-			<div className="bg-[#2a2a2a] text-white p-8 rounded-lg w-md h-auto max-h-[80vh] overflow-y-auto relative shadow-xl">
+			<div className="bg-zinc-800 text-white p-8 rounded-lg w-md h-auto max-h-[80vh] overflow-y-auto relative shadow-xl">
 				<CloseButton onClick={() => navigate('/')} />
 				<h2 className="text-2xl font-bold mb-6 text-center">Login your account</h2>
 				<form className="space-y-4" onSubmit={async (e) =>

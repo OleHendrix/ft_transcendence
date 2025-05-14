@@ -30,7 +30,7 @@ function Navbar()
 	}
 
 	return (
-		<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+		<nav className="sticky top-0 backdrop-blur-lg text-white h-[8vh] min-h-[80px] flex items-center text-lg font-medium z-30">
 			<div className="flex-grow flex justify-center">
 				<button onClick={() => toMenu()}>
 					<img src={logo} alt="Logo" className="h-16 w-auto" />
