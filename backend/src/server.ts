@@ -6,12 +6,12 @@ import fastifyWebsocket  from '@fastify/websocket';
 import fs from 'fs';
 import path from 'path';
 
-import { setUpTwofa }       from './auth/setUpAuth';
+import { setUpJwt }        from './jwt/setUpJwt';
+import { setUpTwofa }      from './auth/setUpAuth';
 import { setupChat }       from './chat/setUpChat';
 import { setupPong }       from './pong/setUpPong';
 import { setUpAccount }    from './account/setUpAccount';
 import { setupTournament } from './tournament/tournament';
-import { setUpJwt } from './jwt/setUpJwt';
 
 import os from 'os';
 
@@ -90,7 +90,7 @@ fastify.listen({ port: Number(process.env.PORT || 5001), host: '0.0.0.0' }, (err
 	console.log(`Server listening on:`);
 	console.log(`→ Localhost: https://localhost:5001`);
 	if (localIP) {
-		console.log(`→ LAN:      https://${localIP}:5001`);
+		console.log(`→ LAN:       https://${localIP}:5001`);
   }
 });
 // start();
