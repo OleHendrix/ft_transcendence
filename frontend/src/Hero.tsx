@@ -158,7 +158,7 @@ function Buttons()
 			<p className="text-lg font-medium">1 Player:</p>
 			<div className="flex flex-row space-x-3">
 				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
@@ -171,7 +171,7 @@ function Buttons()
 				</motion.button>
 
 				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
@@ -189,7 +189,7 @@ function Buttons()
 			<p className="text-lg md:text-lg font-medium">2 Players:</p>
 			<div className="flex flex-row">
 				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left
 				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
@@ -205,7 +205,7 @@ function Buttons()
 			<p className="text-lg md:text-lg font-medium">3+ Players:</p>
 			<div className="flex flex-row">
 			<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl
+				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl animate-slide-in-left
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length > 0 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length > 0 ? { scale: tapScale } : {})}
@@ -230,14 +230,14 @@ function Hero()
 					<AnimatedBackground />
 				</div>
 				<div className="w-full lg:w-1/2 flex justify-center flex-col p-6 pl-[6vw] md:pl-[4vw] space-y-12">
-					<h1 className="text-5xl md:text-6xl font-semibold text-center md:text-left text-brand-orange">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
-					<p className="text-2xl md:text-3xl text-center md:text-left">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
+					<h1 className="text-5xl md:text-6xl font-semibold text-center md:text-left text-brand-orange animate-slide-in-left animate-fade-in">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
+					<p className="text-2xl md:text-3xl text-center md:text-left animate-slide-in-left">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
 					<Buttons />
 					<div className="md:hidden">
 						<Players />
 					</div>
 				</div>
-				<div className="w-full lg:w-1/2 flex justify-center flex-col p-6 pr-[6vw] md:pr-[4vw] space-y-12">
+				<div className="w-full lg:w-1/2 flex justify-center flex-col p-6 pr-[6vw] md:pr-[4vw] space-y-12 animate-slide-in animate-fade-in">
 					<SimplePong />
 				</div>
 			</div>

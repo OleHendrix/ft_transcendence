@@ -185,8 +185,8 @@ function PongGame()
 	const bounceStrength = -Math.min(1.2 * pong.ball.dir.x, 6.0);
 	return (
 		<>
-			<div className='fixed inset-0 bg-[#222222] w-screen h-screen flex flex-col'>
-				<nav className="sticky top-0 bg-[#222222] text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+			<div className='fixed inset-0 bg-zinc-850 w-screen h-screen flex flex-col'>
+				<nav className="sticky top-0 bg-zinc-850 text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
 					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => navigateBack()}>
 						<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-30 hover:opacity-70" />
 					</motion.button>

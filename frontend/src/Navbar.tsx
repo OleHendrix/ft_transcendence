@@ -30,7 +30,7 @@ function Navbar()
 	}
 
 	return (
-		<nav className="sticky top-0 backdrop-blur-lg text-white h-[8vh] min-h-[80px] flex items-center text-lg font-medium z-30">
+		<nav className="sticky top-0 backdrop-blur-lg text-white h-[8vh] min-h-[80px] flex items-center text-lg shadow-lg font-medium z-30">
 			<div className="flex-grow flex justify-center">
 				<button onClick={() => toMenu()}>
 					<img src={logo} alt="Logo" className="h-16 w-auto" />
@@ -39,7 +39,7 @@ function Navbar()
 
 			<div className="absolute left-[6vw] md:left-[4vw]">
 				<motion.button 
-					className="hover:cursor-pointer" 
+					className="hover:cursor-pointer animate-slide-in-left" 
 					whileHover={{scale: 1.07}} 
 					whileTap={{scale: 0.93}} 
 					onClick={() =>

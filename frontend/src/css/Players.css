@@ -9,7 +9,7 @@
 
 @keyframes slideIn {
   from {
-    transform: translateX(20px);
+    transform: translateX(30px);
     opacity: 0;
   }
   to {
@@ -24,13 +24,19 @@
 
 .animate-slide-in {
   animation: slideIn 0.5s ease-out forwards;
+}	
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.animate-fade-out {
-  animation: fadeOut 0.5s ease-out;
+.animate-slide-in-left {
+  animation: slideInLeft 0.8s ease-out forwards;
 }
