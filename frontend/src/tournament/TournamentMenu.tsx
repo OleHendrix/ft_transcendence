@@ -16,15 +16,15 @@ export default function TournamentMenu()
 	const [ lobbies, setLobbies ] 	= useState<TournamentLobby[]>([]);
 	const navigate					= useNavigate();
 	
-	useEffect(() => {
-		const fetchLobbies = async () => {
+	useEffect(() =>
+	{
+		const fetchLobbies = async () =>
+		{
 			const response = await axios.get(`${API_URL}/api/get-tournament-lobbies`);
 			setLobbies(response.data);
 		};
-	
 		fetchLobbies();
 		const interval = setInterval(fetchLobbies, 1000);
-	
 		return () => clearInterval(interval);
 	}, []);
 	

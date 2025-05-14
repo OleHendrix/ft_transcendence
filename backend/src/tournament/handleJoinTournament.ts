@@ -52,6 +52,7 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	connection.on("close", () =>
 	{
 		console.log(`Cleaning up closed socket for player ${connection.playerId}`);
+		let changedHost = false;
 
 		if (tournament.hostId === playerId && tournament.sockets.size > 1)
 		{
@@ -64,10 +65,11 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 			}
 			tournament.hostId = availableSocket.playerId;
 			tournament.hostUsername = availableSocket.playerUsername;
+			changedHost = true;
 		}
 		tournament.sockets.delete(tsocket);
 		console.log(tournament.sockets.size);
-		if (tournament.matchRound === 1)
+		if (tournament.matchRound === 1 || changedHost)
 			tournament.players = tournament.players.filter(player => player.id !== playerId);
 	
 		if (tournament.sockets.size === 0)

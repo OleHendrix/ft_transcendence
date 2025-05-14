@@ -7,7 +7,11 @@ import { setMatches } 						from "./setMatches";
 
 export async function manageTournament(fastify: FastifyInstance)
 {
-	fastify.post('/api/start-tournament', async (request, reply) =>
+	fastify.post('/api/start-tournament',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) =>
 	{
 		const { id } = request.body as { id: number };
 		const tournament = tournamentLobbies.get(id);
@@ -26,7 +30,11 @@ export async function manageTournament(fastify: FastifyInstance)
 		return reply.status(200).send({ succes: true });
 	});
 
-	fastify.post('/api/start-next-round', async (request, reply) => 
+	fastify.post('/api/start-next-round',
+		{
+			preHandler: fastify.authenticate
+		},
+		async (request, reply) => 
 	{
 		const { id } = request.body as { id: number };
 		const t = tournamentLobbies.get(id);

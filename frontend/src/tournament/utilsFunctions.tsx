@@ -2,6 +2,7 @@ import axios 																			from "axios";
 import { useEffect, type MutableRefObject } 														from 'react';
 import { AuthenticatedAccount, PlayerData, PlayerState, PlayerType, Result, TournamentData, TournamentLobby } from "../types";
 import { NavigateFunction } 															from "react-router-dom";
+import { secureApiCall } 																from "../jwt/secureApiCall";
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface CreateTournamentProps
@@ -16,12 +17,22 @@ export async function createTournament({ maxPlayers, loggedInAccounts, navigate 
 	try
 	{
 		const host = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
-		const response = await axios.post(`${API_URL}/api/create-tournament`,
-		{
-			hostId: host.id,
-			hostUsername: host.username,
-			maxPlayers,
-		});	
+
+		const response = await secureApiCall(host.id, (accessToken) =>
+			axios.post(`${API_URL}/api/create-tournament`,
+				{
+					hostId: host.id,
+					hostUsername: host.username,
+					maxPlayers,
+				},
+				{
+					headers: 
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+				}
+			)
+		);
 		if (response.data.success)
 			navigate(`/tournament/waiting-room/${response.data.tournamentId}`);
 		else
@@ -38,10 +49,9 @@ interface useGetTournamentDataProps
 {
 	id: 				string;
 	setTournamentData: (tournamentData: TournamentData) => void;
-	navigate: 			NavigateFunction;
 }
 
-export function useGetTournamentData({ id, setTournamentData, navigate }: useGetTournamentDataProps)
+export function useGetTournamentData({ id, setTournamentData }: useGetTournamentDataProps)
 {
 	useEffect(() =>
 	{

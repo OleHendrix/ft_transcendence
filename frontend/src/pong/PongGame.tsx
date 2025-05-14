@@ -28,16 +28,18 @@ function PongGame()
 	const keysPressed       = useRef<{ [key: string]: boolean }>({});
 	const mobileKeysPressed = useRef<{ [key: string]: boolean }>({});
 
-	function navigateBack() {
-		if (match.tournamentId === -1) {
+	function navigateBack()
+	{
+		if (match.tournamentId === -1) 
 			navigate('/', { replace: true });
-		} else {
+		else 
 			navigate(-1);
-		}
 	}
 
-	useEffect(() => {
-		if (loggedInAccounts.length === 0) {
+	useEffect(() => 
+	{
+		if (loggedInAccounts.length === 0)
+		{
 			navigateBack()
 			return;
 		}

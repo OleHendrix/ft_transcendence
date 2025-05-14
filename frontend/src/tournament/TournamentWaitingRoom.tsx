@@ -20,7 +20,7 @@ export default function TournamentWaitingRoom()
 	let matchCounter 																		= 1;				
 	const isNavigatingToGame 																= useRef(false);				
 	const socketRef																			= useRef<WebSocket | null>(null);
-	useGetTournamentData({ id: id!, setTournamentData, navigate });
+	useGetTournamentData({ id: id!, setTournamentData });
 	const setTournamentDataRef = useRef(setTournamentData);
 	setTournamentDataRef.current = setTournamentData;
 
@@ -122,13 +122,13 @@ export default function TournamentWaitingRoom()
 					{tournamentData && loggedInAccounts[0]?.username === tournamentData.hostUsername 
 					&& tournamentData?.matchRound === 1 && 
 						<TournamentButton 	tournamentData={tournamentData} variant={'start'} 
-											onClick={() => startTournament({ id: id!, tournamentData })}
+											onClick={() => startTournament({ userId: loggedInAccounts[0]?.id, id: id!, tournamentData })}
 											disabled={tournamentData?.players.length !== tournamentData?.maxPlayers} />}   {/*Start Tournament*/}
 
 					{tournamentData && loggedInAccounts[0]?.username === tournamentData.hostUsername 
 					&& tournamentData?.readyForNextRound && !tournamentData?.winner &&
 						<TournamentButton 	tournamentData={tournamentData} variant={'next'} 
-											onClick={() => startNextRound({ id: id!, tournamentData })} 
+											onClick={() => startNextRound({ userId: loggedInAccounts[0]?.id, id: id!, tournamentData })} 
 											disabled={false}/>}   {/*Start Next Round*/}
 
 				</div>
