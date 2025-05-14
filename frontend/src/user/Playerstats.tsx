@@ -50,7 +50,6 @@ function PlayerStatsSkeleton()
           rounded-xl relative shadow-2xl border border-zinc-700"
 				initial={{ scale: 0.9, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
-				exit={{ scale: 0.9, y: 20 }}
 				transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 
 				<button
@@ -354,16 +353,11 @@ function PlayerStats()
 	const sortedMatchHistory = [...matchHistory].sort((a, b) => b.id - a.id);
 
 	return (
-		<ModalWrapper>
-			<motion.div
+			<div
 				className="flex flex-col items-center bg-zinc-800 text-white p-4 md:p-8 gap-4 md:gap-8 
 					w-full max-w-3xl mx-2 md:mx-8 lg:mx-16 
 					h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto
-					rounded-xl relative shadow-2xl border border-zinc-700"
-				initial={{ scale: 0.9, y: 20 }}
-				animate={{ scale: 1, y: 0 }}
-				exit={{ scale: 0.9, y: 20 }}
-				transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+					rounded-xl relative shadow-2xl border border-zinc-700">
 				
 				<button
 					className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer"
@@ -417,8 +411,7 @@ function PlayerStats()
 
 					{selectedAccount && <ShowHistoryGraph matchHistory={matchHistory as MatchHistory[]} selectedAccount={selectedAccount as PlayerType}/>}
 				</div>
-			</motion.div>
-		</ModalWrapper>
+			</div>
 	);
 }
 
