@@ -21,8 +21,11 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		throw ("shitsbriccky");
 	}
 
-	connection.playerId = playerId;
-	const tsocket: TournamentSocket = { playerId, playerUsername, socket: connection };
+	// connection.playerId    = playerId;
+	const tsocket          = connection as TournamentSocket;
+	tsocket.playerId       = playerId;
+	tsocket.playerUsername = playerUsername;
+	// const tsocket: TournamentSocket = { playerId, playerUsername, connection };
 
 	if (tournament.players.find(p => p.id === playerId))
 	{

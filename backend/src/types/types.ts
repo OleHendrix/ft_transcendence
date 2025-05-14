@@ -164,12 +164,12 @@ export enum PlayerState
 	queueing
 }
 
-import type { WebSocket } from 'ws';
+import { WebSocket } from 'ws';
 
-export type TournamentSocket = {
+export interface TournamentSocket extends WebSocket
+{
 	playerId: number;
 	playerUsername: string;
-	socket: WebSocket;
 };
 
 
