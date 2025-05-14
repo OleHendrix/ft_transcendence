@@ -21,30 +21,29 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		throw ("shitsbriccky");
 	}
 
-	// if (tournament.players.find(p => p.id === playerId))
-	// {
-	// 	tournament.sockets.add(tsocket);
-	// 	// Voeg nieuwe socket toe
-	// 	// tournament.sockets.add(connection);
-	// 	// connection.playerId = playerId;
-	// 	console.log(`handleJoinTournament:Player${playerId}:REJOINED:tournament${tournamentId}`);
-	// 	broadcastTournamentUpdate(tournamentId, "DATA");
-	// 	return;
-	// }
-	if (tournament.players.length >= tournament.maxPlayers) {
+	connection.playerId = playerId;
+	const tsocket: TournamentSocket = { playerId, playerUsername, socket: connection };
+
+	if (tournament.players.find(p => p.id === playerId))
+	{
+		tournament.sockets.add(tsocket);
+		console.log(`handleJoinTournament:Player${playerId}:REJOINED:tournament${tournamentId}`);
+		broadcastTournamentUpdate(tournamentId, "DATA");
+		return;
+	}
+	if (tournament.players.length >= tournament.maxPlayers)
+	{
 		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`);
 		connection.close();
 		return;
 	}
 	
-	const player: PlayerData = {
+	const player: PlayerData =
+	{
 		id: playerId,
 		username: playerUsername,
 	};
 	
-	connection.playerId = playerId;
-	
-	const tsocket: TournamentSocket = { playerId, playerUsername, socket: connection };
 	tournament.players.push(player);
 	tournament.sockets.add(tsocket);
 	console.log(`ADDING SOCKET WITH PLAYER ID ${tsocket.playerId}`);
@@ -52,11 +51,8 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 	connection.on("close", () =>
 	{
 		console.log(`Cleaning up closed socket for player ${connection.playerId}`);
-		let changedHost = false;
-
 		if (tournament.hostId === playerId && tournament.sockets.size > 1)
 		{
-			//give me a function to give me the available socket in the tournament
 			const availableSocket = Array.from(tournament.sockets).find(socket => socket.playerId !== playerId);
 			if (!availableSocket)
 			{
@@ -65,11 +61,10 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 			}
 			tournament.hostId = availableSocket.playerId;
 			tournament.hostUsername = availableSocket.playerUsername;
-			changedHost = true;
 		}
 		tournament.sockets.delete(tsocket);
 		console.log(tournament.sockets.size);
-		if (tournament.matchRound === 1 || changedHost)
+		if (tournament.matchRound === 1)
 			tournament.players = tournament.players.filter(player => player.id !== playerId);
 	
 		if (tournament.sockets.size === 0)
