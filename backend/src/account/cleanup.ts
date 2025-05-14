@@ -27,8 +27,8 @@ export default async function cleanup(userId: number)
 				{
 					try
 					{
-						if (socket.readyState === WebSocket.OPEN)
-							socket.close();
+						if (socket.socket.readyState === WebSocket.OPEN)
+							socket.socket.close();
 						tournament.sockets.delete(socket);
 					}
 					catch (error)
