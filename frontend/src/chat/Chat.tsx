@@ -96,13 +96,15 @@ function Chat()
 	}, [chatSessionId]);
 
 	return(
-		<div className="fixed left-[2vw] bottom-[2vw] hover:cursor-pointer z-10">
+		<div className="fixed left-[2vw] bottom-[2vw] z-10">
 		{!isOpen &&
 		(
-			<motion.div whileHover={{ scale: 1.17 }} whileTap={{ scale: 0.89 }}>
+			<motion.div
+				whileHover={(loggedInAccounts.length > 0 ? { scale: 1.17 } : {})}
+				whileTap={(loggedInAccounts.length > 0 ? { scale: 0.89 } : {})}>
 				<BiSolidChat
 					size={32}
-					className="text-[#ff914d] hover:text-[#ab5a28] transition-colors cursor-pointer"
+						className={`text-[#ff914d] transition-colors ${loggedInAccounts.length < 1 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:text-[#ab5a28]'}`}
 					onClick={() => loggedInAccounts.length > 0 && setIsOpen(true)}
 				/>
 			</motion.div>

@@ -39,6 +39,68 @@ import { Line } from 'react-chartjs-2';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+function PlayerStatsSkeleton()
+{
+	return (
+		<ModalWrapper>
+			<motion.div
+				className="flex flex-col items-center bg-zinc-800 text-white p-4 md:p-8 gap-4 md:gap-8 
+          w-full max-w-3xl mx-2 md:mx-8 lg:mx-16 
+          h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto
+          rounded-xl relative shadow-2xl border border-zinc-700"
+				initial={{ scale: 0.9, y: 20 }}
+				animate={{ scale: 1, y: 0 }}
+				exit={{ scale: 0.9, y: 20 }}
+				transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+
+				<button
+					className="absolute top-4 right-4 text-gray-400 hover:text-white hover:cursor-pointer">
+					<IoMdClose size={24} />
+				</button>
+
+				<div className="flex w-full flex-col items-center gap-2">
+					<div className="h-8 w-32 bg-gray-700 rounded animate-pulse"></div>
+					<div className="relative">
+						<div className="h-16 w-16 rounded-full bg-gray-700 animate-pulse"></div>
+					</div>
+					<div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div>
+				</div>
+
+				<div className="flex flex-col w-full gap-3">
+					<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
+						<div className="w-full md:w-2/5 flex-shrink-0">
+							<div className="w-full border border-base-content/20 bg-transparent">
+								<div className="h-12 bg-gray-700 animate-pulse"></div>
+								<div className="space-y-2 p-2">
+									{[...Array(6)].map((_, i) => (
+										<div key={i} className="h-16 bg-gray-700 animate-pulse"></div>
+									))}
+								</div>
+							</div>
+						</div>
+
+						<div className="w-full md:w-3/5 flex-grow">
+							<div className="border border-base-content/20 bg-transparent md:h-[486px]">
+								<div className="h-12 bg-gray-700 animate-pulse"></div>
+								<div className="space-y-2 p-2">
+									{[...Array(5)].map((_, i) => (
+										<div key={i} className="h-18 bg-gray-700 animate-pulse"></div>
+									))}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div className="border border-base-content/20">
+						<div className="h-12 bg-gray-700 animate-pulse"></div>
+						<div className="h-[230px] bg-gray-700 animate-pulse"></div>
+					</div>
+				</div>
+			</motion.div>
+		</ModalWrapper>
+	);
+}
+
 function ShowHistoryGraph({matchHistory, selectedAccount} : {matchHistory: MatchHistory[], selectedAccount: PlayerType})
 {
 	let history: number[] = [];
@@ -228,6 +290,7 @@ function PlayerStats()
 	const [ friendStatus, setFriendStatus ] = useState(false);
 	const [ playerRank, setPlayerRank] = useState(0)
 	const { username } = useParams();
+	const [isLoading, setIsLoading] = useState(true);
 	const navigate = useNavigate();
 
 	useEffect(() =>
@@ -236,6 +299,7 @@ function PlayerStats()
 			return ;
 		async function getAccount()
 		{
+			setIsLoading(true);
 			try
 			{
 				const response = await axios.get(`${API_URL}/api/get-account`,
@@ -257,11 +321,12 @@ function PlayerStats()
 			{
 				console.log(error.response)
 			}
+			setIsLoading(false);
 		}; getAccount()
 	}, [loggedInAccounts])
 
-	if (!loggedInAccounts.length)
-		return <div className="text-white text-center mt-10">Loading account...</div>; // Bij refresh heeft loggedincaccounts tijd nodig om te fetchen.
+	if (isLoading || !loggedInAccounts.length)
+		return <PlayerStatsSkeleton />;
 
 	async function sendFriendRequest()
 	{
