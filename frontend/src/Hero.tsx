@@ -158,7 +158,7 @@ function Buttons()
 			<p className="text-lg font-medium">1 Player:</p>
 			<div className="flex flex-row space-x-3">
 				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left-button
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
@@ -171,7 +171,7 @@ function Buttons()
 				</motion.button>
 
 				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left-button
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
@@ -189,8 +189,8 @@ function Buttons()
 			<p className="text-lg md:text-lg font-medium">2 Players:</p>
 			<div className="flex flex-row">
 				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left
-				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left-button
+				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}` }
 				whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
 				onClick={() => AddGame({id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, {id: loggedInAccounts[1].id, username: loggedInAccounts[1].username}, true, setIsPlaying, navigate)}>
@@ -205,7 +205,7 @@ function Buttons()
 			<p className="text-lg md:text-lg font-medium">3+ Players:</p>
 			<div className="flex flex-row">
 			<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl animate-slide-in-left
+				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl animate-slide-in-left-button
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
 				whileHover={(loggedInAccounts.length > 0 ? { scale: hoverScale } : {})}
 				whileTap={(loggedInAccounts.length > 0 ? { scale: tapScale } : {})}

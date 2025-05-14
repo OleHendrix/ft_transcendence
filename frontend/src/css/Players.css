@@ -37,6 +37,19 @@
   }
 }
 
+@keyframes slideInLeftButton {
+  from {
+    transform: translateX(-30px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 .animate-slide-in-left {
   animation: slideInLeft 0.8s ease-out forwards;
+}
+
+.animate-slide-in-left-button {
+  animation: slideInLeftButton 0.8s ease-out forwards;
 }
