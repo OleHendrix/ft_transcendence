@@ -73,17 +73,17 @@ function Chat()
 	{
 		if (!chatSessionId) return;
 
-		console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
+		// console.log(`frontend:useEffect:chatSessionId change, creating new websocket with: /ws/chat/?scid:${chatSessionId}`);
 		const socket = new WebSocket(`${WS_URL}/ws/chat?chatSessionId=${chatSessionId}`);
 
 		socket.onmessage = function(event)
 		{
 			const message = JSON.parse(event.data)
-			if (message.isTyping && message.isTyping !== loggedInAccounts[0].username && !isTyping)
+			if (message.isTyping && loggedInAccounts[0]?.username && message.isTyping !== loggedInAccounts[0]?.username && !isTyping)
 				setIsTyping(message.isTyping);
 			else
 			{
-				console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
+				// console.log(`Frontend:useEffect:socket.onMessage.setmessageReceived(true)`);
 				setMessageReceived(true);
 				setIsTyping('');
 			}
@@ -179,9 +179,8 @@ function ChatHeader()
 function MessageList()
 {
 	const { loggedInAccounts } = useAccountContext();
-	const { setMessageReceived, chatMessages, setChatMessages, receiverId, receiverUsername, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
+	const { setMessageReceived, chatMessages, receiverId, receiverUsername, messageReceived, isBlocked, setIsBlocked, amIBlocker, setAmIBlocker, isTyping, setIsTyping} = useChatContext();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const navigate = useNavigate();
 
 	useEffect(() =>
 	{
@@ -499,7 +498,7 @@ function MessageInput()
 			);
 			if (response.data.success)
 			{
-				console.log("MessageInput: setMessageReceived(true)");
+				// console.log("MessageInput: setMessageReceived(true)");
 				setMessageReceived(true);
 			}
 			target.value = '';

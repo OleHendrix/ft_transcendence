@@ -1,5 +1,5 @@
 import { tournamentLobbies } 			from "./tournament";
-import { PlayerData } 					from "../types/types";
+import { PlayerData, TournamentSocket } 	from "../types/types";
 import { broadcastTournamentUpdate } 	from "./broadcastTournamentUpdates";
 import type { WebSocket } 				from 'ws';
 
@@ -21,50 +21,58 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		throw ("shitsbriccky");
 	}
 
+	connection.playerId = playerId;
+	const tsocket: TournamentSocket = { playerId, playerUsername, socket: connection };
+
 	if (tournament.players.find(p => p.id === playerId))
 	{
-		// Verwijder oude socket van dezelfde speler als die bestaat
-		for (let socket of tournament.sockets)
-		{
-			if (socket.playerId === playerId)
-				return ;
-		}
-		// Voeg nieuwe socket toe
-		tournament.sockets.add(connection);
-		connection.playerId = playerId;
+		tournament.sockets.add(tsocket);
 		console.log(`handleJoinTournament:Player${playerId}:REJOINED:tournament${tournamentId}`);
 		broadcastTournamentUpdate(tournamentId, "DATA");
 		return;
 	}
-	if (tournament.players.length >= tournament.maxPlayers) {
-		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`); //TODO test this
+	if (tournament.players.length >= tournament.maxPlayers)
+	{
+		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`);
 		connection.close();
 		return;
 	}
-  
-
-	const player: PlayerData = {
+	
+	const player: PlayerData =
+	{
 		id: playerId,
 		username: playerUsername,
 	};
-
-	connection.playerId = playerId;
-
+	
 	tournament.players.push(player);
-	tournament.sockets.add(connection);
+	tournament.sockets.add(tsocket);
+	console.log(`ADDING SOCKET WITH PLAYER ID ${tsocket.playerId}`);
 
 	connection.on("close", () =>
 	{
 		console.log(`Cleaning up closed socket for player ${connection.playerId}`);
-
-		// if (tournament.players.length > 1)
-		// {
-		// 	tournament.hostId = tournament.players[1].id;
-		// 	tournament.hostUsername = tournament.players[1].username;
-		// }
-
-		tournament.sockets.delete(connection);
+		if (tournament.hostId === playerId && tournament.sockets.size > 1)
+		{
+			const availableSocket = Array.from(tournament.sockets).find(socket => socket.playerId !== playerId);
+			if (!availableSocket)
+			{
+				console.log(`rehost-tournament:ERROR:corrupted_player_in_tournament:id:${tournament.players[1].id}`);
+				return ;
+			}
+			tournament.hostId = availableSocket.playerId;
+			tournament.hostUsername = availableSocket.playerUsername;
+		}
+		tournament.sockets.delete(tsocket);
+		console.log(tournament.sockets.size);
+		if (tournament.matchRound === 1)
+			tournament.players = tournament.players.filter(player => player.id !== playerId);
+	
+		if (tournament.sockets.size === 0)
+		{
+			tournamentLobbies.delete(tournamentId);
+			return ;
+		}
+		broadcastTournamentUpdate(tournament.tournamentId, "DATA");
 	});
-
 	broadcastTournamentUpdate(tournamentId, "DATA");
 }

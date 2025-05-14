@@ -58,7 +58,7 @@ function SignUpModal()
 						<button
 							type="button"
 							onClick={() => setShowTerms(true)}
-							className="underline text-blue-400 hover:text-blue-300"
+							className="hover:underline font-bold text-[#ff914d] hover:text-[#ab5a28]"
 						>
 							terms
 						</button>

@@ -78,7 +78,6 @@ export default function initInvite(fastify: FastifyInstance)
 
 		const socket = findSocket(msgID);
 		if (socket === undefined) return reply.code(500).send(false);
-		// TODO: check if sender is available
 		if (isInGame(senders.get(msgID)) === true)
 		{
 			return reply.code(200).send(false);

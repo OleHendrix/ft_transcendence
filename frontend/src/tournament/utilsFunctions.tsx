@@ -1,8 +1,9 @@
 import axios 																			from "axios";
-import type { MutableRefObject } 														from 'react';
+import { useEffect, type MutableRefObject } 														from 'react';
 import { AuthenticatedAccount, PlayerData, PlayerState, PlayerType, Result, TournamentData, TournamentLobby } from "../types";
 import { NavigateFunction } 															from "react-router-dom";
 import { API_URL } from '../utils/network';
+import { secureApiCall } 																from "../jwt/secureApiCall";
 
 interface CreateTournamentProps
 {
@@ -16,12 +17,22 @@ export async function createTournament({ maxPlayers, loggedInAccounts, navigate 
 	try
 	{
 		const host = { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username };
-		const response = await axios.post(`${API_URL}/api/create-tournament`,
-		{
-			hostId: host.id,
-			hostUsername: host.username,
-			maxPlayers,
-		});	
+
+		const response = await secureApiCall(host.id, (accessToken) =>
+			axios.post(`${API_URL}/api/create-tournament`,
+				{
+					hostId: host.id,
+					hostUsername: host.username,
+					maxPlayers,
+				},
+				{
+					headers: 
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+				}
+			)
+		);
 		if (response.data.success)
 			navigate(`/tournament/waiting-room/${response.data.tournamentId}`);
 		else
@@ -33,18 +44,6 @@ export async function createTournament({ maxPlayers, loggedInAccounts, navigate 
 	}
 }
 
-export async function useFetchLobbies(setLobbies: (lobbies: TournamentLobby[]) => void)
-{
-	try
-	{
-		const response = await axios.get(`${API_URL}/api/get-tournament-lobbies`);
-		setLobbies(response.data);
-	}
-	catch (error)
-	{
-		console.log(error);
-	}
-}
 
 interface useGetTournamentDataProps
 {
@@ -52,18 +51,28 @@ interface useGetTournamentDataProps
 	setTournamentData: (tournamentData: TournamentData) => void;
 }
 
-export async function useGetTournamentData({ id, setTournamentData }: useGetTournamentDataProps)
+export function useGetTournamentData({ id, setTournamentData }: useGetTournamentDataProps)
 {
-	try
+	useEffect(() =>
 	{
-		const response = await axios.get(`${API_URL}/api/tournament-data/${id}`);
-		if (response.data.success)
-			setTournamentData(response.data.tournament);
-	}
-	catch (error)
-	{
-		console.log(error);
-	}
+		let isMounted = true;
+		async function fetchData()
+		{
+			try
+			{
+				const response = await axios.get(`${API_URL}/api/tournament-data/${id}`);
+				if (response.data.success && isMounted)
+					setTournamentData(response.data.tournament);
+			}
+			catch (error)
+			{
+				console.log(error);
+			}
+		}
+		if (id)
+			fetchData();
+		return () => { isMounted = false; };
+	}, [id]);
 }
 
 interface socketOnMessageProps
@@ -71,7 +80,7 @@ interface socketOnMessageProps
 	playerId: 			number;
 	playerUsername: 	string;
 	tournamentId: 		number;
-	setTournamentData: 	(tournamentData: TournamentData) => void;
+	setTournamentDataRef: 	MutableRefObject<(tournamentData: TournamentData) => void>;
 	setCountdown: 		(countdown: number) => void;
 	setIsPlaying: 		(isPlaying: PlayerState) => void;
 	isNavigatingToGame: React.MutableRefObject<boolean>;
@@ -79,13 +88,13 @@ interface socketOnMessageProps
 	event: 				MessageEvent;
 }
 
-export function socketOnMessage({ playerId, playerUsername, tournamentId, setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event }: socketOnMessageProps)
+export function socketOnMessage({ playerId, setTournamentDataRef, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event }: socketOnMessageProps)
 {
 	try
 	{
 		const data = JSON.parse(event.data);
 		if (data.type === "DATA")
-			setTournamentData(data.tournament);
+			setTournamentDataRef.current(data.tournament);
 		if (data.type === "START_SIGNAL")	
 		{
 			const activeIds = data.data.activePlayerIds;
@@ -102,9 +111,8 @@ export function socketOnMessage({ playerId, playerUsername, tournamentId, setTou
 				if (count < 0)
 				{
 					clearInterval(interval);
-					setIsPlaying(PlayerState.playing); // start game
+					setIsPlaying(PlayerState.playing);
 					isNavigatingToGame.current = true;
-					// navigate('./pong-game');
 					navigate('/pong-game');
 				}
 			}, 1000);
@@ -114,40 +122,6 @@ export function socketOnMessage({ playerId, playerUsername, tournamentId, setTou
 	{
 		console.error("Failed to parse WebSocket message", err);
 	}	
-}
-
-interface handleCloseProps
-{
-	isLeaving: 				boolean;
-	setIsLeaving: 			(isLeaving: boolean) => void;
-	loggedInAccountsRef:	React.MutableRefObject<AuthenticatedAccount[]>;
-	tournamentDataRef: 		React.MutableRefObject<TournamentData | null>;
-	isNavigatingToGame: 	React.MutableRefObject<boolean>;
-	setIsLeavingRef: 		React.MutableRefObject<(isLeaving: boolean) => void>;
-	id: 					string;
-}
-
-export async function handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id }: handleCloseProps)
-{
-	if (isLeaving) 						return; // protection agains double clicks
-	if (!tournamentDataRef.current) 	return console.warn("TournamentWaitingRoom:handleClose:TournamentData_not_ready_yet"); //misschien onnodig?
-	if (isNavigatingToGame.current)		return; 
-
-	setIsLeavingRef.current(true);
-	try
-	{
-		if (loggedInAccountsRef.current[0].id === tournamentDataRef.current?.hostId && tournamentDataRef.current.players.length > 1)
-			await axios.post(`${API_URL}/api/rehost-tournament`, {id: Number(id)});
-		await axios.post(`${API_URL}/api/leave-tournament`, { playerId: loggedInAccountsRef.current[0].id, id: Number(id)});
-	}
-	catch (error)
-	{
-		console.log(error);
-	} 
-	finally
-	{
-		setIsLeaving(false);
-	}
 }
 
 interface generateBracketProps
@@ -231,8 +205,11 @@ interface stillPlayingProps
 
 export function stillPlaying({ tournamentData }: stillPlayingProps)
 {
+	if (tournamentData?.winner)
+		return false;
 	const currentRound = tournamentData?.rounds?.[tournamentData.roundIdx] || [];
-	const stillPlaying = currentRound.some(match => match.state.result === Result.PLAYING);
-	return stillPlaying;
+	const anyPlaying = currentRound.some(match => match.state.result === Result.PLAYING);
+
+	return anyPlaying;
 }
 

@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, ReactNode, useContext } from "react";
-import { PlayerType, PlayerState, AuthenticatedAccount } from "../types";
+import { PlayerType, PlayerState, AuthenticatedAccount, TournamentSocket, TournamentData } from "../types";
 import { secureApiCall } from "../jwt/secureApiCall";
 import axios from 'axios';
 import { API_URL } from '../utils/network';
@@ -15,20 +15,28 @@ type AccountContextType =
 	setTriggerFetchAccounts: Dispatch<SetStateAction<boolean>>;
 	isPlaying: PlayerState;
 	setIsPlaying: Dispatch<SetStateAction<PlayerState>>;
+	Tsocket: WebSocket | null;
+	setTsocket: React.Dispatch<React.SetStateAction<WebSocket | null>>;
+	inTournament: boolean;
+	setInTournament: Dispatch<SetStateAction<boolean>>;
+	tournamentData: TournamentData | null;
+	setTournamentData: Dispatch<SetStateAction<TournamentData | null>>;
 };
 
 const AccountContext = createContext<AccountContextType | null>(null);
 
 export function AccountProvider({ children }: {children: ReactNode})
 {
-	const [ accounts,                 setAccounts]                 = useState<PlayerType[]>([]);
-	const [ loggedInAccounts,         setLoggedInAccounts]         = useState<AuthenticatedAccount[]>([]);
-	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     = useState(false);
-	const [ isPlaying,                setIsPlaying]                = useState(PlayerState.idle);
+	const [ accounts,                 setAccounts]                 	= useState<PlayerType[]>([]);
+	const [ loggedInAccounts,         setLoggedInAccounts]         	= useState<AuthenticatedAccount[]>([]);
+	const [ triggerFetchAccounts,     setTriggerFetchAccounts]     	= useState(false);
+	const [ isPlaying,                setIsPlaying]                	= useState(PlayerState.idle);
+	const [ Tsocket, 					setTsocket] 				= useState<WebSocket | null>(null);
+	const [ inTournament, 				setInTournament] 			= useState(false);
+	const [tournamentData, setTournamentData] = useState<TournamentData | null>(null);
 	
 	useEffect(() =>
 	{
-		let socket: WebSocket;
 		let isRefreshing = false;
 
 		window.addEventListener('beforeunload', () =>
@@ -47,8 +55,6 @@ export function AccountProvider({ children }: {children: ReactNode})
 					{
 						const parsed = JSON.parse(savedLoggedInAccounts);
 						setLoggedInAccounts(parsed);
-						if (parsed.length === 1)
-							socket = new WebSocket(`${WS_URL}/ws/login?userId=${parsed[0].id}`);
 					}
 					else
 						localStorage.removeItem('loggedInAccounts');
@@ -84,12 +90,6 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		} fetchAccounts();
 		setTriggerFetchAccounts(false);
-
-		return () => 
-		{
-			if (socket && !isRefreshing)
-				socket.close();
-		}
 	}, [ triggerFetchAccounts ])
 
 	const value = useMemo(() => (
@@ -98,7 +98,10 @@ export function AccountProvider({ children }: {children: ReactNode})
 			loggedInAccounts, setLoggedInAccounts,
 			triggerFetchAccounts, setTriggerFetchAccounts,
 			isPlaying, setIsPlaying,
-		}), [ accounts, loggedInAccounts, triggerFetchAccounts, isPlaying ]);
+			Tsocket, setTsocket,
+				inTournament, setInTournament,
+			tournamentData, setTournamentData
+		}), [ accounts, loggedInAccounts, triggerFetchAccounts, isPlaying, Tsocket, inTournament, tournamentData ]);
 	return (
 		<AccountContext.Provider value={value}>
 			{ children }

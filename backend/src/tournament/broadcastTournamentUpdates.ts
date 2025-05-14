@@ -56,8 +56,8 @@ export function broadcastTournamentUpdate(tournamentId: number, type: string)
 
 	tournament.sockets.forEach(socket =>
 	{
-		if (socket.readyState === WebSocket.OPEN)
-			socket.send(message);
+		if (socket.socket.readyState === WebSocket.OPEN)
+			socket.socket.send(message);
 	});
 }
 

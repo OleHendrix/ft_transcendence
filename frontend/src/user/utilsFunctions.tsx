@@ -5,10 +5,12 @@ import { useEffect } from "react";
 import { secureApiCall } from "../jwt/secureApiCall";
 import { API_URL } from '../utils/network';
 
-interface UseGetAccountProps
+interface UseGetAccountProps	
 {
 	username:           string | undefined;
 	setSelectedAccount: React.Dispatch<React.SetStateAction<PlayerType | undefined>>;
+	triggerFetchAccounts: boolean;
+	setTriggerFetchAccounts: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface AccountProps
@@ -40,7 +42,7 @@ interface cancelEditProps
 	selectedAccount:      PlayerType | undefined;
 }
 
-export function useGetAccount({username, setSelectedAccount}: UseGetAccountProps)
+export function useGetAccount({username, setSelectedAccount, triggerFetchAccounts, setTriggerFetchAccounts}: UseGetAccountProps)
 {
 	useEffect(() =>
 	{
@@ -61,7 +63,8 @@ export function useGetAccount({username, setSelectedAccount}: UseGetAccountProps
 			}
 		}
 		getAccount();
-	}, [username, setSelectedAccount]);
+		setTriggerFetchAccounts(false);
+	}, [username, setSelectedAccount, triggerFetchAccounts]);
 }
 
 
@@ -72,8 +75,6 @@ function handleAccountRemoval({loggedInAccounts, setLoggedInAccounts, selectedAc
 	localStorage.setItem('loggedInAccounts', JSON.stringify(updatedaccounts));
 	setTriggerFetchAccounts(true);
 }
-
-
 
 export async function logout({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}: HandleAccountRemovalProps)
 {
@@ -127,8 +128,6 @@ export async function deleteAccount({loggedInAccounts, setLoggedInAccounts, sele
 	}
 }
 
-
-
 export async function updateAccount({formData, loggedInAccounts, setLoggedInAccounts, selectedAccount, setEditProfile, setTriggerFetchAccounts, navigate}: updateAccountProps)
 {
 	try
@@ -152,6 +151,7 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 		);
 		if (response.data.success)
 		{
+			setEditProfile(false);
 			const updatedloggedInAccounts = loggedInAccounts.map((account) =>
 			account.username === selectedAccount?.username
 				? { 
@@ -161,11 +161,11 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 				}
 				: account
 			);
-			setLoggedInAccounts(updatedloggedInAccounts);
 			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
-			setEditProfile(false);
+			setLoggedInAccounts(updatedloggedInAccounts);
 			setTriggerFetchAccounts(true);
-			navigate(`/playerinfo/${response.data.user.username}`);
+			if (formData.username !== selectedAccount?.username)
+				setTimeout(() => navigate(`/playerinfo/${response.data.user.username}`), 0);
 		}
 	}
 	catch (error: any)

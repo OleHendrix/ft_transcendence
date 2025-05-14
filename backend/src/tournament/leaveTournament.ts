@@ -11,13 +11,23 @@ export async function leaveTournament(fastify: FastifyInstance)
 		let tournament = tournamentLobbies.get(id);
 		if (!tournament)
 			return reply.status(500).send({ error: `player ${playerId} tried to leave invalid tournamentid: ${id}` });
+
 		for (let socket of tournament.sockets)
 		{
 			if (socket.playerId === playerId)
 			{
-				if (socket.readyState === WebSocket.OPEN)
-					socket.close();
-				tournament.sockets.delete(socket);
+				console.log("433333333");
+				if (socket.socket.readyState === WebSocket.OPEN)
+				{
+					console.log("what");
+					socket.socket.close();
+				}
+				else
+				{
+					console.log("tttttt");
+					tournament.sockets.delete(socket);
+				}
+				console.log("zijn errr")
 			}
 		}
 		if (tournament.matchRound === 1)
@@ -25,7 +35,7 @@ export async function leaveTournament(fastify: FastifyInstance)
 		console.log(tournament.sockets.size);
 
 		const allSocketsDisconnected = Array.from(tournament.sockets).every(socket =>
-			socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING
+			socket.socket.readyState === WebSocket.CLOSED || socket.socket.readyState === WebSocket.CLOSING
 		);
 
 		if (allSocketsDisconnected)

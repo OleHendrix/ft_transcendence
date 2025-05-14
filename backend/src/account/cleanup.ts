@@ -4,7 +4,7 @@ import WebSocket from 'ws';
 
 export default async function cleanup(userId: number)
 {
-	// console.log("CLEANUP")
+	console.log("CLEANUP")
 	tournamentLobbies.forEach((tournament, id) =>
 	{
 		if (tournament.players.some(player => player.id === userId))
@@ -27,8 +27,8 @@ export default async function cleanup(userId: number)
 				{
 					try
 					{
-						if (socket.readyState === WebSocket.OPEN)
-							socket.close();
+						if (socket.socket.readyState === WebSocket.OPEN)
+							socket.socket.close();
 						tournament.sockets.delete(socket);
 					}
 					catch (error)

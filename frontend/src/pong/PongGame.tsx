@@ -28,16 +28,18 @@ function PongGame()
 	const keysPressed       = useRef<{ [key: string]: boolean }>({});
 	const mobileKeysPressed = useRef<{ [key: string]: boolean }>({});
 
-	function navigateBack() {
-		if (match.tournamentId === -1) {
+	function navigateBack()
+	{
+		if (match.tournamentId === -1) 
 			navigate('/', { replace: true });
-		} else {
+		else 
 			navigate(-1);
-		}
 	}
 
-	useEffect(() => {
-		if (loggedInAccounts.length === 0) {
+	useEffect(() => 
+	{
+		if (loggedInAccounts.length === 0)
+		{
 			navigateBack()
 			return;
 		}
@@ -91,6 +93,7 @@ function PongGame()
 			// window.removeEventListener("popstate",     handlePopState);
 			window.removeEventListener("keydown",      handleKeyDown);
 			window.removeEventListener("keyup",        handleKeyUp);
+			leaveMatch(loggedInAccounts[0].id);
 
 			clearInterval(interval);
 			leaveMatch(loggedInAccounts[0]?.id);
@@ -98,12 +101,25 @@ function PongGame()
 	}, []);
 
 	function leaveMatch(userID: number | undefined) {
+		// if (match.tournamentId !== -1) {
+		// 	console.log("yESSS");
+		// 	// navigate(-1);
+		// } else {
+		// 	navigate('/', { replace: true });
+		// }
 		setIsPlaying(PlayerState.idle);
-		if (userID) {
+		if (userID)
+		{
 			axios.post(`${API_URL}/pong/delete`, { userID: userID }).catch((error) => {
 				// not printing shit here because this always happens when refreshing :)
 			});
 		}
+		socketRef.current?.close();
+		// if (match.tournamentId === -1) {
+		// 	navigate('/', { replace: true });
+		// } else {
+		// 	navigate(-1);
+		// }
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);

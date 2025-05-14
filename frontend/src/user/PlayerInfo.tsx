@@ -95,15 +95,15 @@ function ShowInfo( {editProfile, setEditProfile, selectedAccount, setSelectedAcc
 
 function PlayerInfo()
 {
-	const { loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts }	= useAccountContext();
-	const [editProfile, setEditProfile]											= useState(false);
-	const [tempImageUrl, setTempImageUrl]										= useState<string>('');
-	const [showCropper, setShowCropper]											= useState(false);
-	const [selectedAccount, setSelectedAccount]									= useState<PlayerType>();
-	const navigate																= useNavigate();
-	const { username }															= useParams();
+	const { loggedInAccounts, setLoggedInAccounts, setTriggerFetchAccounts, triggerFetchAccounts }	= useAccountContext();
+	const [editProfile, setEditProfile]																= useState(false);
+	const [tempImageUrl, setTempImageUrl]															= useState<string>('');
+	const [showCropper, setShowCropper]																= useState(false);
+	const [selectedAccount, setSelectedAccount]														= useState<PlayerType>();
+	const navigate																					= useNavigate();
+	const { username }																				= useParams();
 
-	useGetAccount({username, setSelectedAccount});
+	useGetAccount({username, setSelectedAccount, triggerFetchAccounts, setTriggerFetchAccounts});
 
 	return (
 		<ModalWrapper>

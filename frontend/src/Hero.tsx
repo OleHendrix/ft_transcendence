@@ -108,6 +108,9 @@ export function Queue()
 						<h1 className="block text-4xl font-medium text-center">Looking for a match...</h1>
 						<h1 className="block text-l font-medium text-gray-500 text-center">Queue time: {queueTime}s</h1>
 					</div>
+					<div className="flex h-20 mt-10 justify-center items-center">
+						<Loader />
+					</div>
 					<motion.button className="w-full pt-2 bg-[#ff914d] px-4 py-2 font-bold shadow-2xl rounded-3xl hover:bg-[#ab5a28] hover:cursor-pointer"
 						whileHover={ {scale: 1.03}}
 						whileTap={ {scale: 0.97}}
@@ -202,8 +205,8 @@ function Buttons()
 			<motion.button 
 				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl
 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
-				whileHover={(loggedInAccounts.length > 2 ? { scale: hoverScale } : {})}
-				whileTap={(loggedInAccounts.length > 2 ? { scale: tapScale } : {})}
+				whileHover={(loggedInAccounts.length > 0 ? { scale: hoverScale } : {})}
+				whileTap={(loggedInAccounts.length > 0 ? { scale: tapScale } : {})}
 					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/menu')}}>
 				<p>Tournament</p>
 				<TbTournament />

@@ -1,12 +1,11 @@
 import { useMemo, useState, useEffect, useRef } 			from 'react';
-import { motion }											from 'framer-motion';
-import { useNavigate, useParams, useLocation, Outlet } 				from 'react-router-dom';
+import { useNavigate, useParams } 							from 'react-router-dom';
 import { PlayerData, TournamentData }						from '../types';
 import { useAccountContext } 								from '../contexts/AccountContext';
 import Chat 												from "../chat/Chat"
 import Loader 												from '../utils/Loader';
 import { MdAdminPanelSettings }								from "react-icons/md";
-import { generateBracket, handleClose, socketOnMessage } 	from './utilsFunctions';
+import { generateBracket, socketOnMessage } 				from './utilsFunctions';
 import { stillPlaying, useGetTournamentData } 				from './utilsFunctions';
 import CloseButton 											from '../utils/CloseButton';
 import { WinnerMessage, Rounds, TournamentButton, startTournament, startNextRound, BackgroundImage } 	from './utilsComponents';
@@ -14,57 +13,53 @@ import { WS_URL } from '../utils/network';
 
 export default function TournamentWaitingRoom() 
 {
-	const { loggedInAccounts, setIsPlaying } 												= useAccountContext();
-	const [ tournamentData, setTournamentData ] 											= useState<TournamentData | null>(null);
-	const [ isLeaving, setIsLeaving ]														= useState(false);
+	const { loggedInAccounts, setIsPlaying, Tsocket, setTsocket, inTournament, setInTournament, tournamentData, setTournamentData } 	= useAccountContext();
 	const [ countdown, setCountdown ]														= useState(0);
 	const navigate 																			= useNavigate();
-	const { id }																			= useParams();						//Haalt tournamentId uit de params
-	let matchCounter 																		= 1;								//Nodig voor bracketgame nummering, moet nog naar gekeken worden
-	const isLeavingRef 																		= useRef(isLeaving);				//UseRefs belangrijk voor closefunction wanneer comoponent unmount, geen idee hoe het werkt 
-	const tournamentDataRef 																= useRef(tournamentData);
-	const setIsLeavingRef 																	= useRef(setIsLeaving);
-	const loggedInAccountsRef 																= useRef(loggedInAccounts);
-	const navigateRef 																		= useRef(navigate);
-	const isNavigatingToGame 																= useRef(false);
-	const socketRef 																		= useRef<WebSocket | null>(null);
-	useGetTournamentData({ id: id!, setTournamentData });																		//Fetched het gevraagde tournament op basis van id uit de params
-
-	//Wanneer component unmount wordt dit aangesproken. Dus bij een pijltjes navigate, refresh idk? 
-	//Regelt het leaven van de game, in de backend etc.
-	//In handleclose zit een protection (isNavigatingToGame) voor wanneer we naar ponggame gaan. Hier wordt er dus niet geleaved
-	
-	useEffect(() =>
-	{
-		return () => {handleClose({ isLeaving, setIsLeaving, loggedInAccountsRef, tournamentDataRef, isNavigatingToGame, setIsLeavingRef, id: id! });};
-	}, []);	
-	
-	//Let hier niet op
-	useEffect(() =>
-	{
-		isLeavingRef.current 		= isLeaving;
-		tournamentDataRef.current 	= tournamentData;
-		setIsLeavingRef.current 	= setIsLeaving;
-		loggedInAccountsRef.current = loggedInAccounts;
-		navigateRef.current 		= navigate;
-	}, [isLeaving, tournamentData, setIsPlaying, loggedInAccounts, navigate]);
-	
-	//Bij binnenkomst (mount) wordt er gejoined met de socketconnectie, Zo kan er ook geprobeerd te joinen alleen op basis van url. Als je de game wilt delen.
-	//Bij refresh blijft je in de game
-	//Bij refresh closed de socket (maar niet de speler in het tournamet), in de backend zit een protection
-	//als speler al in het tournament zit wordt alleen de socket weer hersteld, maar niks verwijderd.
+	const { id }																			= useParams();						
+	let matchCounter 																		= 1;				
+	const isNavigatingToGame 																= useRef(false);				
+	const socketRef																			= useRef<WebSocket | null>(null);
+	useGetTournamentData({ id: id!, setTournamentData });
+	const setTournamentDataRef = useRef(setTournamentData);
+	setTournamentDataRef.current = setTournamentData;
 
 	useEffect(() =>
 	{
 		const player = loggedInAccounts[0];
-		if (!id || !player?.id || !player?.username || socketRef.current)
+		if (!id || !player?.id || !player?.username)
+		{
+			console.log("returning from socketuseffect");
 			return;
-
-		socketRef.current = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
-		socketRef.current.onopen = () => console.log("Tournament WS connected");
-		socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentData, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
-		return () => {if (!isNavigatingToGame.current) socketRef.current?.close();};
+		}
+		if (!inTournament)
+		{
+			socketRef.current = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
+			socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentDataRef, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
+			setTsocket(socketRef.current);
+			setInTournament(true);
+		}
+		return () => 
+		{
+			if (!isNavigatingToGame.current)
+			{
+				if (Tsocket)
+				{
+					// console.log("UNMOUNT: cleaning socket connection");
+					Tsocket.close();
+					setTsocket(null);
+				}
+				if (socketRef.current)
+				{
+					// console.log("CLOSING ORIGINAL SOCKET");
+					socketRef.current.close();
+					socketRef.current = null;
+				}
+				setInTournament(false);
+			}
+		};
 	}, [loggedInAccounts]);
+	
 
 	const rounds = useMemo(() =>
 	{
@@ -75,15 +70,8 @@ export default function TournamentWaitingRoom()
 
 	return (
 		<div className="absolute h-screen min-h-screen w-screen backdrop-blur-md bg-[#1e1e1e] p-10 flex flex-col z-50">
-			{/* <motion.div
-				className="relative bg-[#1e1e1e] text-white shadow-2xl p-10 h-screen min-h-screen w-screen overflow-hidden flex flex-col"
-				initial={{ scale: 0.95, y: 20 }}
-				animate={{ scale: 1, y: 0 }}
-				exit={{ scale: 0.95, y: 20 }}
-				transition={{ type: "spring", stiffness: 300, damping: 25 }}> */}
 				<BackgroundImage />
 
-				{/*Eerst handleclose afhandelen dan pas unmount.*/}
 				<CloseButton onClick={() => navigate('/')} />
 				<div className='flex-col mb-6'>
 					<h1 className="text-3xl font-bold text-center tracking-wide">Tournament Waiting Room</h1>
@@ -118,7 +106,7 @@ export default function TournamentWaitingRoom()
 							</ul>
 					</div>
 													  {/*Wanneer spelers nog in game zitten laat dan loader zien*/}
-				{stillPlaying({ tournamentData }) 	? <Loader /> 
+				{tournamentData && stillPlaying({ tournamentData }) 	? <Loader /> 
 				: tournamentData?.winner 			? <WinnerMessage username={tournamentData?.winner.username} />
 				: rounds.length > 0 				? <Rounds rounds={rounds} tournamentData={tournamentData} matchCounter={matchCounter} />
 				: 									null}
@@ -134,18 +122,22 @@ export default function TournamentWaitingRoom()
 					{tournamentData && loggedInAccounts[0]?.username === tournamentData.hostUsername 
 					&& tournamentData?.matchRound === 1 && 
 						<TournamentButton 	tournamentData={tournamentData} variant={'start'} 
-											onClick={() => startTournament({ id: id!, tournamentData })}
+											onClick={() => startTournament({ userId: loggedInAccounts[0]?.id, id: id!, tournamentData })}
 											disabled={tournamentData?.players.length !== tournamentData?.maxPlayers} />}   {/*Start Tournament*/}
 
 					{tournamentData && loggedInAccounts[0]?.username === tournamentData.hostUsername 
 					&& tournamentData?.readyForNextRound && !tournamentData?.winner &&
 						<TournamentButton 	tournamentData={tournamentData} variant={'next'} 
-											onClick={() => startNextRound({ id: id!, tournamentData })} 
+											onClick={() => startNextRound({ userId: loggedInAccounts[0]?.id, id: id!, tournamentData })} 
 											disabled={false}/>}   {/*Start Next Round*/}
 
 				</div>
-			{/* </motion.div> */}
-			{/* <Outlet /> */}
+				{/* {countdown !== null && (
+					<div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
+						<h1 className="text-white text-9xl font-extrabold animate-pulse">{countdown > 0 ? countdown : 'START!'}</h1>
+					</div>
+				)} */}
+
 			<Chat />
 		</div>
 	);

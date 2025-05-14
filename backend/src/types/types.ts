@@ -166,6 +166,13 @@ export enum PlayerState
 
 import type { WebSocket } from 'ws';
 
+export type TournamentSocket = {
+	playerId: number;
+	playerUsername: string;
+	socket: WebSocket;
+};
+
+
 export interface TournamentData
 {
 	tournamentId:		number;
@@ -178,6 +185,6 @@ export interface TournamentData
 	roundIdx:			number;
 	matchRound:			number;
 	rounds:				Match[][] | null;
-	sockets:			Set<WebSocket>;
+	sockets:			Set<TournamentSocket>;
 	readyForNextRound: 	boolean;
 };

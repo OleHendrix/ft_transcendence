@@ -74,7 +74,7 @@ export async function notifyClients(newMessage: any)
 			if (socket.readyState === WebSocket.OPEN)
 			{
 				socket.send(JSON.stringify(newMessage));
-				console.log("client notified");
+				// console.log("client notified");
 			}
 		})
 	}

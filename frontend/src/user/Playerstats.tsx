@@ -291,8 +291,8 @@ function PlayerStats()
 	return (
 		<ModalWrapper>
 			<motion.div
-				className="flex flex-col items-center bg-[#2a2a2a]/90 backdrop-blur-md text-white p-4 md:p-8 gap-4 md:gap-8 
-					w-full max-w-xl md:max-w-2xl mx-2 md:mx-8 lg:mx-16 
+				className="flex flex-col items-center bg-[#2a2a2a] text-white p-4 md:p-8 gap-4 md:gap-8 
+					w-full max-w-3xl mx-2 md:mx-8 lg:mx-16 
 					h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto
 					rounded-xl relative shadow-2xl border border-[#383838]"
 				initial={{ scale: 0.9, y: 20 }}

@@ -4,15 +4,12 @@ import { JwtPayload } from "../types/fastify";
 
 export default async function authenticate(fastify: FastifyInstance)
 {
-	console.log('registering authenticate');
 	fastify.decorate('authenticate', async function (request: FastifyRequest, reply: FastifyReply)
 	{
 		try
 		{
 			const decoded = await request.jwtVerify<JwtPayload>();
 			request.account = decoded;
-
-			console.log('authenticated', decoded.username);
 		}
 		catch (err)
 		{

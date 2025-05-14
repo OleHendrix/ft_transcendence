@@ -4,6 +4,7 @@ import { TbTournament } 		from "react-icons/tb";
 import axios					from "axios";
 import { BiRocket } 			from "react-icons/bi";
 import BackgroundTournament 	from '../../assets/BackgroundTournament.svg';
+import { secureApiCall } 		from "../jwt/secureApiCall";
 import { API_URL } from '../utils/network';
 
 export function WinnerMessage({ username }: {username: string})
@@ -59,19 +60,41 @@ interface ButtonFunctionProps
 {
 	id: 			string;
 	tournamentData: TournamentData | null;
+	userId: 		number;
 }
 
-export async function startTournament({ id, tournamentData }: ButtonFunctionProps)
+export async function startTournament({ userId, id, tournamentData }: ButtonFunctionProps)
 {
 	try
 	{
-		await axios.post(`${API_URL}/api/start-tournament`, { id: Number(id) });
-		await axios.post(`${API_URL}/api/send-message`,
-		{
-			content: `Tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
-			senderId: 1,
-			receiverId: 1,
-		})
+		await secureApiCall(userId, (accessToken) =>
+			axios.post(`${API_URL}/api/start-tournament`,
+				{ id: Number(id) },
+				{
+					headers: 
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+				}
+			)
+		);
+
+
+		await secureApiCall(userId, (accessToken) =>
+			axios.post(`${API_URL}/api/send-message`,
+				{
+					content: `Tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
+					senderId: 1,
+					receiverId: 1,
+				},
+				{
+					headers:
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+				}
+			)
+		);
 	}
 	catch (error)
 	{
@@ -79,18 +102,37 @@ export async function startTournament({ id, tournamentData }: ButtonFunctionProp
 	}
 }
 
-export async function startNextRound({ id, tournamentData }: ButtonFunctionProps)
+export async function startNextRound({ userId, id, tournamentData }: ButtonFunctionProps)
 {
 	
 	try
 	{
-		await axios.post(`${API_URL}/api/start-next-round`, { id: Number(id) });
-		await axios.post(`${API_URL}/api/send-message`,
-		{
-			content: `The next round of tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
-			senderId: 1,
-			receiverId: 1,
-		})
+		await secureApiCall(userId, (accessToken) =>
+			axios.post(`${API_URL}/api/start-next-round`,
+				{ id: Number(id) },
+				{
+					headers: 
+					{
+						Authorization: `Bearer ${accessToken}`
+					}
+				}
+			)
+		);
+	    await secureApiCall(userId, (accessToken) =>
+            axios.post(`${API_URL}/api/send-message`,
+                {
+                    content: `The next round of tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
+                    senderId: 1,
+                    receiverId: 1,
+                },
+                {
+                    headers: 
+					{
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                }
+            )
+        );
 	}
 	catch (error) 
 	{
