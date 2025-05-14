@@ -40,32 +40,27 @@ const fastify = Fastify({
 		cert: fs.readFileSync(path.join(__dirname, '../ssl/cert.pem')),
 	}
 });
-export const prisma = new PrismaClient();
 
 
-
-fastify.register(fastifyCors,
-{
+const allowedOrigins = new Set([
+	`https://localhost:5173`,
+	localIP ? `https://${localIP}:5173` : null,
+  ]);
+  
+  fastify.register(fastifyCors, {
 	origin: (origin, cb) => {
-		// Allow if:
-		// - No origin (e.g., curl or same-origin)
-		// - Origin matches our frontend on LAN
-		const allowedOrigins = [
-		`https://${localIP}:5173`,
-		`https://localhost:5173`,
-		];
-
-		if (!origin || allowedOrigins.includes(origin)) {
-		cb(null, true);
+		if (!origin || allowedOrigins.has(origin)) {
+			cb(null, true);
 		} else {
-		cb(new Error("CORS not allowed"), false);
+			console.warn(`Blocked CORS request from origin: ${origin}`);
+			cb(new Error("Not allowed by CORS"), false);
 		}
 	},
-	credentials: true
+	credentials: true,
 });
-
 fastify.register(fastifyWebsocket, { options: { clientTracking: true }});
 
+export const prisma = new PrismaClient();
 
 // setUpJwt first for the authenticate middleWare
 setUpJwt(fastify, prisma);
