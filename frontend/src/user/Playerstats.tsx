@@ -39,33 +39,33 @@ import { Line } from 'react-chartjs-2';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function ShowStatsSkeleton() 
-{
-	return (
-		<div className="w-full border border-base-content/20 bg-transparent">
-			<div className="h-12 bg-gray-700 animate-pulse"></div>
-			<div className="space-y-2 p-2">
-				{[...Array(6)].map((_, i) => (
-					<div key={i} className="h-16 bg-gray-700 animate-pulse"></div>
-				))}
-			</div>
-		</div>
-	);
-}
+// function ShowStatsSkeleton() 
+// {
+// 	return (
+// 		<div className="w-full border border-base-content/20 bg-transparent">
+// 			<div className="h-12 bg-gray-700 animate-pulse"></div>
+// 			<div className="space-y-2 p-2">
+// 				{[...Array(6)].map((_, i) => (
+// 					<div key={i} className="h-16 bg-gray-700 animate-pulse"></div>
+// 				))}
+// 			</div>
+// 		</div>
+// 	);
+// }
 
-function ShowMatchHistorySkeleton()
-{
-	return (
-		<div className="border border-base-content/20 bg-transparent md:h-[486px]">
-		<div className="h-12 bg-gray-700 animate-pulse"></div>
-		<div className="space-y-2 p-2">
-			{[...Array(5)].map((_, i) => (
-			<div key={i} className="h-18 bg-gray-700 animate-pulse"></div>
-			))}
-		</div>
-		</div>
-  );
-}
+// function ShowMatchHistorySkeleton()
+// {
+// 	return (
+// 		<div className="border border-base-content/20 bg-transparent md:h-[486px]">
+// 		<div className="h-12 bg-gray-700 animate-pulse"></div>
+// 		<div className="space-y-2 p-2">
+// 			{[...Array(5)].map((_, i) => (
+// 			<div key={i} className="h-18 bg-gray-700 animate-pulse"></div>
+// 			))}
+// 		</div>
+// 		</div>
+//   );
+// }
 
 function ShowHistoryGraph({matchHistory, selectedAccount} : {matchHistory: MatchHistory[], selectedAccount: PlayerType})
 {
@@ -374,19 +374,10 @@ function PlayerStats()
 				<div className="flex flex-col w-full gap-3">
 					<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
 						<div className="w-full md:w-2/5 flex-shrink-0">
-							{isLoading ? (
-								<ShowStatsSkeleton />
-							) : (
-								selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType} />
-							)}
+							{selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType} />}
 						</div>
-
 						<div className="w-full md:w-3/5 flex-grow">
-							{isLoading ? (
-								<ShowMatchHistorySkeleton />
-							) : (
-								selectedAccount && <ShowMatchHistory sorted={sortedMatchHistory as MatchHistory[]} />
-							)}
+							{selectedAccount && <ShowMatchHistory sorted={sortedMatchHistory as MatchHistory[]} />}
 						</div>
 					</div>
 

@@ -120,7 +120,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 	<div
 		className="fixed inset-0 backdrop-blur-sm z-20"
 		onClick={() => setIsOpen(false)}>
-		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between p-6 pt-10 h-[calc(100vh-8vw)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-zinc-950 shadow-2xl rounded-2xl z-50" onClick={(e) => e.stopPropagation()}>
+		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between p-6 pt-10 h-[calc(100vh-12vh)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-zinc-950 shadow-2xl rounded-2xl z-50" onClick={(e) => e.stopPropagation()}>
 			<button className="absolute top-2 right-2 text-gray-400 hover:text-white hover:cursor-pointer" onClick={() => setIsOpen(false)}>
 				<IoMdClose size={24} />
 			</button>
@@ -192,6 +192,8 @@ function MessageList()
 
 	useEffect(() =>
 	{
+		if (!isTyping) return;
+
 		async function typeStatus()
 		{
 			const startTime = Date.now();
