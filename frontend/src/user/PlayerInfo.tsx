@@ -40,7 +40,6 @@ function ShowInfo( {editProfile, setEditProfile, selectedAccount, setSelectedAcc
 
 	useEffect(() =>
 	{
-		console.log('We zijn er');
 		if (selectedAccount)
 			setFormData({ username: selectedAccount.username, email: selectedAccount.email, password: '', confirmPassword: ''});
 	}, [selectedAccount]);

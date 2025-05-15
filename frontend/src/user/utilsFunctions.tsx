@@ -164,8 +164,7 @@ export async function updateAccount({formData, loggedInAccounts, setLoggedInAcco
 			localStorage.setItem('loggedInAccounts', JSON.stringify(updatedloggedInAccounts));
 			setLoggedInAccounts(updatedloggedInAccounts);
 			setTriggerFetchAccounts(true);
-			if (formData.username !== selectedAccount?.username)
-				setTimeout(() => navigate(`/playerinfo/${response.data.user.username}`), 0);
+			navigate(`/playerinfo/${response.data.user.username}`);
 		}
 	}
 	catch (error: any)

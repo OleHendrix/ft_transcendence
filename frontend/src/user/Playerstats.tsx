@@ -313,6 +313,9 @@ function PlayerStats()
 			console.log(error.response)
 		}
 	}
+
+	if (!loggedInAccounts.length)
+		return <div>Loading...</div>;
 	const matchHistory = selectedAccount?.matches ?? [];
 	const sortedMatchHistory = [...matchHistory].sort((a, b) => b.id - a.id);
 
