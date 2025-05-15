@@ -3,6 +3,7 @@ import axios from "axios";
 import { PlayerState, Result, PlayerData, Opponent, Vec2 } from '../types';
 import { startQueue } from '../Hero';
 import { useAccountContext } from '../contexts/AccountContext';
+import { RiRobot2Line } from "react-icons/ri";
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatTime, ParseResult } from './pongUtils';
 import { usePongContext } from '../contexts/PongContext';
@@ -199,8 +200,8 @@ function PongGame()
 							{formatTime(pong.timer)}
 						</div>
 					)}
-					<div className='absolute right-[25%] text-2xl opacity-50'>
-						{match?.p2.username}
+					<div className='absolute right-[25%] text-2xl opacity-80'>
+						{match?.p2.id === -1 && <RiRobot2Line className="w-8 h-auto text-[#134588]" />}
 					</div>
 				</nav>
 

@@ -83,12 +83,11 @@ interface socketOnMessageProps
 	setTournamentDataRef: 	MutableRefObject<(tournamentData: TournamentData) => void>;
 	setCountdown: 		(countdown: number) => void;
 	setIsPlaying: 		(isPlaying: PlayerState) => void;
-	isNavigatingToGame: React.MutableRefObject<boolean>;
 	navigate: 			NavigateFunction;
 	event: 				MessageEvent;
 }
 
-export function socketOnMessage({ playerId, setTournamentDataRef, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event }: socketOnMessageProps)
+export function socketOnMessage({ playerId, setTournamentDataRef, setCountdown, setIsPlaying, navigate, event }: socketOnMessageProps)
 {
 	try
 	{
@@ -100,6 +99,7 @@ export function socketOnMessage({ playerId, setTournamentDataRef, setCountdown, 
 			const activeIds = data.data.activePlayerIds;
 			if (!activeIds.includes(playerId))
 				return;
+			localStorage.setItem('isNavigatingToGame', 'true');44
 			setCountdown(3); // trigger countdown
 		
 			let count = 3;
@@ -112,7 +112,6 @@ export function socketOnMessage({ playerId, setTournamentDataRef, setCountdown, 
 				{
 					clearInterval(interval);
 					setIsPlaying(PlayerState.playing);
-					isNavigatingToGame.current = true;
 					navigate('/pong-game');
 				}
 			}, 1000);
