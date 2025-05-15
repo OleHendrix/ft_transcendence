@@ -10,9 +10,10 @@ import { useAccountContext } from "./contexts/AccountContext";
 import "./css/ponganimation.css";
 import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
-import { API_URL } from './utils/network';
 import AnimatedBackground from './utils/AnimatedBackground';
+import Loader from './utils/Loader';
 import { WS_URL } from './utils/network';
+import { API_URL } from './utils/network';
 
 function SimplePong()
 {

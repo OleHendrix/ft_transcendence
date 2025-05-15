@@ -1,5 +1,6 @@
 services:
   backend:
+    container_name: backend
     build: ./backend
     ports:
       - "5001:5001"
@@ -9,6 +10,7 @@ services:
       - frontend
 
   frontend:
+    container_name: frontend
     build: ./frontend
     ports:
       - "5173:5173"

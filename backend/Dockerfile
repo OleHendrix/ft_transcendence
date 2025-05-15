@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y openssl
 
 COPY . .
 
-RUN npx prisma generate; npx prisma db seed
+RUN npx prisma generate && npx prisma db seed
 
 RUN npm run build
 

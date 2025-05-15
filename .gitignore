@@ -1,6 +1,8 @@
 **/node_modules/
 **/package-lock.json/
 ./backend/dist
+./backend/ssl
+./frontend/ssl
 *.local
 *.db
 

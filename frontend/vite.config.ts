@@ -9,8 +9,8 @@ import path from 'path';
 export default defineConfig({
   server: {
     https: {
-      key: fs.readFileSync(path.resolve(__dirname, '../backend/ssl/key.pem')),
-      cert: fs.readFileSync(path.resolve(__dirname, '../backend/ssl/cert.pem')),
+      key: fs.readFileSync(path.resolve(__dirname, './ssl/key.pem')),
+      cert: fs.readFileSync(path.resolve(__dirname, './ssl/cert.pem')),
     },
     host: '0.0.0.0', // Ensure that the server is accessible on LAN
     port: 5173, // Adjust the port if needed

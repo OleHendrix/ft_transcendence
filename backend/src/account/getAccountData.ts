@@ -15,7 +15,8 @@ export default async function getAccountData(fastify: FastifyInstance, prisma: P
 		if (!account)
 			return reply.code(404).send({ message: 'User not found'});
 
-		const jsonData = JSON.stringify(account, null, 2);
+		const { password, ...safeAccount } = account;
+		const jsonData = JSON.stringify(safeAccount, null, 2);
 
 		reply
 			.header('Content-Type', 'application/json')
