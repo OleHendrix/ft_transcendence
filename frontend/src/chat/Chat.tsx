@@ -194,9 +194,9 @@ function MessageList()
 	{
 		if (!isTyping) return;
 
+		const startTime = Date.now();
 		async function typeStatus()
 		{
-			const startTime = Date.now();
 			const elapsedTime = Date.now() - startTime;
 			const remainingTime = Math.max(0, 3000 - elapsedTime);
 			await new Promise(resolve => setTimeout(resolve, remainingTime));
@@ -477,6 +477,7 @@ function MessageInput()
 	const {loggedInAccounts} 					= useAccountContext();
 	const {receiverId, setMessageReceived}		= useChatContext();
 	const [isMessageMenuOpen, setMessageMenu] 	= useState(false);
+	const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) =>
 	{
@@ -520,19 +521,36 @@ function MessageInput()
 
 	async function sendIsTyping()
 	{
-		try
-		{
-			await axios.post(`${API_URL}/api/send-istyping`,
+		// Clear any existing timeout
+		if (typingTimeoutRef.current) {
+			clearTimeout(typingTimeoutRef.current);
+		}
+
+		// Set a new timeout
+		typingTimeoutRef.current = setTimeout(async () => {
+			try
 			{
-				senderId: loggedInAccounts[0]?.id,
-				receiverId: receiverId
-			})
-		}
-		catch (error: any)
-		{
-			console.error("Error in send isTyping", error)
-		}
+				await axios.post(`${API_URL}/api/send-istyping`,
+				{
+					senderId: loggedInAccounts[0]?.id,
+					receiverId: receiverId
+				})
+			}
+			catch (error: any)
+			{
+				console.error("Error in send isTyping", error)
+			}
+		}, 500); // Wait 500ms before sending the typing status
 	}
+
+	// Cleanup timeout on unmount
+	useEffect(() => {
+		return () => {
+			if (typingTimeoutRef.current) {
+				clearTimeout(typingTimeoutRef.current);
+			}
+		};
+	}, []);
 
 	return (
 		<div className="relative w-full">
