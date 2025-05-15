@@ -100,7 +100,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 			isPlaying, setIsPlaying,
 			Tsocket, setTsocket,
 				inTournament, setInTournament,
-			tournamentData, setTournamentData
+			tournamentData, setTournamentData,
 		}), [ accounts, loggedInAccounts, triggerFetchAccounts, isPlaying, Tsocket, inTournament, tournamentData ]);
 	return (
 		<AccountContext.Provider value={value}>

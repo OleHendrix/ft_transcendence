@@ -217,7 +217,7 @@ function Buttons()
 
 function Hero()
 {
-	const { isPlaying, setIsPlaying } = useAccountContext();
+	const { isPlaying } = useAccountContext();
 
 	return(
 		<>
@@ -240,102 +240,5 @@ function Hero()
 		</>
 	)
 }
-
-// function Buttons()
-// {
-// 	const { loggedInAccounts, isPlaying, setIsPlaying } = useAccountContext();
-// 	const navigate = useNavigate();
-// 	const hoverScale = 1.03;
-// 	const tapScale = 0.97;
-
-// 	return(
-// 		<div className="flex justify-center flex-row gap-3 md:gap-20 font-bold text-m md:text-xl w-full">
-
-// 			<div className="flex flex-col space-y-2">
-// 				<p className="text-lg font-medium">1 Player:</p>
-// 				<div className="flex flex-col space-y-3">
-// 					<motion.button 
-// 				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-4 py-0 rounded-3xl
-// 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
-// 				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
-// 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
-// 				onClick={() => 
-// 				{
-// 					startQueue({ player: loggedInAccounts[0], opponentID: Opponent.ANY}, setIsPlaying, navigate);
-// 				}}>
-// 				<p>Online Game</p>
-// 				<BiRocket />
-// 				</motion.button>
-
-// 				<motion.button 
-// 				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
-// 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
-// 				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
-// 				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
-// 				onClick={() => 
-// 				{
-// 					startQueue( { player: { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username }, opponentID: Opponent.AI }, setIsPlaying, navigate);
-// 				}}>
-// 				<p>Versus AI</p>
-// 					<RiRobot2Line />
-// 					</motion.button>
-// 				</div>
-// 			</div>
-
-// 			<div className="flex flex-col space-y-2">
-// 			<p className="text-lg font-medium">2 Players:</p>
-// 			<div className="flex flex-row">
-// 				<motion.button 
-// 				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
-// 				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
-// 				whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
-// 				whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
-// 				onClick={() => AddGame({id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, {id: loggedInAccounts[1].id, username: loggedInAccounts[1].username}, true, setIsPlaying, navigate)}>
-// 				<p>Local Game</p>
-// 				<RiGamepadLine />
-// 				</motion.button>
-// 			</div>
-// 		</div>
-
-// 		<div className="flex flex-col space-y-2">
-// 			<p className="text-lg md:text-lg font-medium">3+ Players:</p>
-// 			<div className="flex flex-row">
-// 			<motion.button 
-// 				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl
-// 				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
-// 				whileHover={(loggedInAccounts.length > 0 ? { scale: hoverScale } : {})}
-// 				whileTap={(loggedInAccounts.length > 0 ? { scale: tapScale } : {})}
-// 					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/menu')}}>
-// 				<p>Tournament</p>
-// 				<TbTournament />
-// 			</motion.button>
-// 			</div>
-// 		</div>
-// 		</div>
-// 	)
-// }
-
-// function Hero()
-// {
-// 	const { isPlaying, setIsPlaying } = useAccountContext();
-// 	return(
-// 		<>
-// 			<div className={`w-full flex flex-col min-h-[calc(100vh-8vh)] p-4 sm:p-8 md:p-12 lg:p-20 justify-start gap-4 sm:gap-6 md:gap-8 lg:gap-10 items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>
-// 					<h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-center text-brand-orange px-4">
-// 						Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?
-// 					</h1>
-// 					<p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-center px-4 max-w-6xl">
-// 						Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?
-// 					</p>
-// 					<div className="w-full max-w-md sm:max-w-lg md:max-w-3xl lg:max-w-6xl">
-// 						<SimplePong />
-// 					</div>
-// 					<div className="w-[90%] sm:max-w-lg md:max-w-3xl lg:max-w-6xl">
-// 						<Buttons />
-// 					</div>
-// 			</div>
-// 		</>
-// 	)
-// }
 
 export default Hero
