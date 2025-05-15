@@ -287,6 +287,7 @@ function PlayerStats()
 			catch (error: any)
 			{
 				console.log(error.response)
+				navigate("/");
 			}
 			setIsLoading(false);
 		}; getAccount()
