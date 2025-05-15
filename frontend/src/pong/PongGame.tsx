@@ -201,7 +201,7 @@ function PongGame()
 						</div>
 					)}
 					<div className='absolute right-[25%] text-2xl opacity-80'>
-						{match?.p2.id === -1 && <RiRobot2Line className="w-8 h-auto text-[#134588]" />}
+						{match?.p2.id === -1 ? <RiRobot2Line className="w-8 h-auto text-[#134588]" /> : match?.p2.username}
 					</div>
 				</nav>
 
