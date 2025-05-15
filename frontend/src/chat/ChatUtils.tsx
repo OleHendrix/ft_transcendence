@@ -236,14 +236,14 @@ export function DefaultMessage({ message, isSender }: MessageProps)
 	const navigate = useNavigate();
 
 	return (
-		<div key={message.id} className={`chat ${isSender ? "chat-end" : "chat-start"} max-w-[95vw] md:max-w-[40vw] whitespace-pre-wrap`}>
+		<div key={message.id} className={`chat ${isSender ? "chat-end" : "chat-start"}`}>
 			<div className="chat-header font-bold hover:underline" onClick={() => navigate(`/playerstats/${message.senderUsername}`)}>
 				{message.senderUsername}
 				<time className="text-xs opacity-50">
 					{format(new Date(message.timestamp), "HH:mm")}
 				</time>
 			</div>
-			<div className={`chat-bubble ${isSender ? "bg-[#ff914d]" : "bg-[#134588]"}`}>
+			<div className={`chat-bubble break-words ${isSender ? "bg-[#ff914d]" : "bg-[#134588]"}`}>
 				{message.content}
 			</div>
 		</div>
