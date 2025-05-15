@@ -9,7 +9,7 @@ import { formatTime, ParseResult } from './pongUtils';
 import { usePongContext } from '../contexts/PongContext';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { IoArrowUndoOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
-import { isBrowser, isMobile, isTablet } from "react-device-detect";
+import { isMobile, isTablet } from "react-device-detect";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
@@ -18,14 +18,10 @@ function PongGame()
 {
 	const { loggedInAccounts, setIsPlaying } 					= useAccountContext();
 	const { pongState: pong, setPongState, match, setMatch }	= usePongContext();
-	const location												= useLocation();
 	const navigate												= useNavigate();
-	const navigationType										= useNavigationType();
-	const firstRender 											= useRef(true);
-
-	const isOnPC = !(isMobile || isTablet);
 
 	const socketRef         = useRef<WebSocket | null>(null);
+	const isOnPC            = !(isMobile || isTablet)
 	const keysPressed       = useRef<{ [key: string]: boolean }>({});
 	const mobileKeysPressed = useRef<{ [key: string]: boolean }>({});
 
@@ -58,12 +54,8 @@ function PongGame()
 				console.log(error);
 			}
 		};
-		// const handlePopState = () => {
-		// 	console.log("popstate")
-		// 	leaveMatch(loggedInAccounts[0]?.id);
-		// };
+
 		window.addEventListener("beforeunload", handleUnload);
-		// window.addEventListener("popstate",     handlePopState);
 		window.addEventListener("keydown",      handleKeyDown);
 		window.addEventListener("keyup",        handleKeyUp);
 
@@ -91,7 +83,6 @@ function PongGame()
 
 		return () => {
 			window.removeEventListener("beforeunload", handleUnload);
-			// window.removeEventListener("popstate",     handlePopState);
 			window.removeEventListener("keydown",      handleKeyDown);
 			window.removeEventListener("keyup",        handleKeyUp);
 			leaveMatch(loggedInAccounts[0].id);
@@ -102,12 +93,6 @@ function PongGame()
 	}, []);
 
 	function leaveMatch(userID: number | undefined) {
-		// if (match.tournamentId !== -1) {
-		// 	console.log("yESSS");
-		// 	// navigate(-1);
-		// } else {
-		// 	navigate('/', { replace: true });
-		// }
 		setIsPlaying(PlayerState.idle);
 		if (userID)
 		{
@@ -116,11 +101,6 @@ function PongGame()
 			});
 		}
 		socketRef.current?.close();
-		// if (match.tournamentId === -1) {
-		// 	navigate('/', { replace: true });
-		// } else {
-		// 	navigate(-1);
-		// }
 	}
 
 	const [isP1Bouncing, setP1IsBouncing] = useState(false);
@@ -144,19 +124,34 @@ function PongGame()
 		return (<div className='text-2xl italic'>loading...</div>);
 	}
 
-	function CreateMotionButton( pos: Vec2, output: string, isUp: boolean) {
+	function CreateButton(pos: Vec2, output: string, isUp: boolean) {
+		function handlePointerDown() {
+			mobileKeysPressed.current[output] = true;
+	
+			// Add global listener to catch pointer up anywhere
+			const handleGlobalPointerUp = () => {
+				mobileKeysPressed.current[output] = false;
+				window.removeEventListener("pointerup", handleGlobalPointerUp);
+				window.removeEventListener("pointercancel", handleGlobalPointerUp);
+			};
+	
+			window.addEventListener("pointerup", handleGlobalPointerUp);
+			window.addEventListener("pointercancel", handleGlobalPointerUp);
+		}
+	
 		return (
-			<motion.button
-				className="flex items-center justify-center rounded-lg bg-white/10 hover:cursor-pointer absolute -translate-x-1/2 -translate-y-1/2 shadow-xl text-5xl text-center text-gray-400"
-				whileHover={{ scale: 1.00 }}
-				whileTap={{ scale: 0.94 }}
-				style={{ width: '10vh', height: '10vh', top: `${pos.y}vh`, left: `${pos.x}vw` }}
-				onPointerDown  ={() => { mobileKeysPressed.current[output] = true;  }}
-				onPointerLeave ={() => { mobileKeysPressed.current[output] = false; }}
-				onPointerUp    ={() => { mobileKeysPressed.current[output] = false; }}
+			<button
+				className="flex items-center justify-center rounded-lg bg-white/10 hover:cursor-pointer absolute -translate-x-1/2 -translate-y-1/2 shadow-xl text-5xl text-center text-gray-400 active:scale-95 transition-transform touch-none"
+				style={{
+					width: '15vh',
+					height: '15vh',
+					top: `${pos.y}vh`,
+					left: `${pos.x}vw`,
+				}}
+				onPointerDown={handlePointerDown}
 			>
 				{isUp ? <IoChevronUp /> : <IoChevronDown />}
-			</motion.button>
+			</button>
 		);
 	}
 
@@ -164,19 +159,20 @@ function PongGame()
 		if (isOnPC) {
 			return (<></>);
 		}
+		const [topY, bottomY] = [60, 76];
 		return (
 			<>
 				{match?.isLocalGame && match.p2.id !== -1 ? 
 					<>
-						{CreateMotionButton({ x: 25, y: 64 }, 'w', true)}
-						{CreateMotionButton({ x: 25, y: 75 }, 's', false)}
-						{CreateMotionButton({ x: 75, y: 64 }, 'ArrowUp', true)}
-						{CreateMotionButton({ x: 75, y: 75 }, 'ArrowDown', false)}
+						{CreateButton({ x: 25, y: topY    }, 'w',         true)}
+						{CreateButton({ x: 25, y: bottomY }, 's',         false)}
+						{CreateButton({ x: 75, y: topY    }, 'ArrowUp',   true)}
+						{CreateButton({ x: 75, y: bottomY }, 'ArrowDown', false)}
 					</>
 					:
 					<>
-						{CreateMotionButton({ x: 50, y: 64 }, 'w', true)}
-						{CreateMotionButton({ x: 50, y: 75 }, 's', false)}
+						{CreateButton({ x: 50, y: topY    }, 'w', true)}
+						{CreateButton({ x: 50, y: bottomY }, 's', false)}
 					</>
 				}
 			</>
@@ -186,8 +182,8 @@ function PongGame()
 	const bounceStrength = -Math.min(1.2 * pong.ball.dir.x, 6.0);
 	return (
 		<>
-			<div className='fixed inset-0 bg-zinc-850 w-screen h-screen flex flex-col'>
-				<nav className="sticky top-0 bg-zinc-850 text-white h-[8vh] min-h-[80px] flex items-center shadow-xl text-lg font-medium z-10">
+			<div className='flex flex-col min-h-screen bg-zinc-850 w-screen h-screen flex flex-col'>
+				<nav className="h-[80px] shrink-0 bg-zinc-850 text-white shadow-xl flex items-center z-10">
 					<motion.button className="absolute left-[6vw] md:left-[4vw]" whileHover={{scale: 1.07}} whileTap={{scale: 0.93}} onClick={() => navigateBack()}>
 						<IoArrowUndoOutline className="h-8 w-auto hover:cursor-pointer opacity-30 hover:opacity-70" />
 					</motion.button>
@@ -204,8 +200,7 @@ function PongGame()
 						{match?.p2.id === -1 ? <RiRobot2Line className="w-8 h-auto text-[#134588]" /> : match?.p2.username}
 					</div>
 				</nav>
-
-				<div className={`w-screen min-h-[calc(100vh-8vh)] box-border overflow-hidden relative m-0 ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
+				<main className={`flex-1 overflow-hidden relative ${pong.result === Result.PLAYING ? "" : "blur-sm"}`}>
 					<div className="relative w-full h-full">
 						<div className="absolute inset-0 text-[75%] flex justify-center items-center font-black">
 							<div className="h-full w-1/2 flex justify-center items-center">
@@ -267,7 +262,7 @@ function PongGame()
 						/>
 						<RenderButtons />
 					</div>
-				</div>
+				</main>
 
 				{pong.result !== Result.PLAYING &&
 				<AnimatePresence>
