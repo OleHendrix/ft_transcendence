@@ -236,7 +236,7 @@ export function DefaultMessage({ message, isSender }: MessageProps)
 	const navigate = useNavigate();
 
 	return (
-		<div key={message.id} className={`chat ${isSender ? "chat-end" : "chat-start"}`}>
+		<div key={message.id} className={`chat ${isSender ? "chat-end" : "chat-start"} max-w-[95vw] md:max-w-[40vw] whitespace-pre-wrap`}>
 			<div className="chat-header font-bold hover:underline" onClick={() => navigate(`/playerstats/${message.senderUsername}`)}>
 				{message.senderUsername}
 				<time className="text-xs opacity-50">
