@@ -477,7 +477,7 @@ function MessageInput()
 	const {loggedInAccounts} 					= useAccountContext();
 	const {receiverId, setMessageReceived}		= useChatContext();
 	const [isMessageMenuOpen, setMessageMenu] 	= useState(false);
-	const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const typingTimeoutRef = useRef<number| null>(null);
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) =>
 	{
@@ -540,7 +540,7 @@ function MessageInput()
 			{
 				console.error("Error in send isTyping", error)
 			}
-		}, 500); // Wait 500ms before sending the typing status
+		}, 500) as unknown as number; // Wait 500ms before sending the typing status
 	}
 
 	// Cleanup timeout on unmount
