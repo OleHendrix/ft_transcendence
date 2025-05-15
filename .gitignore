@@ -3,6 +3,7 @@
 ./backend/dist
 ./backend/ssl
 ./frontend/ssl
+./ssl
 *.local
 *.db
 
