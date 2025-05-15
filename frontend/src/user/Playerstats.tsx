@@ -1,4 +1,4 @@
-import { fetchAccounts, useAccountContext } from "../contexts/AccountContext";
+import { useAccountContext } from "../contexts/AccountContext";
 import { useChatContext } from "../contexts/ChatContext";
 import { useState, useEffect, useMemo, use } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
