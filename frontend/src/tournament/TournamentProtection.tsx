@@ -42,7 +42,10 @@ function TournamentProtection({children}: {children: ReactNode})
 	useEffect(() =>
 	{
 		if (error)
-			throw new Response("Tournament not found", { status: 404 });
+		{
+			navigate("/");
+			return;
+		}
 		if (!tournamentData || !loggedInAccounts.length)
 			return;
 		const isPlayerInTournament = tournamentData.players.some((p: PlayerData) => p.id === loggedInAccounts[0].id);
@@ -51,7 +54,8 @@ function TournamentProtection({children}: {children: ReactNode})
 		if ((isTournamentFull && !isPlayerInTournament))
 		{
 			setAuthorized(false);
-			throw new Response("Unauthorized", { status: 401 });
+			navigate("/");
+			return;
 		}
 		else
 			setAuthorized(true);
