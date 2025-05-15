@@ -1,4 +1,4 @@
-import { useAccountContext } from "../contexts/AccountContext";
+import { fetchAccounts, useAccountContext } from "../contexts/AccountContext";
 import { useChatContext } from "../contexts/ChatContext";
 import { useState, useEffect, useMemo, use } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
@@ -198,13 +198,14 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 	if (player[stat] === null)
 		return "Play a match to see ranking";
 	const [worseThan, total] = calcWorseThan(player, stat, accounts);
-	const percentile = toPercentage((worseThan / total) * 100, 1);
-	return `Top ${percentile}% - #${worseThan + 1}`
+	const percentage = Math.max(0.1 , toPercentage(100 / (total / worseThan), 1));
+	return `Top ${percentage}% - #${worseThan + 1}`
 }
 
 function ShowStats({selectedAccount} : {selectedAccount: PlayerType})
 {
 	const { accounts } = useAccountContext();
+	fetchAccounts();
 
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{

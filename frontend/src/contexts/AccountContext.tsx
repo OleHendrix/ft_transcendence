@@ -25,6 +25,31 @@ type AccountContextType =
 
 const AccountContext = createContext<AccountContextType | null>(null);
 
+export async function fetchAccounts()
+{
+	const { loggedInAccounts, setAccounts } = useAccountContext();
+	try
+	{
+		const userId = loggedInAccounts[0]?.id;
+		if (!userId)
+			return;
+		const response = await secureApiCall(userId, (accessToken) =>
+			 axios.post(`${API_URL}/api/get-accounts`, {},
+			{
+				headers:
+				{
+					Authorization: `Bearer ${accessToken}`
+				}
+			})
+		);
+		setAccounts(response.data.accounts);
+	}
+	catch (error: any)
+	{
+		console.log(error.response.data);
+	}
+}
+
 export function AccountProvider({ children }: {children: ReactNode})
 {
 	const [ accounts,                 setAccounts]                 	= useState<PlayerType[]>([]);
@@ -66,29 +91,7 @@ export function AccountProvider({ children }: {children: ReactNode})
 			}
 		}; checkLoggedInAccounts()
 
-		async function fetchAccounts()
-		{
-			try
-			{
-				const userId = loggedInAccounts[0]?.id;
-				if (!userId)
-					return;
-				const response = await secureApiCall(userId, (accessToken) =>
-					 axios.post(`${API_URL}/api/get-accounts`, {},
-					{
-						headers:
-						{
-							Authorization: `Bearer ${accessToken}`
-						}
-					})
-				);
-				setAccounts(response.data.accounts);
-			}
-			catch (error: any)
-			{
-				console.log(error.response.data);
-			}
-		} fetchAccounts();
+		fetchAccounts();
 		setTriggerFetchAccounts(false);
 	}, [ triggerFetchAccounts ])
 
