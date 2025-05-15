@@ -11,6 +11,7 @@ import "./css/ponganimation.css";
 import { PlayerState, PlayerData, QueueData, Opponent } from './types';
 import { useState, useEffect } from 'react';
 import { API_URL } from './utils/network';
+import AnimatedBackground from './utils/AnimatedBackground';
 import { WS_URL } from './utils/network';
 
 function SimplePong()
@@ -103,7 +104,7 @@ export function Queue()
 	return (
 		<AnimatePresence>
 			<motion.div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-				<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-full max-w-md relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+				<motion.div className="flex flex-col items-center bg-zinc-800 text-white p-8 gap-8 rounded-lg w-full max-w-md relative shadow-xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 					<div className="justify-center space-y-3">
 						<h1 className="block text-4xl font-medium text-center">Looking for a match...</h1>
 						<h1 className="block text-l font-medium text-gray-500 text-center">Queue time: {queueTime}s</h1>
@@ -155,46 +156,43 @@ function Buttons()
 			<div className="flex flex-col space-y-2">
 			<p className="text-lg font-medium">1 Player:</p>
 			<div className="flex flex-row space-x-3">
-				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
-				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
-				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
-				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
+				<button
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left-button
+				${loggedInAccounts.length < 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#246bcb] hover:cursor-pointer hover:scale-102'}`}
+				disabled={loggedInAccounts.length < 1}
 				onClick={() => 
 				{
 					startQueue({ player: loggedInAccounts[0], opponentID: Opponent.ANY}, setIsPlaying, navigate);
 				}}>
 				<p>Online Game</p>
 				<BiRocket />
-				</motion.button>
+				</button>
 
-				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
-				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
-				whileHover={(loggedInAccounts.length >= 1 ? { scale: hoverScale } : {})}
-				whileTap={(loggedInAccounts.length >= 1 ? { scale: tapScale } : {})}
+				<button 
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left-button
+				${loggedInAccounts.length < 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#246bcb] hover:cursor-pointer hover:scale-102'}`}
+				disabled={loggedInAccounts.length < 1}
 				onClick={() => 
 				{
 					startQueue( { player: { id: loggedInAccounts[0].id, username: loggedInAccounts[0].username }, opponentID: Opponent.AI }, setIsPlaying, navigate);
 				}}>
 				<p>Versus AI</p>
 				<RiRobot2Line />
-				</motion.button>
+				</button>
 			</div>
 			</div>
 
 			<div className="flex flex-col space-y-2">
 			<p className="text-lg md:text-lg font-medium">2 Players:</p>
 			<div className="flex flex-row">
-				<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl
-				${loggedInAccounts.length < 2 ? 'opacity-40' : 'hover:bg-[#246bcb] hover:cursor-pointer'}`}
-				whileHover={(loggedInAccounts.length >= 2 ? { scale: hoverScale } : {})}
-				whileTap={(loggedInAccounts.length >= 2 ? { scale: tapScale } : {})}
+				<button 
+				className={`flex items-center h-10 space-x-2 bg-[#134588] text-white px-3 py-0 rounded-3xl animate-slide-in-left-button
+				${loggedInAccounts.length < 2 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#246bcb] hover:cursor-pointer hover:scale-102'}` }
+				disabled={loggedInAccounts.length < 2}
 				onClick={() => AddGame({id: loggedInAccounts[0].id, username: loggedInAccounts[0].username}, {id: loggedInAccounts[1].id, username: loggedInAccounts[1].username}, true, setIsPlaying, navigate)}>
 				<p>Local Game</p>
 				<RiGamepadLine />
-				</motion.button>
+				</button>
 			</div>
 			</div>
 		</div>
@@ -202,15 +200,14 @@ function Buttons()
 		<div className="flex flex-col space-y-2">
 			<p className="text-lg md:text-lg font-medium">3+ Players:</p>
 			<div className="flex flex-row">
-			<motion.button 
-				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl
-				${loggedInAccounts.length < 1 ? 'opacity-40' : 'hover:bg-[#ab5a28] hover:cursor-pointer'}`}
-				whileHover={(loggedInAccounts.length > 0 ? { scale: hoverScale } : {})}
-				whileTap={(loggedInAccounts.length > 0 ? { scale: tapScale } : {})}
-					onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/menu')}}>
+			<button 
+				className={`flex items-center h-10 space-x-2 bg-[#ff914d] text-white px-3 py-0 rounded-3xl animate-slide-in-left-button
+				${loggedInAccounts.length < 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#ab5a28] hover:cursor-pointer hover:scale-102'}`}
+				disabled={loggedInAccounts.length < 1}
+				onClick={() =>  {if (isPlaying !== PlayerState.playing) navigate('/tournament/menu')}}>
 				<p>Tournament</p>
 				<TbTournament />
-			</motion.button>
+			</button>
 			</div>
 		</div>
 		</div>
@@ -219,19 +216,23 @@ function Buttons()
 
 function Hero()
 {
-	const { isPlaying, setIsPlaying } = useAccountContext();
+	const { isPlaying } = useAccountContext();
+
 	return(
 		<>
-			<div className={`w-full flex flex-col lg:flex-row min-h-[calc(100vh-8vh)] justify-between items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>
+			<div className={`relative w-full flex flex-col lg:flex-row min-h-[calc(100vh-8vh)] justify-between items-center ${isPlaying === PlayerState.queueing ? "blur-sm" : ""}`}>
+				<div className="absolute inset-0 w-full h-full pointer-events-none z-0">
+					<AnimatedBackground />
+				</div>
 				<div className="w-full lg:w-1/2 flex justify-center flex-col p-6 pl-[6vw] md:pl-[4vw] space-y-12">
-					<h1 className="text-5xl md:text-6xl font-semibold text-center md:text-left text-brand-orange">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
-					<p className="text-2xl md:text-3xl text-center md:text-left">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
+					<h1 className="text-5xl md:text-6xl font-semibold text-center md:text-left text-brand-orange animate-slide-in-left animate-fade-in">Are you ready for a <span className="font-black italic text-[#ff914d]">transcending</span> game of Pong?</h1>
+					<p className="text-2xl md:text-3xl text-center md:text-left animate-slide-in-left">Get ready for the ultimate Pong experience. Challenge your friends in fast-paced, competitive matches where every point matters. Are you ready to outplay, outlast, and outscore?</p>
 					<Buttons />
 					<div className="md:hidden">
 						<Players />
 					</div>
 				</div>
-				<div className="w-full lg:w-1/2 flex justify-center flex-col p-6 pr-[6vw] md:pr-[4vw] space-y-12">
+				<div className="w-full lg:w-1/2 flex justify-center flex-col p-6 pr-[6vw] md:pr-[4vw] space-y-12 animate-slide-in animate-fade-in">
 					<SimplePong />
 				</div>
 			</div>

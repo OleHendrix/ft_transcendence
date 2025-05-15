@@ -220,7 +220,7 @@ export default function Leaderboard()
 	return (
 		<ModalWrapper>
 			<motion.div
-				className="flex flex-col items-center bg-[#2a2a2a]/90 text-white gap-8 rounded-lg p-4 md:p-8 w-full max-w-xl md:max-w-xl mx-4 md:mx-8 lg:mx-16 h-auto max-h-[80vh] relative shadow-xl"
+				className="flex flex-col items-center bg-zinc-800 text-white gap-8 rounded-lg p-4 md:p-8 w-full max-w-xl md:max-w-xl mx-4 md:mx-8 lg:mx-16 h-auto max-h-[80vh] relative shadow-xl"
 				initial={{ scale: 0.9, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.9, y: 20 }}

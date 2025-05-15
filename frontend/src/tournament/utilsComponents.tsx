@@ -86,6 +86,7 @@ export async function startTournament({ userId, id, tournamentData }: ButtonFunc
 					content: `Tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
 					senderId: 1,
 					receiverId: 1,
+					status: -1,
 				},
 				{
 					headers:
@@ -124,6 +125,7 @@ export async function startNextRound({ userId, id, tournamentData }: ButtonFunct
                     content: `The next round of tournament ${id} is starting!, ${tournamentData?.players.map(player => player.username).join(', ')}, get ready`,
                     senderId: 1,
                     receiverId: 1,
+					status: -1,
                 },
                 {
                     headers: 

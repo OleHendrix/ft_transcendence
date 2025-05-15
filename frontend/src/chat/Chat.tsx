@@ -10,7 +10,7 @@ import { IoMdClose } from "react-icons/io";
 import { RiGroup2Line } from "react-icons/ri";
 import { CgUnblock } from "react-icons/cg";
 import { BiRocket } from "react-icons/bi";
-import { GameInvite, DefaultMessage, FriendRequest, IsTypingBubble, EmptyChatBanner } from "./ChatUtils";
+import { GameInvite, DefaultMessage, FriendRequest, IsTypingBubble, EmptyChatBanner, TournamentUpdate } from "./ChatUtils";
 import { PlayerData } from "../types";
 import axios from 'axios';
 import SearchBar from "../utils/SearchBar";
@@ -96,13 +96,15 @@ function Chat()
 	}, [chatSessionId]);
 
 	return(
-		<div className="fixed left-[2vw] bottom-[2vw] hover:cursor-pointer z-10">
+		<div className="fixed left-[2vw] bottom-[2vw] z-10">
 		{!isOpen &&
 		(
-			<motion.div whileHover={{ scale: 1.17 }} whileTap={{ scale: 0.89 }}>
+			<motion.div
+				whileHover={(loggedInAccounts.length > 0 ? { scale: 1.17 } : {})}
+				whileTap={(loggedInAccounts.length > 0 ? { scale: 0.89 } : {})}>
 				<BiSolidChat
 					size={32}
-					className="text-[#ff914d] hover:text-[#ab5a28] transition-colors cursor-pointer"
+						className={`text-[#ff914d] transition-colors ${loggedInAccounts.length < 1 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:text-[#ab5a28]'}`}
 					onClick={() => loggedInAccounts.length > 0 && setIsOpen(true)}
 				/>
 			</motion.div>
@@ -118,7 +120,7 @@ function ChatWindow( { setIsOpen }: { setIsOpen: (open: boolean) => void } )
 	<div
 		className="fixed inset-0 backdrop-blur-sm z-20"
 		onClick={() => setIsOpen(false)}>
-		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between p-6 pt-10 h-[calc(100vh-6vw)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-black/90 shadow-2xl rounded-2xl z-50" onClick={(e) => e.stopPropagation()}>
+		<div className="chat absolute left-[2vw] bottom-[2vw] flex flex-col justify-between p-6 pt-10 h-[calc(100vh-12vh)] w-[95vw] md:w-[40vw] md:min-w-[475px] bg-zinc-950 shadow-2xl rounded-2xl z-50" onClick={(e) => e.stopPropagation()}>
 			<button className="absolute top-2 right-2 text-gray-400 hover:text-white hover:cursor-pointer" onClick={() => setIsOpen(false)}>
 				<IoMdClose size={24} />
 			</button>
@@ -157,7 +159,7 @@ function ChatHeader()
 							whileHover={{ scale: 1.07 }}
 							whileTap={{ scale: 0.93 }}
 							onClick={() => {setReceiverId(account.id); setReceiverUsername(account.username)}}/>
-							{account.avatar !== '' && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70"></div>}
+							{account.avatar !== '' && <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black to-transparent opacity-70 pointer-events-none"></div>}
 							</div>
 						<p className="text-[10px] opacity-90 w-full text-center truncate">{account.username}</p>
 					</div>
@@ -190,9 +192,11 @@ function MessageList()
 
 	useEffect(() =>
 	{
+		if (!isTyping) return;
+
+		const startTime = Date.now();
 		async function typeStatus()
 		{
-			const startTime = Date.now();
 			const elapsedTime = Date.now() - startTime;
 			const remainingTime = Math.max(0, 3000 - elapsedTime);
 			await new Promise(resolve => setTimeout(resolve, remainingTime));
@@ -298,6 +302,8 @@ function MessageList()
 					return <GameInvite key={message.id} message={message} isSender={isSender} />;
 				else if (isFriendRequest)
 					return <FriendRequest key={message.id} message={message} isSender={isSender} />;
+				else if (message.status === -1)
+					return <TournamentUpdate key={message.id} message={message} isSender={isSender} />;
 				else
 					return <DefaultMessage key={message.id} message={message} isSender={isSender} />;
 			})}
@@ -309,10 +315,10 @@ function MessageList()
 	);
 }
 
-function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => void }) 
+function MessageMenu({ setMessageMenu, receiverId }: { setMessageMenu: (open: boolean) => void, receiverId: number }) 
 {
 	const { loggedInAccounts, setIsPlaying } = useAccountContext();
-	const { receiverId, setMessageReceived, setIsBlocked } = useChatContext();
+	const { setMessageReceived, setIsBlocked } = useChatContext();
 	const navigate = useNavigate();
 
 	function inviteSocket(msgID: number) {
@@ -446,16 +452,21 @@ function MessageMenu({ setMessageMenu }: { setMessageMenu: (open: boolean) => vo
 						<BiRocket size={16}/>
 					Send game invite
 				</li>
-				<li className="cursor-pointer flex items-center gap-1 bg-[#ff914d] hover:bg-[#ab5a28] p-2 rounded-md transition-colors"
-					onClick={sendFriendRequest}>
-						<FaUserFriends size={16}/>
-					Send friend request
-				</li>
-				<li className="cursor-pointer flex items-center gap-1 p-2 bg-[#ff914d] hover:bg-[#ab5a28] rounded-md transition-colors"
-					onClick={blockUser}>
-						<MdBlock size={16}/>
-					Block user
-				</li>
+				{receiverId !== -1 &&
+				(
+					<>
+						<li className="cursor-pointer flex items-center gap-1 bg-[#ff914d] hover:bg-[#ab5a28] p-2 rounded-md transition-colors"
+							onClick={sendFriendRequest}>
+								<FaUserFriends size={16}/>
+						Send friend request
+					</li>
+					<li className="cursor-pointer flex items-center gap-1 p-2 bg-[#ff914d] hover:bg-[#ab5a28] rounded-md transition-colors"
+						onClick={blockUser}>
+							<MdBlock size={16}/>
+							Block user
+						</li>
+					</>
+				)}
 			</ul>
 		</div>
 	);
@@ -466,6 +477,7 @@ function MessageInput()
 	const {loggedInAccounts} 					= useAccountContext();
 	const {receiverId, setMessageReceived}		= useChatContext();
 	const [isMessageMenuOpen, setMessageMenu] 	= useState(false);
+	const typingTimeoutRef = useRef<number| null>(null);
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) =>
 	{
@@ -509,19 +521,36 @@ function MessageInput()
 
 	async function sendIsTyping()
 	{
-		try
-		{
-			await axios.post(`${API_URL}/api/send-istyping`,
+		// Clear any existing timeout
+		if (typingTimeoutRef.current) {
+			clearTimeout(typingTimeoutRef.current);
+		}
+
+		// Set a new timeout
+		typingTimeoutRef.current = setTimeout(async () => {
+			try
 			{
-				senderId: loggedInAccounts[0]?.id,
-				receiverId: receiverId
-			})
-		}
-		catch (error: any)
-		{
-			console.error("Error in send isTyping", error)
-		}
+				await axios.post(`${API_URL}/api/send-istyping`,
+				{
+					senderId: loggedInAccounts[0]?.id,
+					receiverId: receiverId
+				})
+			}
+			catch (error: any)
+			{
+				console.error("Error in send isTyping", error)
+			}
+		}, 500) as unknown as number; // Wait 500ms before sending the typing status
 	}
+
+	// Cleanup timeout on unmount
+	useEffect(() => {
+		return () => {
+			if (typingTimeoutRef.current) {
+				clearTimeout(typingTimeoutRef.current);
+			}
+		};
+	}, []);
 
 	return (
 		<div className="relative w-full">
@@ -540,7 +569,7 @@ function MessageInput()
 				<FiPlus size={25} />
 			</motion.div>
 
-			{isMessageMenuOpen && <MessageMenu setMessageMenu={setMessageMenu} />}
+			{isMessageMenuOpen && <MessageMenu setMessageMenu={setMessageMenu} receiverId={receiverId} />}
 		</div>
 	);
 }

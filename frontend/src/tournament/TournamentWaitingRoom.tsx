@@ -18,14 +18,16 @@ export default function TournamentWaitingRoom()
 	const navigate 																			= useNavigate();
 	const { id }																			= useParams();						
 	let matchCounter 																		= 1;				
-	const isNavigatingToGame 																= useRef(false);				
 	const socketRef																			= useRef<WebSocket | null>(null);
 	useGetTournamentData({ id: id!, setTournamentData });
 	const setTournamentDataRef = useRef(setTournamentData);
 	setTournamentDataRef.current = setTournamentData;
+	// const setInTournamentRef = useRef(setInTournament);
+	// setInTournamentRef.current = setInTournament;
 
 	useEffect(() =>
 	{
+		localStorage.setItem('isNavigatingToGame', 'false');
 		const player = loggedInAccounts[0];
 		if (!id || !player?.id || !player?.username)
 		{
@@ -35,13 +37,13 @@ export default function TournamentWaitingRoom()
 		if (!inTournament)
 		{
 			socketRef.current = new WebSocket(`${WS_URL}/ws/join-tournament?playerId=${player.id}&playerUsername=${player.username}&tournamentId=${Number(id)}`);
-			socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentDataRef, setCountdown, setIsPlaying, isNavigatingToGame, navigate, event });
+			socketRef.current.onmessage = (event) => socketOnMessage({ playerId: player.id, playerUsername: player.username, tournamentId: Number(id), setTournamentDataRef, setCountdown, setIsPlaying, navigate, event });
 			setTsocket(socketRef.current);
 			setInTournament(true);
 		}
 		return () => 
 		{
-			if (!isNavigatingToGame.current)
+			if (localStorage.getItem('isNavigatingToGame') === 'false')
 			{
 				if (Tsocket)
 				{
@@ -69,7 +71,7 @@ export default function TournamentWaitingRoom()
 
 
 	return (
-		<div className="absolute h-screen min-h-screen w-screen backdrop-blur-md bg-[#1e1e1e] p-10 flex flex-col z-50">
+		<div className="absolute h-screen min-h-screen w-screen backdrop-blur-md bg-zinc-800 p-10 flex flex-col z-50">
 				<BackgroundImage />
 
 				<CloseButton onClick={() => navigate('/')} />

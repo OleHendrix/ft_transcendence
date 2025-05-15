@@ -34,6 +34,16 @@ export default async function setMsgStatus(server: FastifyInstance, prisma: Pris
 					status: status,
 				},
 			});
+
+			await prisma.message.deleteMany(
+				{
+					where:
+					{
+						chatSessionId: chatSession.id,
+						content: "::gameInvite::",
+						NOT: { id: messageId }
+					}
+				});
 			notifyClients(update);
 			reply.send({ success: true, message: "Message status updated successfully." });
 		} catch (error) {

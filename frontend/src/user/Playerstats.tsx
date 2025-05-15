@@ -39,6 +39,34 @@ import { Line } from 'react-chartjs-2';
 
 import { API_URL } from '../utils/network';
 
+// function ShowStatsSkeleton() 
+// {
+// 	return (
+// 		<div className="w-full border border-base-content/20 bg-transparent">
+// 			<div className="h-12 bg-gray-700 animate-pulse"></div>
+// 			<div className="space-y-2 p-2">
+// 				{[...Array(6)].map((_, i) => (
+// 					<div key={i} className="h-16 bg-gray-700 animate-pulse"></div>
+// 				))}
+// 			</div>
+// 		</div>
+// 	);
+// }
+
+// function ShowMatchHistorySkeleton()
+// {
+// 	return (
+// 		<div className="border border-base-content/20 bg-transparent md:h-[486px]">
+// 		<div className="h-12 bg-gray-700 animate-pulse"></div>
+// 		<div className="space-y-2 p-2">
+// 			{[...Array(5)].map((_, i) => (
+// 			<div key={i} className="h-18 bg-gray-700 animate-pulse"></div>
+// 			))}
+// 		</div>
+// 		</div>
+//   );
+// }
+
 function ShowHistoryGraph({matchHistory, selectedAccount} : {matchHistory: MatchHistory[], selectedAccount: PlayerType})
 {
 	let history: number[] = [];
@@ -170,13 +198,14 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 	if (player[stat] === null)
 		return "Play a match to see ranking";
 	const [worseThan, total] = calcWorseThan(player, stat, accounts);
-	const percentile = toPercentage((worseThan / total) * 100, 1);
-	return `Top ${percentile}% - #${worseThan + 1}`
+	const percentage = Math.max(0.1 , toPercentage(100 / (total / worseThan), 1));
+	return `Top ${percentage}% - #${worseThan + 1}`
 }
 
 function ShowStats({selectedAccount} : {selectedAccount: PlayerType})
 {
-	const { accounts } = useAccountContext();
+	const { accounts, setTriggerFetchAccounts } = useAccountContext();
+	useEffect(() => setTriggerFetchAccounts(true), []);
 
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{
@@ -228,6 +257,7 @@ function PlayerStats()
 	const [ friendStatus, setFriendStatus ] = useState(false);
 	const [ playerRank, setPlayerRank] = useState(0)
 	const { username } = useParams();
+	const [isLoading, setIsLoading] = useState(true);
 	const navigate = useNavigate();
 
 	useEffect(() =>
@@ -236,6 +266,7 @@ function PlayerStats()
 			return ;
 		async function getAccount()
 		{
+			setIsLoading(true);
 			try
 			{
 				const response = await axios.get(`${API_URL}/api/get-account`,
@@ -257,11 +288,9 @@ function PlayerStats()
 			{
 				console.log(error.response)
 			}
+			setIsLoading(false);
 		}; getAccount()
 	}, [loggedInAccounts])
-
-	if (!loggedInAccounts.length)
-		return <div className="text-white text-center mt-10">Loading account...</div>; // Bij refresh heeft loggedincaccounts tijd nodig om te fetchen.
 
 	async function sendFriendRequest()
 	{
@@ -285,16 +314,19 @@ function PlayerStats()
 			console.log(error.response)
 		}
 	}
+
+	if (!loggedInAccounts.length)
+		return <div>Loading...</div>;
 	const matchHistory = selectedAccount?.matches ?? [];
 	const sortedMatchHistory = [...matchHistory].sort((a, b) => b.id - a.id);
 
 	return (
 		<ModalWrapper>
 			<motion.div
-				className="flex flex-col items-center bg-[#2a2a2a] text-white p-4 md:p-8 gap-4 md:gap-8 
+				className="flex flex-col items-center bg-zinc-800 text-white p-4 md:p-8 gap-4 md:gap-8 
 					w-full max-w-3xl mx-2 md:mx-8 lg:mx-16 
 					h-[90vh] md:h-auto md:max-h-[85vh] overflow-y-auto
-					rounded-xl relative shadow-2xl border border-[#383838]"
+					rounded-xl relative shadow-2xl border border-zinc-700"
 				initial={{ scale: 0.9, y: 20 }}
 				animate={{ scale: 1, y: 0 }}
 				exit={{ scale: 0.9, y: 20 }}
@@ -342,11 +374,10 @@ function PlayerStats()
 				<div className="flex flex-col w-full gap-3">
 					<div className="flex flex-col md:flex-row justify-center w-full gap-3 h-full">
 						<div className="w-full md:w-2/5 flex-shrink-0">
-							{selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType}/>}
+							{selectedAccount && <ShowStats selectedAccount={selectedAccount as PlayerType} />}
 						</div>
-
 						<div className="w-full md:w-3/5 flex-grow">
-							{selectedAccount && <ShowMatchHistory sorted={sortedMatchHistory as MatchHistory[]}/>}
+							{selectedAccount && <ShowMatchHistory sorted={sortedMatchHistory as MatchHistory[]} />}
 						</div>
 					</div>
 

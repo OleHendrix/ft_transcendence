@@ -29,24 +29,26 @@ export function handleJoinTournament(connection: WebSocket, playerId: number, pl
 		tournament.sockets.add(tsocket);
 		console.log(`handleJoinTournament:Player${playerId}:REJOINED:tournament${tournamentId}`);
 		broadcastTournamentUpdate(tournamentId, "DATA");
-		return;
 	}
-	if (tournament.players.length >= tournament.maxPlayers)
+	else
 	{
-		console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`);
-		connection.close();
-		return;
+		if (tournament.players.length >= tournament.maxPlayers)
+		{
+			console.log(`handleJoinTournament:Tournament:${tournamentId}:ERROR_TOURNAMENT_FULL`);
+			connection.close();
+			return;
+		}
+		
+		const player: PlayerData =
+		{
+			id: playerId,
+			username: playerUsername,
+		};
+		
+		tournament.players.push(player);
+		tournament.sockets.add(tsocket);
+		console.log(`ADDING SOCKET WITH PLAYER ID ${tsocket.playerId}`);
 	}
-	
-	const player: PlayerData =
-	{
-		id: playerId,
-		username: playerUsername,
-	};
-	
-	tournament.players.push(player);
-	tournament.sockets.add(tsocket);
-	console.log(`ADDING SOCKET WITH PLAYER ID ${tsocket.playerId}`);
 
 	connection.on("close", () =>
 	{

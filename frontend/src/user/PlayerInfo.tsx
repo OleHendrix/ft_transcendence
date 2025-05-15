@@ -40,7 +40,6 @@ function ShowInfo( {editProfile, setEditProfile, selectedAccount, setSelectedAcc
 
 	useEffect(() =>
 	{
-		console.log('We zijn er');
 		if (selectedAccount)
 			setFormData({ username: selectedAccount.username, email: selectedAccount.email, password: '', confirmPassword: ''});
 	}, [selectedAccount]);
@@ -107,7 +106,7 @@ function PlayerInfo()
 
 	return (
 		<ModalWrapper>
-			<motion.div className="flex flex-col items-center bg-[#2a2a2a] text-white p-8 gap-8 rounded-lg w-md h-auto max-h-[90vh] overflow-y-auto relative shadow-2xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
+			<motion.div className="flex flex-col items-center bg-zinc-800 text-white p-8 gap-8 rounded-lg w-md h-auto max-h-[90vh] overflow-y-auto relative shadow-2xl" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}>
 				<CloseButton onClick={() => {navigate('/'); setTriggerFetchAccounts(false)}}/>
 				{!editProfile && <LogoutDeleteButton keyword="logout" onClick={() => {logout({loggedInAccounts, setLoggedInAccounts, selectedAccount, setTriggerFetchAccounts}); navigate('/')}}/>}
 				<div className="flex w-full flex-col items-center gap-2">

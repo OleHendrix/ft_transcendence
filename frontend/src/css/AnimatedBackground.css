@@ -1,0 +1,43 @@
+
+
+.shape {
+	position: absolute;
+	opacity: 0.1;
+	animation: float 1s ease-in-out infinite alternate; /* was bv. 10s, nu 4s */
+}
+
+.circle {
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+}
+
+.rect {
+	width: 80px;
+	height: 20px;
+	border-radius: 8px;
+}
+
+.triangle {
+	width: 0;
+	height: 0;
+	border-left: 32px solid transparent;
+	border-right: 32px solid transparent;
+	border-bottom: 56px solid;
+	background: none;
+}
+
+.orange {
+	background: #ff914d;
+	border-bottom-color: #ff914d;
+}
+
+.blue {
+	background: #3b6ea8;
+	border-bottom-color: #3b6ea8;
+}
+
+@keyframes float {
+	0%   { transform: translateY(0) rotate(0deg);}
+	100% { transform: translateY(-80px) rotate(40deg);}
+}

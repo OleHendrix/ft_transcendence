@@ -13,7 +13,6 @@ export async function secureApiCall(userId: number, apiCall: (accessToken: strin
 			accessToken  = newTokens.newAccessToken;
 			refreshToken = newTokens.newRefreshToken;
 
-			console.log(accessToken, refreshToken);
 			storeNewTokens(userId, accessToken, refreshToken);
 		}
 	}

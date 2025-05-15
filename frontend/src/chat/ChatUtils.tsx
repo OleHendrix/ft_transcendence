@@ -4,6 +4,7 @@ import { RiGamepadLine } from "react-icons/ri";
 import { Message, PlayerState } from '../types'
 import { useChatContext } from '../contexts/ChatContext';
 import { useAccountContext } from '../contexts/AccountContext';
+import { TbTournament } from "react-icons/tb";
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -218,6 +219,18 @@ export function FriendRequest( {message, isSender} : MessageProps)
 	)
 }
 
+export function TournamentUpdate( {message, isSender} : MessageProps)
+{
+	return (
+		<div key={message.id} className="mt-5 -mx-2 w-[calc(100%+1rem)] flex flex-col bg-white/2 py-4 gap-1 items-center shadow-2xl">
+			<time className="text-xs opacity-30">
+				{format(new Date(message.timestamp), "HH:mm")}
+			</time>
+			<TbTournament size={18} className='opacity-30' />
+			<p className="text-xs font-light opacity-50 mt-2">{message.content}</p>
+		</div>
+	)
+}
 export function DefaultMessage({ message, isSender }: MessageProps)
 {
 	const navigate = useNavigate();
@@ -230,7 +243,7 @@ export function DefaultMessage({ message, isSender }: MessageProps)
 					{format(new Date(message.timestamp), "HH:mm")}
 				</time>
 			</div>
-			<div className={`chat-bubble ${isSender ? "bg-[#ff914d]" : "bg-[#134588]"}`}>
+			<div className={`chat-bubble break-words ${isSender ? "bg-[#ff914d]" : "bg-[#134588]"}`}>
 				{message.content}
 			</div>
 		</div>
