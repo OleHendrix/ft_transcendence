@@ -143,8 +143,8 @@ function PongGame()
 			<button
 				className="flex items-center justify-center rounded-lg bg-white/10 hover:cursor-pointer absolute -translate-x-1/2 -translate-y-1/2 shadow-xl text-5xl text-center text-gray-400 active:scale-95 transition-transform touch-none"
 				style={{
-					width: '15vh',
-					height: '15vh',
+					width: '20vh',
+					height: '20vh',
 					top: `${pos.y}vh`,
 					left: `${pos.x}vw`,
 				}}
@@ -159,7 +159,7 @@ function PongGame()
 		if (isOnPC) {
 			return (<></>);
 		}
-		const [topY, bottomY] = [60, 76];
+		const [topY, bottomY] = [40, 61];
 		return (
 			<>
 				{match?.isLocalGame && match.p2.id !== -1 ? 
