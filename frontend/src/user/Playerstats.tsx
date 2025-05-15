@@ -204,8 +204,8 @@ function getPercentile(player: PlayerType, stat: keyof PlayerType, accounts: Pla
 
 function ShowStats({selectedAccount} : {selectedAccount: PlayerType})
 {
-	const { accounts } = useAccountContext();
-	fetchAccounts();
+	const { accounts, setTriggerFetchAccounts } = useAccountContext();
+	useEffect(() => setTriggerFetchAccounts(true), []);
 
 	function GetStatEntry(isEven: boolean, startStr: string, unit: string, player: PlayerType, stat: keyof PlayerType): React.ReactElement
 	{
